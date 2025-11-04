@@ -1,0 +1,8 @@
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  console.log("logging on!");
+  socket.on("emitting", (msg) => {
+    console.log(msg);
+  });
+</script>

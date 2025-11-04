@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "_version": "25.0.0",
+
+  "compilerOptions": {
+    "lib": [
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Iterator",
+      "ESNext.Promise"
+    ],
+    "module": "nodenext",
+    "target": "es2024",
+
+    "strict": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node16",
+
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["dist"]
+}
