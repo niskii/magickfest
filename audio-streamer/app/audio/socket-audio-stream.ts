@@ -1,8 +1,10 @@
 import { Socket } from "socket.io-client";
 import { Chunk } from "./chunk";
+import { TimeKeeper } from "./timeKeeper";
 
 export class SocketAudioStream {
   _socket: Socket;
+  _timeKeeper: TimeKeeper;
   _fetchTimer: NodeJS.Timeout;
   _isFetching = false;
   _isFlushed = false;
@@ -10,34 +12,35 @@ export class SocketAudioStream {
   lastChunkPage = 0;
   _currentDuration = 0;
   _minDuration;
+  _blob;
   onFetch;
   onFlush;
 
-  constructor(socket: Socket, minDuration) {
+  constructor(socket: Socket, timeKeeper: TimeKeeper, minDuration) {
     this._socket = socket;
+    this._timeKeeper = timeKeeper;
     this._minDuration = minDuration;
 
     socket.on("chunk", async (chunk: Chunk) => {
       this._isFetching = false;
-      this._isFlushed = true;
       this.lastChunkPage = chunk.pageEnd;
-      console.log("Received package!");
 
-      // let bytes = new Uint8Array(chunk.buffer);
-
-      // const link = document.createElement("a");
-      // const file = new Blob([bytes], { type: 'audio/ogg; code=opus' });
-      // link.href = URL.createObjectURL(file);
-      // link.download = "sample.opus";
-      // link.click();
-      // URL.revokeObjectURL(link.href);
-
+      console.log("Received package!", chunk.pageEnd);
       this.onFetch(chunk.buffer);
     });
+
+    // let bytes = new Uint8Array(chunk.buffer);
+
+    // const link = document.createElement("a");
+    // const file = new Blob([bytes], { type: 'audio/ogg; code=opus' });
+    // link.href = URL.createObjectURL(file);
+    // link.download = "sample.opus";
+    // link.click();
+    // URL.revokeObjectURL(link.href);
   }
 
   async getMinimalNumberOfChunks() {
-    if (this._currentDuration < this._minDuration) {
+    if (this._timeKeeper.getRemainingTime() < this._minDuration) {
       this.fetch();
     }
   }
@@ -53,7 +56,8 @@ export class SocketAudioStream {
     });
   }
 
-  async fetch() {
+  fetch() {
+    if (this._isFetching) return;
     this._isFetching = true;
 
     console.log("trying to fetch!");
@@ -61,7 +65,6 @@ export class SocketAudioStream {
       "fetchChunks",
       { lastPage: this.lastChunkPage },
       (response) => {
-        this._isFetching = false;
         if (response.status == 1) {
           this.onFlush();
           this.reset();
@@ -75,11 +78,10 @@ export class SocketAudioStream {
     this.fetchCurrent();
     this._fetchTimer?.close();
     this._fetchTimer = setInterval(async () => {
-      console.log("has buffered", this._currentDuration);
-      if (this._currentDuration < 0 && !this._isFlushed) this.onFlush();
+      // console.log("has buffered", this._timeKeeper.getRemainingTime());
       if (this._isFetching) return;
       this.getMinimalNumberOfChunks();
-    }, 1000);
+    }, 200);
   }
 
   async reset() {

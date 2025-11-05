@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext", "ES2017", "WebWorker"],
+    "target": "es2024",
+    "lib": ["dom", "dom.iterable", "esnext", "ES2024", "WebWorker"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -9,8 +9,8 @@
     "incremental": true,
     "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
+    "moduleResolution": "bundler",
     "isolatedModules": true,
     "jsx": "react-jsx",
     "plugins": [
@@ -28,7 +28,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "app/worker-decoder-opus.mjs"
+    "app/audio/worker-decoder-opus.mjs"
   ],
   "exclude": ["node_modules"]
 }

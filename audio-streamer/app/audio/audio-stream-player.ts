@@ -1,12 +1,10 @@
 import { Socket } from "socket.io-client";
 import { SocketAudioStream } from "./socket-audio-stream";
-import Worker from "web-worker";
-import { WorkerStates } from "../worker-messages";
-// import { decoder } from '../worker-decoder-opus'
+import { TimeKeeper } from "./timeKeeper";
+import * as decoder from "./decoder-service";
 
 export class AudioStreamPlayer {
   // these shouldn't change once set
-  _worker: Worker;
   _socket: Socket;
   _readBufferSize;
 
@@ -14,30 +12,27 @@ export class AudioStreamPlayer {
   _sessionId; // used to prevent race conditions between cancel/starts
   _audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
   _stream: SocketAudioStream;
+  _timeKeeper: TimeKeeper;
   _audioSrcNodes; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
   _totalTimeScheduled; // time scheduled of all AudioBuffers
   _playStartedAt; // audioContext.currentTime of first sched
   _abCreated; // AudioBuffers created
   _abEnded; // AudioBuffers played/ended
   _skips; // audio skipping caused by slow download
+  _flushTimeoutId;
+  _hasFlushed;
 
   onUpdateState;
 
   constructor(socket: Socket, readBufferSize, decoderName) {
     switch (decoderName) {
       case "OPUS":
-        this._worker = new Worker(
-          new URL("../worker-decoder-opus.mjs", import.meta.url),
-        );
         break;
       default:
         throw Error("Unsupported decoderName", decoderName);
     }
 
-    this._worker.onerror = (event) => {
-      this._updateState({ error: event.message });
-    };
-    this._worker.onmessage = this._onWorkerMessage.bind(this);
+    decoder.handlers.onDecode = this._onDecode.bind(this);
 
     // pause for now
     // this._audioCtx.suspend().then(_ => console.log('audio paused'));
@@ -87,7 +82,8 @@ export class AudioStreamPlayer {
     this._sessionId = performance.now();
     performance.mark(this._downloadMarkKey);
     this._audioCtx = new window.AudioContext();
-    const stream = new SocketAudioStream(this._socket, 10);
+    this._timeKeeper = new TimeKeeper(this._audioCtx);
+    const stream = new SocketAudioStream(this._socket, this._timeKeeper, 10);
     // stream.onFetch = this._downloadProgress.bind(this);
     stream.onFetch = this._decode.bind(this);
     stream.onFlush = this._flush.bind(this);
@@ -128,35 +124,30 @@ export class AudioStreamPlayer {
   }
 
   _flush() {
-    setTimeout(
-      () => {
-        this._worker.postMessage({
-          action: WorkerStates.FLUSH,
-          remaining: this._getRemainingTime(),
-        });
-      },
-      this._getRemainingTime() * 1000 - 100,
-    );
+    const timeout = this._timeKeeper.getRemainingTime();
+
+    this._flushTimeoutId = setTimeout(() => {
+      decoder.flushAudio();
+    }, timeout);
   }
 
-  _decode(buffer: ArrayBuffer) {
+  async _decode(buffer: ArrayBuffer) {
     const sessionId = this._sessionId;
-    this._worker.postMessage(
-      { decode: buffer, sessionId, action: WorkerStates.DECODE },
-      [buffer],
-    );
+    decoder.decodeAudio(buffer, sessionId);
+
+    this._hasFlushed = false;
+    clearTimeout(this._flushTimeoutId);
   }
 
   // prevent race condition by checking sessionId
-  _onWorkerMessage(event) {
-    const { decoded, sessionId } = event.data;
-    if (decoded.channelData) {
-      if (!(this._sessionId && this._sessionId === sessionId)) {
+  _onDecode(event) {
+    if (event.decoded.channelData) {
+      if (!(this._sessionId && this._sessionId === event.sessionId)) {
         console.log("race condition detected for closed session");
         return;
       }
 
-      this._schedulePlayback(decoded);
+      this._schedulePlayback(event.decoded);
     }
   }
 
@@ -178,9 +169,10 @@ export class AudioStreamPlayer {
   }
 
   _getRemainingTime() {
-    return (
+    return Math.max(
+      0.0,
       this._totalTimeScheduled -
-      (this._audioCtx.currentTime - this._playStartedAt)
+        (this._audioCtx.currentTime - this._playStartedAt),
     );
   }
 
@@ -195,7 +187,6 @@ export class AudioStreamPlayer {
     audioSrc.onended = () => {
       this._audioSrcNodes.shift();
       this._abEnded++;
-      this._stream.currentLength(this._getRemainingTime()); // Maybe not the best place to duration time.
       this._updateState({});
     };
     this._abCreated++;
@@ -234,6 +225,7 @@ export class AudioStreamPlayer {
       // const startDelay = audioCtx.outputLatency || audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
       this._playStartedAt = this._audioCtx.currentTime + startDelay;
+      this._timeKeeper.setStartedAt(this._playStartedAt);
       this._updateState({
         latency:
           performance.now() - this._getDownloadStartTime() + startDelay * 1000,
@@ -243,7 +235,10 @@ export class AudioStreamPlayer {
     audioSrc.buffer = audioBuffer;
     audioSrc.connect(this._audioCtx.destination);
 
-    const startAt = this._playStartedAt + this._totalTimeScheduled;
+    const startAt = Math.max(
+      this._audioCtx.currentTime,
+      this._playStartedAt + this._totalTimeScheduled,
+    ); // play at current time if underflowing
     if (this._audioCtx.currentTime >= startAt) {
       this._skips++;
       this._updateState({});
@@ -252,6 +247,6 @@ export class AudioStreamPlayer {
     audioSrc.start(startAt);
 
     this._totalTimeScheduled += audioBuffer.duration;
-    console.log(startAt, this._totalTimeScheduled);
+    this._timeKeeper.setTotalTimeScheduled(this._totalTimeScheduled);
   }
 }

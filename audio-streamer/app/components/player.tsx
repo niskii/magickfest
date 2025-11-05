@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { io } from "socket.io-client";
-import { AudioStreamPlayer } from "./audio-stream-player";
+import { AudioStreamPlayer } from "../audio/audio-stream-player";
 import ss from "socket.io-stream";
 
 // const decoder = new OpusDecoder();
