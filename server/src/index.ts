@@ -1,12 +1,11 @@
 import express, { Request, Response } from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import { readFileSync, createReadStream, writeFile, existsSync } from "fs";
+import { readFileSync, writeFile, existsSync } from "fs";
 import { Playlist } from "./playlist";
 import { Player } from "./player";
 
-const ss = require("socket.io-stream");
-const cors = require("cors");
+import cors from "cors";
 
 const playlistStateFilePath = 'temp/playlist_state_'
 
@@ -49,6 +48,10 @@ function saveState() {
   })
 }
 
+function sendChunk(socket: Socket, data: any, callback?: Function) {
+  socket.emit("chunk", data)
+}
+
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -68,16 +71,16 @@ io.on("connection", (socket) => {
   socket.on("fetchCurrent", (callback) => {
     console.log("received chunk request!");
 
-    const results = player.getCurrentReader()?.getCurrentChunk();
-    if (results?.chunk !== null) socket.emit("chunk", results?.chunk);
+    const result = player.getCurrentReader()?.getCurrentChunk();
+    if (result?.chunk !== null) sendChunk(socket, result?.chunk);
     callback({
-      status: results?.status,
+      status: result?.status,
     });
   });
 
   socket.on("fetchChunks", function (data, callback) {
     const result = player.getCurrentReader()?.getNextChunk(data.lastPage);
-    if (result?.chunk !== null) socket.emit("chunk", result?.chunk);
+    if (result?.chunk !== null) sendChunk(socket, result?.chunk);
     callback({
       status: result?.status,
     });
