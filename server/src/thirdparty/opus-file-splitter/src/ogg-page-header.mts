@@ -60,7 +60,7 @@ export class OggPageHeader {
   get isFirstPage() {
     return this.type.firstPage != 0;
   }
-  
+
   set isFirstPage(truthy) {
     // set first bit
     let bit = this.#view.getUint8(this.offset + 5);

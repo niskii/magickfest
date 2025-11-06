@@ -1,69 +1,67 @@
+import { readFileSync } from "fs";
 import { Status } from "./status";
-import { OpusFileSplitter } from "./thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
-import { readFileSync, createReadStream } from "fs";
+import {
+  HeaderObject,
+  OpusFileSplitter,
+  Page,
+} from "./thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
 
 export class OpusReader {
-  fileSplitter;
-  headerObject;
-  startTime: number;
-  pages;
-  numberOfPages;
-  minPagesForChunk;
-  headerSize;
-  preskip;
-  totalDurationSeconds;
-  positions;
+  #fileSplitter: OpusFileSplitter;
+  #headerObject: HeaderObject;
+  #startTime: number;
+  #pages: Array<Page>;
+  #numberOfPages: number;
+  #minPagesForChunk: number;
+  #preskipSeconds: number;
+  #totalDurationSeconds: number;
+  #positions: Array<number>;
 
   constructor(file: string) {
-    this.fileSplitter = new OpusFileSplitter(readFileSync(file).buffer);
-    this.headerObject = this.fileSplitter.headerObject;
-    this.startTime = Date.now();
-    this.pages = this.fileSplitter.pages;
-    this.numberOfPages = this.pages.length;
-    this.minPagesForChunk = this.calculateMinPages(
+    this.#fileSplitter = new OpusFileSplitter(readFileSync(file).buffer);
+    this.#headerObject = this.#fileSplitter.headerObject;
+    this.#startTime = Date.now();
+    this.#pages = this.#fileSplitter.pages;
+    this.#numberOfPages = this.#pages.length;
+    this.#minPagesForChunk = this.calculateMinPages(
       3,
-      this.headerObject.audioPageSize,
+      this.#headerObject.audioPageSize,
     );
-    this.headerSize = this.fileSplitter.headByteLength;
-    this.preskip = this.fileSplitter.calculateDurationSeconds(
-      0n,
-      BigInt(this.headerObject.preskip),
-    );
-    this.totalDurationSeconds = this.fileSplitter.calculateDurationSeconds(
-      BigInt(this.headerObject.preskip),
-      this.headerObject.PCMLength,
+    this.#preskipSeconds = this.#fileSplitter.preSkipSeconds;
+    this.#totalDurationSeconds = this.#fileSplitter.calculateDurationSeconds(
+      BigInt(this.#headerObject.preskipGranule),
+      this.#headerObject.PCMLength,
     );
 
-    this.positions = this.pages.flatMap((p) => Number(p.position));
+    this.#positions = this.#pages.flatMap((p) => Number(p.position));
   }
 
   startClock() {
-    this.startTime = Date.now()
+    this.#startTime = Date.now();
   }
 
   getClock() {
-    return this.startTime
+    return this.#startTime;
   }
 
   setClock(time: number) {
-    this.startTime = time;
+    this.#startTime = time;
   }
 
-
   getCurrentTimeMillis() {
-    return Date.now() - this.startTime;
+    return Date.now() - this.#startTime;
   }
 
   getRemainingTimeSeconds() {
     return (
-      this.totalDurationSeconds -
+      this.#totalDurationSeconds -
       this.getCurrentTimeMillis() / 1000 -
-      this.preskip
+      this.#preskipSeconds
     );
   }
 
   getPlayTimeSeconds() {
-    return (Date.now() - this.startTime) / 1000;
+    return (Date.now() - this.#startTime) / 1000;
   }
 
   getCurrentPage() {
@@ -74,14 +72,14 @@ export class OpusReader {
     if (
       pageStart < 0 ||
       pageEnd < 0 ||
-      pageStart >= this.numberOfPages ||
-      pageEnd >= this.numberOfPages
+      pageStart >= this.#numberOfPages ||
+      pageEnd >= this.#numberOfPages
     )
       return 0;
 
-    return this.fileSplitter.calculateDurationSeconds(
-      this.pages[pageStart].position,
-      this.pages[pageEnd].position,
+    return this.#fileSplitter.calculateDurationSeconds(
+      this.#pages[pageStart].position,
+      this.#pages[pageEnd].position,
     );
   }
 
@@ -89,7 +87,7 @@ export class OpusReader {
     return Math.max(Math.floor(minDuration / pageDuration), 1);
   }
 
-  binarySearch(arr: number[], target: number): number {
+  #binarySearch(arr: number[], target: number): number {
     let low = 0;
     let high = arr.length - 1;
 
@@ -97,40 +95,41 @@ export class OpusReader {
       const mid = Math.floor((low + high) / 2);
 
       if (arr[mid] === target) {
-        return mid; // Target found
+        return mid;
       } else if (arr[mid] < target) {
-        low = mid + 1; // Discard the left half
+        low = mid + 1;
       } else {
-        high = mid - 1; // Discard the right half
+        high = mid - 1;
       }
     }
-    return low; // Target not found
+    return low;
   }
 
   bytesToPage(position: number) {
-    return this.binarySearch(this.positions, position);
+    return this.#binarySearch(this.#positions, position);
   }
 
   getPageRangeEnd(pageStart: number) {
-    return Math.min(pageStart + this.minPagesForChunk, this.numberOfPages - 1);
+    return Math.min(
+      pageStart + this.#minPagesForChunk,
+      this.#numberOfPages - 1,
+    );
   }
 
   makeChunkFromRange(start: number, end: number) {
     const duration = this.calculateRangeDuration(start, end);
-    const chunks = this.fileSplitter.sliceByPage(start, end);
+    const chunks = this.#fileSplitter.sliceByPage(start, end);
     console.log(start, end, duration);
     return {
       buffer: chunks,
       pageStart: start,
       pageEnd: end,
-      chunkPlayPosition: (this.headerObject.audioPageSize * start),
-      totalDuration: this.totalDurationSeconds,
-      currentTime: this.getCurrentTimeMillis(), 
+      chunkPlayPosition: this.#headerObject.audioPageSize * start,
+      totalDuration: this.#totalDurationSeconds,
+      currentTime: this.getCurrentTimeMillis(),
       duration: duration,
     };
   }
-
-  validateRange() {}
 
   getCurrentChunk() {
     const pageStart = this.getCurrentPage();
@@ -151,9 +150,9 @@ export class OpusReader {
       "more data requested! %d, %d, %d",
       currentPage,
       pageStart,
-      this.numberOfPages,
+      this.#numberOfPages,
     );
-    if (pageStart >= this.numberOfPages || pageEnd >= this.numberOfPages)
+    if (pageStart >= this.#numberOfPages || pageEnd >= this.#numberOfPages)
       return { chunk: null, status: Status.EOF };
     if (this.calculateRangeDuration(currentPage, pageStart) > 30)
       return { chunk: null, status: Status.INVALID };
