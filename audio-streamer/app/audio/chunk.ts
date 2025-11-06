@@ -4,4 +4,7 @@ export interface Chunk {
   pageEnd;
   headerSize;
   duration;
+  chunkPlayPosition;
+  currentTime;
+  totalDuration;
 }

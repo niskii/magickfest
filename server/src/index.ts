@@ -48,11 +48,6 @@ function saveState() {
   })
 }
 
-function sendChunk(socket: Socket, data: any, callback?: Function) {
-  socket.emit("chunk", data)
-}
-
-
 io.on("connection", (socket) => {
   console.log("a user connected");
 
@@ -72,7 +67,7 @@ io.on("connection", (socket) => {
     console.log("received chunk request!");
 
     const result = player.getCurrentReader()?.getCurrentChunk();
-    if (result?.chunk !== null) sendChunk(socket, result?.chunk);
+    if (result?.chunk !== null) socket.emit("sync", result?.chunk);
     callback({
       status: result?.status,
     });
@@ -80,7 +75,7 @@ io.on("connection", (socket) => {
 
   socket.on("fetchChunks", function (data, callback) {
     const result = player.getCurrentReader()?.getNextChunk(data.lastPage);
-    if (result?.chunk !== null) sendChunk(socket, result?.chunk);
+    if (result?.chunk !== null) socket.emit("fetch", result?.chunk);
     callback({
       status: result?.status,
     });

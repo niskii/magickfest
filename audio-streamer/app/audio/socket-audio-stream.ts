@@ -8,11 +8,11 @@ export class SocketAudioStream {
   _fetchTimer: NodeJS.Timeout;
   _isFetching = false;
   _isFlushed = false;
+  _needsResync = false;
   currentChunk: Chunk;
   lastChunkPage = 0;
-  _currentDuration = 0;
   _minDuration;
-  _blob;
+
   onFetch;
   onFlush;
 
@@ -21,22 +21,39 @@ export class SocketAudioStream {
     this._timeKeeper = timeKeeper;
     this._minDuration = minDuration;
 
-    socket.on("chunk", async (chunk: Chunk) => {
-      this._isFetching = false;
-      this.lastChunkPage = chunk.pageEnd;
-
-      console.log("Received package!", chunk.pageEnd);
-      this.onFetch(chunk.buffer);
+    socket.on("fetch", async (chunk: Chunk) => {
+      console.log(
+        "playing at",
+        chunk.currentTime / 1000 - this._timeKeeper.getCurrentPlayPosition(),
+      );
+      if (
+        this._timeKeeper.getCurrentPlayPosition() <
+        chunk.currentTime / 1000 - 5
+      ) {
+        this._needsResync = true;
+      }
+      this.handleChunk(chunk);
     });
 
-    // let bytes = new Uint8Array(chunk.buffer);
+    socket.on("sync", async (chunk: Chunk) => {
+      console.log("syncing!");
+      this._needsResync = false;
+      this._timeKeeper.setStartPosition(chunk.chunkPlayPosition);
+      this._timeKeeper.setTotalDuration(chunk.totalDuration);
+      this._timeKeeper.addDelay(
+        chunk.chunkPlayPosition -
+          chunk.currentTime / 1000 -
+          this._timeKeeper.audioContext.currentTime,
+      );
+      this.handleChunk(chunk);
+    });
+  }
 
-    // const link = document.createElement("a");
-    // const file = new Blob([bytes], { type: 'audio/ogg; code=opus' });
-    // link.href = URL.createObjectURL(file);
-    // link.download = "sample.opus";
-    // link.click();
-    // URL.revokeObjectURL(link.href);
+  handleChunk(chunk: Chunk) {
+    console.log("Received package!", chunk.pageEnd);
+    this._isFetching = false;
+    this.lastChunkPage = chunk.pageEnd;
+    this.onFetch(chunk.buffer);
   }
 
   async getMinimalNumberOfChunks() {
@@ -45,14 +62,10 @@ export class SocketAudioStream {
     }
   }
 
-  currentLength(length) {
-    this._currentDuration = length;
-  }
-
   async fetchCurrent() {
     this._isFetching = true;
     this._socket.emit("fetchCurrent", (response) => {
-      console.log(response.status);
+      console.log("Status code:", response.status);
     });
   }
 
@@ -78,7 +91,12 @@ export class SocketAudioStream {
     this.fetchCurrent();
     this._fetchTimer?.close();
     this._fetchTimer = setInterval(async () => {
-      // console.log("has buffered", this._timeKeeper.getRemainingTime());
+      if (this._needsResync) {
+        this._needsResync = false;
+        this.fetchCurrent();
+        return;
+      }
+      console.log("has buffered", this._timeKeeper.getRemainingTime());
       if (this._isFetching) return;
       this.getMinimalNumberOfChunks();
     }, 200);
@@ -86,7 +104,6 @@ export class SocketAudioStream {
 
   async reset() {
     this.lastChunkPage = 0;
-    this._currentDuration = 0;
     this.currentChunk = null;
     clearTimeout(this._fetchTimer);
   }

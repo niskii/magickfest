@@ -46,7 +46,8 @@ export class AudioStreamPlayer {
     if (this._stream) this._stream.reset();
     delete this._stream;
     this._stream = null;
-    this._socket.removeListener("chunk");
+    this._socket.removeListener("fetch");
+    this._socket.removeListener("sync");
 
     if (this._sessionId) {
       performance.clearMarks(this._downloadMarkKey);
@@ -83,11 +84,9 @@ export class AudioStreamPlayer {
     performance.mark(this._downloadMarkKey);
     this._audioCtx = new window.AudioContext();
     this._timeKeeper = new TimeKeeper(this._audioCtx);
-    const stream = new SocketAudioStream(this._socket, this._timeKeeper, 10);
-    // stream.onFetch = this._downloadProgress.bind(this);
+    const stream = new SocketAudioStream(this._socket, this._timeKeeper, 5);
     stream.onFetch = this._decode.bind(this);
     stream.onFlush = this._flush.bind(this);
-
     this._stream = stream;
 
     stream.start().catch((e) => {
@@ -147,6 +146,7 @@ export class AudioStreamPlayer {
         return;
       }
 
+      this._audioCtx.resume();
       this._schedulePlayback(event.decoded);
     }
   }
@@ -188,6 +188,13 @@ export class AudioStreamPlayer {
       this._audioSrcNodes.shift();
       this._abEnded++;
       this._updateState({});
+
+      if (
+        this._audioCtx.currentTime >
+        this._playStartedAt + this._totalTimeScheduled
+      ) {
+        this._audioCtx.suspend();
+      }
     };
     this._abCreated++;
     this._updateState({});

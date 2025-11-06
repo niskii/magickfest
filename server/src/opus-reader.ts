@@ -123,6 +123,9 @@ export class OpusReader {
       buffer: chunks,
       pageStart: start,
       pageEnd: end,
+      chunkPlayPosition: (this.headerObject.audioPageSize * start),
+      totalDuration: this.totalDurationSeconds,
+      currentTime: this.getCurrentTimeMillis(), 
       duration: duration,
     };
   }
