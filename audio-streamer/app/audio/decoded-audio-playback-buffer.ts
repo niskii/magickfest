@@ -39,41 +39,41 @@ export class DecodedAudioPlaybackBuffer {
   };
 
   // left/right channels of buffers we're filling
-  _bufferL = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
-  _bufferR = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
+  #bufferL = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
+  #bufferR = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
 
-  _bufferPos; // last filled position in buffer
-  _onFlush; // user-provided function
-  _flushCount; // number of times we've already flushed
+  #bufferPos; // last filled position in buffer
+  #onFlush; // user-provided function
+  #flushCount; // number of times we've already flushed
 
   constructor({ onFlush }) {
     if (typeof onFlush !== "function")
       throw Error("onFlush must be a function");
 
-    this._onFlush = onFlush;
+    this.#onFlush = onFlush;
     this.reset();
   }
 
   reset() {
-    this._bufferPos = 0;
-    this._flushCount = 0;
+    this.#bufferPos = 0;
+    this.#flushCount = 0;
   }
 
   add({ left, right }) {
     const srcLen = left.length;
     let bufferLen,
       srcStart = 0,
-      bufferPos = this._bufferPos;
+      bufferPos = this.#bufferPos;
 
     while (srcStart < srcLen) {
-      bufferLen = DecodedAudioPlaybackBuffer.flushLength(this._flushCount);
+      bufferLen = DecodedAudioPlaybackBuffer.flushLength(this.#flushCount);
       const len = Math.min(bufferLen - bufferPos, srcLen - srcStart);
       const end = srcStart + len;
-      this._bufferL.set(left.slice(srcStart, end), bufferPos);
-      this._bufferR.set(right.slice(srcStart, end), bufferPos);
+      this.#bufferL.set(left.slice(srcStart, end), bufferPos);
+      this.#bufferR.set(right.slice(srcStart, end), bufferPos);
       srcStart += len;
       bufferPos += len;
-      this._bufferPos = bufferPos;
+      this.#bufferPos = bufferPos;
       if (bufferPos === bufferLen) {
         this.flush();
         bufferPos = 0;
@@ -83,12 +83,12 @@ export class DecodedAudioPlaybackBuffer {
   }
 
   flush() {
-    const bufferPos = this._bufferPos;
-    this._onFlush({
-      left: this._bufferL.slice(0, bufferPos),
-      right: this._bufferR.slice(0, bufferPos),
+    const bufferPos = this.#bufferPos;
+    this.#onFlush({
+      left: this.#bufferL.slice(0, bufferPos),
+      right: this.#bufferR.slice(0, bufferPos),
     });
-    this._flushCount++;
-    this._bufferPos = 0;
+    this.#flushCount++;
+    this.#bufferPos = 0;
   }
 }

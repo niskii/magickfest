@@ -1,42 +1,41 @@
 import { useEffect } from "react";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { AudioStreamPlayer } from "../audio/audio-stream-player";
-import ss from "socket.io-stream";
 
-// const decoder = new OpusDecoder();
-
-const socket = io(":8080");
+let socket: Socket;
+let audioStreamPlayer: AudioStreamPlayer;
 let isConnected = false;
+let stateInterval: NodeJS.Timeout;
 
-const audioStreamPlayer: AudioStreamPlayer = new AudioStreamPlayer(
-  socket,
-  1024,
-  "OPUS",
-);
+async function connect() {
+  if (!isConnected) {
+    console.log("Joining audio!");
+    socket = io(":8080");
 
-// ss(socket).on('audio-stream', function(stream, data) {
-//     stream.on('data', function(chunk) {
-//         ap.addAudio(data.header, chunk);
-//     });
-//     stream.on('end', function () {
-//     });
-// });
+    socket.on("newSet", () => {
+      if (isConnected) {
+        console.log("hallo!");
+        audioStreamPlayer.reset();
+        audioStreamPlayer.start();
+      }
+    });
 
-socket.on("newSet", () => {
-  if (isConnected) {
-    console.log("hallo!");
-    audioStreamPlayer._reset();
+    audioStreamPlayer = new AudioStreamPlayer(socket, 10, "OPUS");
+
+    audioStreamPlayer.reset();
     audioStreamPlayer.start();
+    isConnected = true;
   }
-});
+}
 
-async function playSound() {
-  console.log("Joining audio!");
-
-  isConnected = true;
-
-  audioStreamPlayer._reset();
-  audioStreamPlayer.start();
+async function disconnect() {
+  if (isConnected) {
+    clearInterval(stateInterval);
+    audioStreamPlayer.close();
+    audioStreamPlayer = null;
+    socket.disconnect();
+    isConnected = false;
+  }
 }
 
 export function Player() {
@@ -45,7 +44,8 @@ export function Player() {
   return (
     <div>
       Playing
-      <button onClick={playSound}>El button</button>
+      <button onClick={connect}>connect</button>
+      <button onClick={disconnect}>disconnect</button>
     </div>
   );
 }

@@ -5,26 +5,23 @@ import * as decoder from "./decoder-service";
 
 export class AudioStreamPlayer {
   // these shouldn't change once set
-  _socket: Socket;
-  _readBufferSize;
+  #socket: Socket;
+  #maxBufferSize;
 
   // these are reset
-  _sessionId; // used to prevent race conditions between cancel/starts
-  _audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
-  _stream: SocketAudioStream;
-  _timeKeeper: TimeKeeper;
-  _audioSrcNodes; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
-  _totalTimeScheduled; // time scheduled of all AudioBuffers
-  _playStartedAt; // audioContext.currentTime of first sched
-  _abCreated; // AudioBuffers created
-  _abEnded; // AudioBuffers played/ended
-  _skips; // audio skipping caused by slow download
-  _flushTimeoutId;
-  _hasFlushed;
+  #sessionId; // used to prevent race conditions between cancel/starts
+  #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
+  #stream: SocketAudioStream;
+  #timeKeeper: TimeKeeper;
+  #audioSrcNodes; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
+  #totalTimeScheduled; // time scheduled of all AudioBuffers
+  #playStartedAt; // audioContext.currentTime of first sched
+  skips; // audio skipping caused by slow download
+  #flushTimeoutId;
 
   onUpdateState;
 
-  constructor(socket: Socket, readBufferSize, decoderName) {
+  constructor(socket: Socket, maxBufferSize, decoderName) {
     switch (decoderName) {
       case "OPUS":
         break;
@@ -32,175 +29,169 @@ export class AudioStreamPlayer {
         throw Error("Unsupported decoderName", decoderName);
     }
 
-    decoder.handlers.onDecode = this._onDecode.bind(this);
+    decoder.handlers.onDecode = this.#onDecode.bind(this);
 
     // pause for now
     // this._audioCtx.suspend().then(_ => console.log('audio paused'));
 
-    this._socket = socket;
-    this._readBufferSize = readBufferSize;
-    this._reset();
+    this.#socket = socket;
+    this.#maxBufferSize = maxBufferSize;
+    this.reset();
   }
 
-  _reset() {
-    if (this._stream) this._stream.reset();
-    delete this._stream;
-    this._stream = null;
-    this._socket.removeListener("fetch");
-    this._socket.removeListener("sync");
+  reset() {
+    if (this.#stream) this.#stream.reset();
+    this.#stream = null;
+    this.#socket.removeListener("fetch");
+    this.#socket.removeListener("sync");
 
-    if (this._sessionId) {
+    if (this.#sessionId) {
       performance.clearMarks(this._downloadMarkKey);
     }
-    this._sessionId = null;
-    this._audioCtx = null;
-    this._audioSrcNodes = [];
-    this._totalTimeScheduled = 0;
-    this._playStartedAt = 0;
-    this._abCreated = 0;
-    this._abEnded = 0;
-    this._skips = 0;
+    this.#sessionId = null;
+    this.#audioCtx = null;
+    this.#audioSrcNodes = [];
+    this.#totalTimeScheduled = 0;
+    this.#playStartedAt = 0;
+    this.skips = 0;
   }
 
   close() {
-    for (const node of this._audioSrcNodes) {
+    this.#flush();
+
+    for (const node of this.#audioSrcNodes) {
       node.onended = null;
-      node.disconnect(this._audioCtx.destination);
+      node.disconnect(this.#audioCtx.destination);
       node.stop();
     }
-    if (this._stream) {
-      this._stream.reset();
+    if (this.#stream) {
+      this.#stream.reset();
     }
-    if (this._audioCtx) {
-      this._audioCtx.suspend();
-      this._audioCtx.close();
+    if (this.#audioCtx) {
+      this.#audioCtx.suspend();
+      this.#audioCtx.close();
     }
 
-    this._reset();
+    this.reset();
   }
 
   start() {
-    this._sessionId = performance.now();
+    this.#sessionId = performance.now();
     performance.mark(this._downloadMarkKey);
-    this._audioCtx = new window.AudioContext();
-    this._timeKeeper = new TimeKeeper(this._audioCtx);
-    const stream = new SocketAudioStream(this._socket, this._timeKeeper, 5);
-    stream.onFetch = this._decode.bind(this);
-    stream.onFlush = this._flush.bind(this);
-    this._stream = stream;
+    this.#audioCtx = new window.AudioContext();
+    this.#timeKeeper = new TimeKeeper(this.#audioCtx);
+    const stream = new SocketAudioStream(
+      this.#socket,
+      this.#timeKeeper,
+      this.#maxBufferSize,
+    );
+    stream.onFetch = this.#decode.bind(this);
+    stream.onFlush = this.#flush.bind(this);
+    this.#stream = stream;
 
     stream.start().catch((e) => {
-      this._updateState({ error: e.toString() });
+      this.#updateState({ error: e.toString() });
     });
 
     this.resume();
   }
 
   pause() {
-    this._audioCtx
+    this.#audioCtx
       .suspend()
-      .then((_) => this._updateState({ playState: "paused" }));
+      .then((_) => this.#updateState({ playState: "paused" }));
   }
   resume() {
-    this._audioCtx
+    this.#audioCtx
       .resume()
-      .then((_) => this._updateState({ playState: "playing" }));
+      .then((_) => this.#updateState({ playState: "playing" }));
   }
 
-  _updateState(props) {
-    const abState = !this._abCreated
-      ? {}
-      : {
-          abCreated: this._abCreated,
-          abEnded: this._abEnded,
-          abRemaining: this._abCreated - this._abEnded,
-          skips: this._skips,
-        };
+  getCurrentPlayPosition() {
+    return this.#timeKeeper.getCurrentPlayPosition();
+  }
+
+  getTotalDuration() {
+    return this.#timeKeeper.getTotalDuration();
+  }
+
+  #updateState(props) {
+    const abState = {
+      skips: this.skips,
+    };
     const state = Object.assign(abState, props);
     if (this.onUpdateState) {
       this.onUpdateState(state);
     }
   }
 
-  _flush() {
-    const timeout = this._timeKeeper.getRemainingTime();
+  #flush() {
+    const timeout = this.#timeKeeper.getRemainingTime();
 
-    this._flushTimeoutId = setTimeout(() => {
+    this.#flushTimeoutId = setTimeout(() => {
       decoder.flushAudio();
     }, timeout);
   }
 
-  async _decode(buffer: ArrayBuffer) {
-    const sessionId = this._sessionId;
-    decoder.decodeAudio(buffer, sessionId);
-
-    this._hasFlushed = false;
-    clearTimeout(this._flushTimeoutId);
+  #decode(buffer: ArrayBuffer) {
+    decoder.decodeAudio(buffer, this.#sessionId);
+    clearTimeout(this.#flushTimeoutId);
   }
 
   // prevent race condition by checking sessionId
-  _onDecode(event) {
+  #onDecode(event) {
     if (event.decoded.channelData) {
-      if (!(this._sessionId && this._sessionId === event.sessionId)) {
+      if (!(this.#sessionId && this.#sessionId === event.sessionId)) {
         console.log("race condition detected for closed session");
         return;
       }
 
-      this._audioCtx.resume();
-      this._schedulePlayback(event.decoded);
+      this.#audioCtx.resume();
+      this.#schedulePlayback(event.decoded);
     }
   }
 
-  _downloadProgress({ bytes, totalRead, totalBytes, done }) {
-    this._updateState({
+  #downloadProgress({ bytes, totalRead, totalBytes, done }) {
+    this.#updateState({
       bytesRead: totalRead,
       bytesTotal: totalBytes,
       dlRate:
-        (totalRead * 8) / (performance.now() - this._getDownloadStartTime()),
+        (totalRead * 8) / (performance.now() - this.#getDownloadStartTime()),
     });
     // console.log(done, (totalRead/totalBytes*100).toFixed(2) );
   }
 
   get _downloadMarkKey() {
-    return `download-start-${this._sessionId}`;
+    return `download-start-${this.#sessionId}`;
   }
-  _getDownloadStartTime() {
+
+  #getDownloadStartTime() {
     return performance.getEntriesByName(this._downloadMarkKey)[0].startTime;
   }
 
-  _getRemainingTime() {
-    return Math.max(
-      0.0,
-      this._totalTimeScheduled -
-        (this._audioCtx.currentTime - this._playStartedAt),
-    );
-  }
-
-  _schedulePlayback({ channelData, length, numberOfChannels, sampleRate }) {
-    const audioSrc = this._audioCtx.createBufferSource(),
-      audioBuffer = this._audioCtx.createBuffer(
+  #schedulePlayback({ channelData, length, numberOfChannels, sampleRate }) {
+    const audioSrc = this.#audioCtx.createBufferSource(),
+      audioBuffer = this.#audioCtx.createBuffer(
         numberOfChannels,
         length,
         sampleRate,
       );
 
     audioSrc.onended = () => {
-      this._audioSrcNodes.shift();
-      this._abEnded++;
-      this._updateState({});
+      this.#audioSrcNodes.shift();
+      this.#updateState({});
 
       if (
-        this._audioCtx.currentTime >
-        this._playStartedAt + this._totalTimeScheduled
+        this.#audioCtx.currentTime >
+        this.#playStartedAt + this.#totalTimeScheduled
       ) {
-        this._audioCtx.suspend();
+        this.#audioCtx.suspend();
       }
     };
-    this._abCreated++;
-    this._updateState({});
+    this.#updateState({});
 
     // adding also ensures onended callback is fired in Safari
-    this._audioSrcNodes.push(audioSrc);
+    this.#audioSrcNodes.push(audioSrc);
 
     // Use performant copyToChannel() if browser supports it
     for (let c = 0; c < numberOfChannels; c++) {
@@ -217,7 +208,7 @@ export class AudioStreamPlayer {
     let startDelay = 0;
     // initialize first play position.  initial clipping/choppiness sometimes occurs and intentional start latency needed
     // read more: https://github.com/WebAudio/web-audio-api/issues/296#issuecomment-257100626
-    if (!this._playStartedAt) {
+    if (!this.#playStartedAt) {
       /* this clips in Firefox, plays */
       // const startDelay = audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
@@ -231,29 +222,29 @@ export class AudioStreamPlayer {
       /* this could be useful for firefox but outputLatency is about 250ms in FF. too long */
       // const startDelay = audioCtx.outputLatency || audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
-      this._playStartedAt = this._audioCtx.currentTime + startDelay;
-      this._timeKeeper.setStartedAt(this._playStartedAt);
-      this._updateState({
+      this.#playStartedAt = this.#audioCtx.currentTime + startDelay;
+      this.#timeKeeper.setStartedAt(this.#playStartedAt);
+      this.#updateState({
         latency:
-          performance.now() - this._getDownloadStartTime() + startDelay * 1000,
+          performance.now() - this.#getDownloadStartTime() + startDelay * 1000,
       });
     }
 
     audioSrc.buffer = audioBuffer;
-    audioSrc.connect(this._audioCtx.destination);
+    audioSrc.connect(this.#audioCtx.destination);
 
     const startAt = Math.max(
-      this._audioCtx.currentTime,
-      this._playStartedAt + this._totalTimeScheduled,
+      this.#audioCtx.currentTime,
+      this.#playStartedAt + this.#totalTimeScheduled,
     ); // play at current time if underflowing
-    if (this._audioCtx.currentTime >= startAt) {
-      this._skips++;
-      this._updateState({});
+    if (this.#audioCtx.currentTime >= startAt) {
+      this.skips++;
+      this.#updateState({});
     }
 
     audioSrc.start(startAt);
 
-    this._totalTimeScheduled += audioBuffer.duration;
-    this._timeKeeper.setTotalTimeScheduled(this._totalTimeScheduled);
+    this.#totalTimeScheduled += audioBuffer.duration;
+    this.#timeKeeper.setTotalTimeScheduled(this.#totalTimeScheduled);
   }
 }
