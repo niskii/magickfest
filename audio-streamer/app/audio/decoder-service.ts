@@ -67,7 +67,7 @@ function toDecodedFormat(decodedAudio: OggOpusDecodedAudio) {
 function onDecodeInternal({ left, right, samplesDecoded, sampleRate }) {
   // Decoder recovers when it receives new files, and samplesDecoded is negative.
   // For cause, see https://github.com/AnthumChris/opus-stream-decoder/issues/7
-  if (samplesDecoded < 0) {
+  if (samplesDecoded <= 0) {
     return;
   }
 

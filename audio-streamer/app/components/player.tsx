@@ -13,20 +13,18 @@ export function Player() {
   async function connect() {
     if (!isConnected) {
       console.log("Joining audio!");
-
-      socket.connect()
-      socket.on("newSet", () => {
-        if (isConnected) {
-          console.log("hallo!");
-          audioStreamPlayer.reset();
-          audioStreamPlayer.start();
-        }
-      });
   
       const player = new AudioStreamPlayer(socket, 10, "OPUS")
       player.reset();
       player.start();
       setAudioStreamPlayer(player);
+
+      socket.connect()
+      socket.on("newSet", () => {
+        console.log("hallo!");
+        player.reset();
+        player.start();
+      });
 
       setStateInterval(setInterval(() => {
         setPlayState([player.getCurrentPlayPosition(), player.getTotalDuration()])
@@ -44,6 +42,7 @@ export function Player() {
       audioStreamPlayer.close();
       setAudioStreamPlayer(null);
       
+      socket.removeAllListeners();
       socket.disconnect();
       
       setIsConnected(false)

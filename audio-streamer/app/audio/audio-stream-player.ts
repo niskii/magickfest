@@ -79,6 +79,7 @@ export class AudioStreamPlayer {
     this.#sessionId = performance.now();
     performance.mark(this._downloadMarkKey);
     this.#audioCtx = new window.AudioContext();
+    this.#audioCtx.suspend()
     this.#timeKeeper = new TimeKeeper(this.#audioCtx);
     const stream = new SocketAudioStream(
       this.#socket,
@@ -89,11 +90,11 @@ export class AudioStreamPlayer {
     stream.onFlush = this.#flush.bind(this);
     this.#stream = stream;
 
+
+
     stream.start().catch((e) => {
       this.#updateState({ error: e.toString() });
     });
-
-    this.resume();
   }
 
   pause() {
@@ -146,7 +147,7 @@ export class AudioStreamPlayer {
         return;
       }
 
-      this.#audioCtx.resume();
+      this.resume();
       this.#schedulePlayback(event.decoded);
     }
   }
@@ -185,7 +186,7 @@ export class AudioStreamPlayer {
         this.#audioCtx.currentTime >
         this.#playStartedAt + this.#totalTimeScheduled
       ) {
-        this.#audioCtx.suspend();
+        this.pause();
       }
     };
     this.#updateState({});
@@ -241,7 +242,6 @@ export class AudioStreamPlayer {
       this.skips++;
       this.#updateState({});
     }
-
     audioSrc.start(startAt);
 
     this.#totalTimeScheduled += audioBuffer.duration;
