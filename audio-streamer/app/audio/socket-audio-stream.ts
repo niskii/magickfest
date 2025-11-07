@@ -91,7 +91,7 @@ export class SocketAudioStream {
     this.#fetchTimer = setInterval(async () => {
       if (this.#needsResync) {
         this.#needsResync = false;
-        this.onFlush()
+        this.onFlush();
         this.fetchCurrent();
         return;
       }

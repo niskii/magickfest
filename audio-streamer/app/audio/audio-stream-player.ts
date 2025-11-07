@@ -79,7 +79,7 @@ export class AudioStreamPlayer {
     this.#sessionId = performance.now();
     performance.mark(this._downloadMarkKey);
     this.#audioCtx = new window.AudioContext();
-    this.#audioCtx.suspend()
+    this.#audioCtx.suspend();
     this.#timeKeeper = new TimeKeeper(this.#audioCtx);
     const stream = new SocketAudioStream(
       this.#socket,
@@ -89,8 +89,6 @@ export class AudioStreamPlayer {
     stream.onFetch = this.#decode.bind(this);
     stream.onFlush = this.#flush.bind(this);
     this.#stream = stream;
-
-
 
     stream.start().catch((e) => {
       this.#updateState({ error: e.toString() });
