@@ -1,10 +1,8 @@
 export interface Chunk {
   buffer: Uint8Array;
-  pageStart;
-  pageEnd;
-  headerSize;
-  duration;
-  chunkPlayPosition;
-  currentTime;
-  totalDuration;
+  pageStart: number;
+  pageEnd: number;
+  chunkPlayPosition: number;
+  serverTime: number;
+  totalDuration: number;
 }

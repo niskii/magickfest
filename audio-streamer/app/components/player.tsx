@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { socket } from "../socket";
 import { AudioStreamPlayer } from "../audio/audio-stream-player";
+import { SetInfoFetcher } from "../set-info-fetcher";
+
 
 export function Player() {
   const [audioStreamPlayer, setAudioStreamPlayer] =
     useState<AudioStreamPlayer>(null);
-  const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null);
-  const [playState, setPlayState] = useState([0, 0]);
-  const [isConnected, setIsConnected] = useState(socket.connected);
+    const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null);
+    const [playState, setPlayState] = useState([0, 0]);
+    const [isConnected, setIsConnected] = useState(socket.connected);
+    const [coverImage, setCoverImage] = useState(null)
+    
+    const setInformation = new SetInfoFetcher(socket)
 
   useEffect(() => {
     function onConnect() {
@@ -32,6 +37,9 @@ export function Player() {
       if (isConnected) {
         audioStreamPlayer.reset();
         audioStreamPlayer.start();
+        setInformation.fetchInformation().then((info) => {
+          setCoverImage(URL.createObjectURL(info.cover))
+        })
       }
     }
 
@@ -65,6 +73,13 @@ export function Player() {
     }
   }
 
+  async function getInfo() {
+    setInformation.fetchInformation().then((info) => {
+      console.log(info)
+      setCoverImage(URL.createObjectURL(info.cover))
+    })
+  }
+
   async function disconnect() {
     console.log(isConnected);
     if (isConnected) {
@@ -86,9 +101,12 @@ export function Player() {
       Playing
       <button onClick={connect}>connect</button>
       <button onClick={disconnect}>disconnect</button>
+      <button onClick={getInfo}>work</button>
       <div>
         Playing: {playState[0]} / {playState[1]}
       </div>
+
+      <img src={coverImage} width={"300px"}></img>
     </div>
   );
 }

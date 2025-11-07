@@ -1,6 +1,6 @@
 import { Socket } from "socket.io-client";
 import { Chunk } from "./chunk";
-import { TimeKeeper } from "./timeKeeper";
+import { TimeKeeper } from "./time-keeper";
 
 export class SocketAudioStream {
   #socket: Socket;
@@ -9,38 +9,38 @@ export class SocketAudioStream {
   #isFetching = false;
   #needsResync = false;
   #lastChunkPage = 0;
-  #minDuration;
+  #minDuration: number;
 
   onFetch;
   onFlush;
 
-  constructor(socket: Socket, timeKeeper: TimeKeeper, minDuration) {
+  constructor(socket: Socket, timeKeeper: TimeKeeper, minDuration: number) {
     this.#socket = socket;
     this.#timeKeeper = timeKeeper;
     this.#minDuration = minDuration;
 
-    socket.on("fetch", async (chunk: Chunk) => {
+    socket.on("chunkFromPage", async (chunk: Chunk) => {
       console.log(
-        "playing at",
-        chunk.currentTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
+        "Delay of:",
+        chunk.serverTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
       );
       if (
         this.#timeKeeper.getCurrentPlayPosition() <
-        chunk.currentTime / 1000 - 5
+        chunk.serverTime / 1000 - 5
       ) {
         this.#needsResync = true;
       }
       this.handleChunk(chunk);
     });
 
-    socket.on("sync", async (chunk: Chunk) => {
+    socket.on("syncedChunk", async (chunk: Chunk) => {
       console.log("syncing!");
       this.#needsResync = false;
       this.#timeKeeper.setStartPosition(chunk.chunkPlayPosition);
       this.#timeKeeper.setTotalDuration(chunk.totalDuration);
       this.#timeKeeper.addDelay(
         chunk.chunkPlayPosition -
-          chunk.currentTime / 1000 -
+          chunk.serverTime / 1000 -
           this.#timeKeeper.getCurrentTime(),
       );
       this.handleChunk(chunk);
@@ -48,7 +48,6 @@ export class SocketAudioStream {
   }
 
   handleChunk(chunk: Chunk) {
-    console.log("Received package!", chunk.pageEnd);
     this.#isFetching = false;
     this.#lastChunkPage = chunk.pageEnd;
     this.onFetch(chunk.buffer);
@@ -62,7 +61,7 @@ export class SocketAudioStream {
 
   async fetchCurrent() {
     this.#isFetching = true;
-    this.#socket.emit("fetchCurrent", (response) => {
+    this.#socket.emit("fetchSyncedChunk", (response) => {
       console.log("Status code:", response.status);
     });
   }
@@ -73,7 +72,7 @@ export class SocketAudioStream {
 
     console.log("trying to fetch!");
     this.#socket.emit(
-      "fetchChunks",
+      "fetchChunkFromPage",
       { lastPage: this.#lastChunkPage },
       (response) => {
         if (response.status == 1) {

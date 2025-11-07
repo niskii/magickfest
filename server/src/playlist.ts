@@ -4,6 +4,7 @@ interface Set {
   Title: string;
   Author: string;
   File: string;
+  CoverFile: string; 
 }
 
 export class Playlist {

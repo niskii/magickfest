@@ -1276,14 +1276,12 @@ __metadata:
     eslint-config-prettier: "npm:^10.1.8"
     next: "npm:^16.0.0"
     ogg-opus-decoder: "npm:^1.7.3"
-    opus-stream-decoder: "npm:^1.2.7"
     prettier: "npm:^3.6.2"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"
     socket.io-client: "npm:^4.8.1"
     socket.io-stream: "npm:^0.9.1"
     typescript: "npm:5.9.3"
-    web-worker: "npm:^1.5.0"
   languageName: unknown
   linkType: soft
 
@@ -3200,13 +3198,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"opus-stream-decoder@npm:^1.2.7":
-  version: 1.2.7
-  resolution: "opus-stream-decoder@npm:1.2.7"
-  checksum: 10c0/faf401c352f535236ea94f3944bc96c7662350f4473945d5cbdccaa65b30ea357a4b931168341bf2bcdc2f887d7eff1ef867d521867e6c06243a9a0d7aa2f933
-  languageName: node
-  linkType: hard
-
 "own-keys@npm:^1.0.1":
   version: 1.0.1
   resolution: "own-keys@npm:1.0.1"
@@ -4160,13 +4151,6 @@ __metadata:
   dependencies:
     punycode: "npm:^2.1.0"
   checksum: 10c0/4ef57b45aa820d7ac6496e9208559986c665e49447cb072744c13b66925a362d96dd5a46c4530a6b8e203e5db5fe849369444440cb22ecfc26c679359e5dfa3c
-  languageName: node
-  linkType: hard
-
-"web-worker@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "web-worker@npm:1.5.0"
-  checksum: 10c0/d42744757422803c73ca64fa51e1ce994354ace4b8438b3f740425a05afeb8df12dd5dadbf6b0839a08dbda56c470d7943c0383854c4fb1ae40ab874eb10427a
   languageName: node
   linkType: hard
 

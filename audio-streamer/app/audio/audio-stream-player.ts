@@ -1,6 +1,6 @@
 import { Socket } from "socket.io-client";
 import { SocketAudioStream } from "./socket-audio-stream";
-import { TimeKeeper } from "./timeKeeper";
+import { TimeKeeper } from "./time-keeper";
 import * as decoder from "./decoder-service";
 
 export class AudioStreamPlayer {
@@ -42,8 +42,8 @@ export class AudioStreamPlayer {
   reset() {
     if (this.#stream) this.#stream.reset();
     this.#stream = null;
-    this.#socket.removeListener("fetch");
-    this.#socket.removeListener("sync");
+    this.#socket.removeListener("syncedChunk");
+    this.#socket.removeListener("chunkFromPage");
 
     if (this.#sessionId) {
       performance.clearMarks(this._downloadMarkKey);

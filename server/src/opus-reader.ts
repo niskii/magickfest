@@ -117,17 +117,15 @@ export class OpusReader {
   }
 
   makeChunkFromRange(start: number, end: number) {
-    const duration = this.calculateRangeDuration(start, end);
     const chunks = this.#fileSplitter.sliceByPage(start, end);
-    console.log(start, end, duration);
+    console.log(start, end);
     return {
       buffer: chunks,
       pageStart: start,
       pageEnd: end,
       chunkPlayPosition: this.#headerObject.audioPageSize * start,
       totalDuration: this.#totalDurationSeconds,
-      currentTime: this.getCurrentTimeMillis(),
-      duration: duration,
+      serverTime: this.getCurrentTimeMillis(),
     };
   }
 

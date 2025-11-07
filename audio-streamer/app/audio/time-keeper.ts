@@ -17,7 +17,7 @@ export class TimeKeeper {
     this.#startedAt = startedAt;
   }
 
-  setTotalTimeScheduled(totalTimeScheduled) {
+  setTotalTimeScheduled(totalTimeScheduled: number) {
     this.#totalTimeScheduled = totalTimeScheduled;
   }
 
@@ -25,7 +25,7 @@ export class TimeKeeper {
     this.#totalDuration = totalDuration;
   }
 
-  setStartPosition(startPosition) {
+  setStartPosition(startPosition: number) {
     this.#startPosition = startPosition;
   }
 
@@ -53,7 +53,7 @@ export class TimeKeeper {
     return this.#totalDuration - this.getCurrentPlayPosition();
   }
 
-  addDelay(delay) {
+  addDelay(delay: number) {
     this.#offset = delay;
   }
 

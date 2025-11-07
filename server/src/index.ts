@@ -1,9 +1,12 @@
 import express from "express";
-import { existsSync, readFileSync, writeFile } from "fs";
-import { createServer } from "http";
+import ss from "socket.io-stream"
+import path from "path"
 import { Server } from "socket.io";
+import { createReadStream, existsSync, readFileSync, writeFile } from "fs";
+import { createServer } from "http";
 import { Player } from "./player";
 import { Playlist } from "./playlist";
+import { imageMimeTypes } from "./mime-map";
 
 import cors from "cors";
 
@@ -24,11 +27,11 @@ const player = new Player(playlist);
 const hasSavedState = false;
 if (!hasSavedState) {
   player.play();
-  saveState();
+  // saveState();
 }
 
 player.events?.on("finished", () => {
-  saveState();
+  // saveState();
 });
 
 function loadState() {
@@ -47,7 +50,8 @@ function saveState() {
     playlistStateFilePath + state.id + ".json",
     JSON.stringify(state),
     (err) => {
-      console.log(err);
+      if (err)
+        console.log(err);
     },
   );
 }
@@ -67,24 +71,32 @@ io.on("connection", (socket) => {
     player.events?.off("finished", sendNewSetAlert);
   });
 
-  socket.on("fetchCurrent", (callback) => {
-    console.log("received chunk request!");
-
+  socket.on("fetchSyncedChunk", (callback) => {
     const result = player.getCurrentReader()?.getCurrentChunk();
-    if (result?.chunk !== null) socket.emit("sync", result?.chunk);
+    if (result?.chunk !== null) socket.emit("syncedChunk", result?.chunk);
     callback({
       status: result?.status,
     });
   });
 
-  socket.on("fetchChunks", function (data, callback) {
+  socket.on("fetchChunkFromPage", (data, callback) => {
     const result = player.getCurrentReader()?.getNextChunk(data.lastPage);
-    if (result?.chunk !== null) socket.emit("fetch", result?.chunk);
+    if (result?.chunk !== null) socket.emit("chunkFromPage", result?.chunk);
     callback({
       status: result?.status,
     });
-    // return socket.emit("nothing", chunk)
   });
+
+  socket.on('fetchSetInformation', () => {
+    console.log("going to stream image")
+    const imageStream = ss.createStream();
+    const currentSet = playlist.getCurrentSet()
+    const imageFile = currentSet.CoverFile;
+    const imageMimeType = imageMimeTypes.get(path.extname(imageFile))
+
+    ss(socket).emit('setInformation', imageStream, {title: currentSet.Title, author: currentSet.Author, fileMimeType: imageMimeType});
+    createReadStream(imageFile).pipe(imageStream);
+    })
 });
 
 server.listen(8080, () => {
