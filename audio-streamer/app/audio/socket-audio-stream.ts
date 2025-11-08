@@ -2,6 +2,8 @@ import { Socket } from "socket.io-client";
 import { Chunk } from "./chunk";
 import { TimeKeeper } from "./time-keeper";
 
+import config from "../../config/client.json";
+
 export class SocketAudioStream {
   #socket: Socket;
   #timeKeeper: TimeKeeper;
@@ -9,31 +11,34 @@ export class SocketAudioStream {
   #isFetching = false;
   #needsResync = false;
   #lastChunkPage = 0;
-  #minDuration: number;
 
   onFetch;
   onFlush;
 
-  constructor(socket: Socket, timeKeeper: TimeKeeper, minDuration: number) {
+  constructor(socket: Socket, timeKeeper: TimeKeeper) {
     this.#socket = socket;
     this.#timeKeeper = timeKeeper;
-    this.#minDuration = minDuration;
+  }
 
-    socket.on("chunkFromPage", async (chunk: Chunk) => {
-      console.log(
-        "Delay of:",
-        chunk.serverTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
-      );
-      if (
-        this.#timeKeeper.getCurrentPlayPosition() <
-        chunk.serverTime / 1000 - 5
-      ) {
-        this.#needsResync = true;
-      }
-      this.handleChunk(chunk);
+  handleChunk(chunk: Chunk) {
+    this.#isFetching = false;
+    this.#lastChunkPage = chunk.pageEnd;
+    this.onFetch(chunk.buffer);
+  }
+
+  async getMinimalNumberOfChunks() {
+    if (this.#timeKeeper.getRemainingTime() < config.FetchThreshold) {
+      this.fetch();
+    }
+  }
+
+  async fetchCurrent() {
+    this.#isFetching = true;
+    this.#socket.emit("fetchSyncedChunk", (response) => {
+      console.log("Status code:", response.status);
     });
 
-    socket.on("syncedChunk", async (chunk: Chunk) => {
+    this.#socket.once("syncedChunk", async (chunk: Chunk) => {
       console.log("syncing!");
       this.#needsResync = false;
       this.#timeKeeper.setStartPosition(chunk.chunkPlayPosition);
@@ -44,25 +49,6 @@ export class SocketAudioStream {
           this.#timeKeeper.getCurrentTime(),
       );
       this.handleChunk(chunk);
-    });
-  }
-
-  handleChunk(chunk: Chunk) {
-    this.#isFetching = false;
-    this.#lastChunkPage = chunk.pageEnd;
-    this.onFetch(chunk.buffer);
-  }
-
-  async getMinimalNumberOfChunks() {
-    if (this.#timeKeeper.getRemainingTime() < this.#minDuration) {
-      this.fetch();
-    }
-  }
-
-  async fetchCurrent() {
-    this.#isFetching = true;
-    this.#socket.emit("fetchSyncedChunk", (response) => {
-      console.log("Status code:", response.status);
     });
   }
 
@@ -82,6 +68,20 @@ export class SocketAudioStream {
         }
       },
     );
+
+    this.#socket.once("chunkFromPage", async (chunk: Chunk) => {
+      console.log(
+        "Delay of:",
+        chunk.serverTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
+      );
+      if (
+        this.#timeKeeper.getCurrentPlayPosition() <
+        chunk.serverTime / 1000 - config.MaxOutOfSync
+      ) {
+        this.#needsResync = true;
+      }
+      this.handleChunk(chunk);
+    });
   }
 
   async start() {
@@ -97,7 +97,7 @@ export class SocketAudioStream {
       console.log("has buffered", this.#timeKeeper.getRemainingTime());
       if (this.#isFetching) return;
       this.getMinimalNumberOfChunks();
-    }, 200);
+    }, config.FetchInterval);
   }
 
   async reset() {

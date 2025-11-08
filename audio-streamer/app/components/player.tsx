@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { socket } from "../socket";
+import { socket } from "../socket/socket";
 import { AudioStreamPlayer } from "../audio/audio-stream-player";
-import { SetInfoFetcher } from "../set-info-fetcher";
-
+import { SetInfoFetcher } from "../socket/set-info-fetcher";
+import config from "../../config/client.json";
 
 export function Player() {
   const [audioStreamPlayer, setAudioStreamPlayer] =
     useState<AudioStreamPlayer>(null);
-    const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null);
-    const [playState, setPlayState] = useState([0, 0]);
-    const [isConnected, setIsConnected] = useState(socket.connected);
-    const [coverImage, setCoverImage] = useState(null)
-    
-    const setInformation = new SetInfoFetcher(socket)
+  const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null);
+  const [playState, setPlayState] = useState([0, 0]);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [coverImage, setCoverImage] = useState(null);
+
+  const setInformation = new SetInfoFetcher(socket);
 
   useEffect(() => {
     function onConnect() {
@@ -33,13 +33,10 @@ export function Player() {
 
   useEffect(() => {
     function newSetEvent() {
-      console.log("hallo!", isConnected);
       if (isConnected) {
         audioStreamPlayer.reset();
         audioStreamPlayer.start();
-        setInformation.fetchInformation().then((info) => {
-          setCoverImage(URL.createObjectURL(info.cover))
-        })
+        fetchInfo();
       }
     }
 
@@ -55,7 +52,9 @@ export function Player() {
       console.log("Joining audio!");
       socket.connect();
 
-      const player = new AudioStreamPlayer(socket, 10, "OPUS");
+      fetchInfo();
+
+      const player = new AudioStreamPlayer(socket, "OPUS");
       player.reset();
       player.start();
       setAudioStreamPlayer(player);
@@ -66,22 +65,20 @@ export function Player() {
             player.getCurrentPlayPosition(),
             player.getTotalDuration(),
           ]);
-        }, 1000),
+        }, config.UpdateInterval),
       );
 
       setIsConnected(true);
     }
   }
 
-  async function getInfo() {
+  function fetchInfo() {
     setInformation.fetchInformation().then((info) => {
-      console.log(info)
-      setCoverImage(URL.createObjectURL(info.cover))
-    })
+      setCoverImage(info.coverURL);
+    });
   }
 
   async function disconnect() {
-    console.log(isConnected);
     if (isConnected) {
       clearInterval(stateInterval);
       setStateInterval(null);
@@ -101,11 +98,10 @@ export function Player() {
       Playing
       <button onClick={connect}>connect</button>
       <button onClick={disconnect}>disconnect</button>
-      <button onClick={getInfo}>work</button>
+      <button onClick={fetchInfo}>work</button>
       <div>
-        Playing: {playState[0]} / {playState[1]}
+        Playing: {playState[0].toFixed(2)} / {playState[1].toFixed(2)}
       </div>
-
       <img src={coverImage} width={"300px"}></img>
     </div>
   );

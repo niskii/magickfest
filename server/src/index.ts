@@ -1,5 +1,4 @@
 import express from "express";
-import ss from "socket.io-stream"
 import path from "path"
 import { Server } from "socket.io";
 import { createReadStream, existsSync, readFileSync, writeFile } from "fs";
@@ -9,6 +8,7 @@ import { Playlist } from "./playlist";
 import { imageMimeTypes } from "./mime-map";
 
 import cors from "cors";
+const socketStream = require("socket.io-stream")
 
 const playlistStateFilePath = "temp/playlist_state_";
 
@@ -19,6 +19,10 @@ const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
   },
+});
+
+process.on('warning', (warning) => {
+    console.log(warning.stack);
 });
 
 const playlist = new Playlist(readFileSync("public/playlist.json").toString());
@@ -89,12 +93,12 @@ io.on("connection", (socket) => {
 
   socket.on('fetchSetInformation', () => {
     console.log("going to stream image")
-    const imageStream = ss.createStream();
+    const imageStream = socketStream.createStream();
     const currentSet = playlist.getCurrentSet()
     const imageFile = currentSet.CoverFile;
     const imageMimeType = imageMimeTypes.get(path.extname(imageFile))
 
-    ss(socket).emit('setInformation', imageStream, {title: currentSet.Title, author: currentSet.Author, fileMimeType: imageMimeType});
+    socketStream(socket).emit('setInformation', imageStream, {title: currentSet.Title, author: currentSet.Author, fileMimeType: imageMimeType});
     createReadStream(imageFile).pipe(imageStream);
     })
 });
