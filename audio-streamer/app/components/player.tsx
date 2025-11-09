@@ -1,66 +1,108 @@
 import { useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { socket } from "../socket/socket";
 import { AudioStreamPlayer } from "../audio/audio-stream-player";
-
+import { SetInfoFetcher } from "../socket/set-info-fetcher";
+import config from "../../config/client.json";
 
 export function Player() {
-  const [audioStreamPlayer, setAudioStreamPlayer] = useState<AudioStreamPlayer>(null)
-  const [isConnected, setIsConnected] = useState(false)
-  const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null)
-  const [playState, setPlayState] = useState([0, 0])
-  let socket: Socket;
-  
+  const [audioStreamPlayer, setAudioStreamPlayer] =
+    useState<AudioStreamPlayer>(null);
+  const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null);
+  const [playState, setPlayState] = useState([0, 0]);
+  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [coverImage, setCoverImage] = useState(null);
+
+  const setInformation = new SetInfoFetcher(socket);
+
+  useEffect(() => {
+    function onConnect() {
+      setIsConnected(true);
+    }
+
+    function onDisconnect() {
+      setIsConnected(false);
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    function newSetEvent() {
+      if (isConnected) {
+        audioStreamPlayer.reset();
+        audioStreamPlayer.start();
+        fetchInfo();
+      }
+    }
+
+    socket.on("newSet", newSetEvent);
+
+    return () => {
+      socket.off("newSet", newSetEvent);
+    };
+  }, [isConnected]);
+
   async function connect() {
     if (!isConnected) {
       console.log("Joining audio!");
-  
-      const player = new AudioStreamPlayer(socket, 10, "OPUS")
+      socket.connect();
+
+      fetchInfo();
+
+      const player = new AudioStreamPlayer(socket, "OPUS");
       player.reset();
       player.start();
       setAudioStreamPlayer(player);
 
-      socket.connect()
-      socket.on("newSet", () => {
-        console.log("hallo!");
-        player.reset();
-        player.start();
-      });
+      setStateInterval(
+        setInterval(() => {
+          setPlayState([
+            player.getCurrentPlayPosition(),
+            player.getTotalDuration(),
+          ]);
+        }, config.UpdateInterval),
+      );
 
-      setStateInterval(setInterval(() => {
-        setPlayState([player.getCurrentPlayPosition(), player.getTotalDuration()])
-      }, 1000))
-  
       setIsConnected(true);
     }
   }
-  
+
+  function fetchInfo() {
+    setInformation.fetchInformation().then((info) => {
+      setCoverImage(info.coverURL);
+    });
+  }
+
   async function disconnect() {
     if (isConnected) {
       clearInterval(stateInterval);
-      setStateInterval(null)
+      setStateInterval(null);
 
       audioStreamPlayer.close();
       setAudioStreamPlayer(null);
-      
+
       socket.removeAllListeners();
       socket.disconnect();
-      
-      setIsConnected(false)
+
+      setIsConnected(false);
     }
   }
-
-  useEffect(function mount() {
-    socket = io(":8080", {autoConnect: false})
-  });
 
   return (
     <div>
       Playing
       <button onClick={connect}>connect</button>
       <button onClick={disconnect}>disconnect</button>
+      <button onClick={fetchInfo}>work</button>
       <div>
-        Playing: {playState[0]} / {playState[1]}
+        Playing: {playState[0].toFixed(2)} / {playState[1].toFixed(2)}
       </div>
+      <img src={coverImage} width={"300px"}></img>
     </div>
   );
 }
