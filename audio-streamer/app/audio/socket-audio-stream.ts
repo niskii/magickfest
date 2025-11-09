@@ -27,7 +27,7 @@ export class SocketAudioStream {
   }
 
   async getMinimalNumberOfChunks() {
-    if (this.#timeKeeper.getRemainingTime() < config.FetchThreshold) {
+    if (this.#timeKeeper.getDownloadedAudioTime() < config.FetchThreshold) {
       this.fetch();
     }
   }
@@ -94,7 +94,6 @@ export class SocketAudioStream {
         this.fetchCurrent();
         return;
       }
-      console.log("has buffered", this.#timeKeeper.getRemainingTime());
       if (this.#isFetching) return;
       this.getMinimalNumberOfChunks();
     }, config.FetchInterval);

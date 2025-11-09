@@ -8,7 +8,7 @@ export function Player() {
   const [audioStreamPlayer, setAudioStreamPlayer] =
     useState<AudioStreamPlayer>(null);
   const [stateInterval, setStateInterval] = useState<NodeJS.Timeout>(null);
-  const [playState, setPlayState] = useState([0, 0]);
+  const [playState, setPlayState] = useState([0, 0, 0]);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [coverImage, setCoverImage] = useState(null);
 
@@ -64,6 +64,7 @@ export function Player() {
           setPlayState([
             player.getCurrentPlayPosition(),
             player.getTotalDuration(),
+            player.getDownloadedAudioTime()
           ]);
         }, config.UpdateInterval),
       );
@@ -100,7 +101,7 @@ export function Player() {
       <button onClick={disconnect}>disconnect</button>
       <button onClick={fetchInfo}>work</button>
       <div>
-        Playing: {playState[0].toFixed(2)} / {playState[1].toFixed(2)}
+        Playing: {playState[0].toFixed(2)} / {playState[1].toFixed(2)} Buffer: {playState[2].toFixed(2)}
       </div>
       <img src={coverImage} width={"300px"}></img>
     </div>

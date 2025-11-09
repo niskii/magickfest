@@ -98,8 +98,12 @@ export class AudioStreamPlayer {
     return this.#timeKeeper.getTotalDuration();
   }
 
+  getDownloadedAudioTime() {
+    return this.#timeKeeper.getDownloadedAudioTime();
+  }
+
   #flush() {
-    const timeout = this.#timeKeeper.getRemainingTime();
+    const timeout = this.#timeKeeper.getDownloadedAudioTime();
 
     this.#flushTimeoutId = setTimeout(() => {
       decoder.flushAudio();

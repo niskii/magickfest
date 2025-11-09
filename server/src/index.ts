@@ -19,6 +19,7 @@ const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
   },
+  connectTimeout: 20000,
 });
 
 process.on('warning', (warning) => {
