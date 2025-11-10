@@ -2,8 +2,14 @@ import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
 
+export enum Bitrate {
+  High = 128,
+  Medium = 96,
+  Low = 64,
+}
+
 export class Player {
-  #opusReader: OpusReader | null = null;
+  #readerCollection: Map<number, OpusReader>;
   #startTime: number | null = null;
   #playbackTimer: NodeJS.Timeout | null = null;
   #playlist;
@@ -11,6 +17,7 @@ export class Player {
 
   constructor(playlist: Playlist) {
     this.#playlist = playlist;
+    this.#readerCollection = new Map();
 
     this.events = new EventEmitter();
     if (this.events === undefined) {
@@ -32,11 +39,16 @@ export class Player {
   }
 
   playAt(startTime: number) {
+    this.#startTime = startTime;
     this.#playbackTimer?.close();
-    const set = this.#playlist.getCurrentSet();
-    this.#opusReader = new OpusReader(set.File);
-    this.#opusReader.setClock(startTime);
-    this.#startTime = this.#opusReader.getClock();
+
+    this.#readerCollection.clear();
+    this.#playlist.forEachCurrentAudioFile((audioFile) => {
+      const reader = new OpusReader(audioFile.File);
+      reader.setClock(startTime);
+      this.#readerCollection.set(audioFile.Bitrate, reader);
+    });
+
     this.#setupPlaybackTimer();
   }
 
@@ -44,15 +56,20 @@ export class Player {
     this.playAt(Date.now());
   }
 
-  getCurrentReader() {
-    return this.#opusReader;
+  getCurrentReader(bitrate: number) {
+    if (!this.#readerCollection.has(bitrate)) return null;
+    return this.#readerCollection.get(bitrate);
   }
 
   #setupPlaybackTimer() {
     this.#playbackTimer = setInterval(() => {
-      if (this.#opusReader != null) {
-        console.log(this.#opusReader.getRemainingTimeSeconds());
-        if (this.#opusReader.getRemainingTimeSeconds() < 0) {
+      // using the high quality reader as a baseline for tracking time
+      // because a getting the duration of the file
+      // would require a metadata reader.
+      const currentReader = this.#readerCollection.get(Bitrate.High);
+      if (currentReader !== undefined) {
+        console.log(currentReader.getRemainingTimeSeconds());
+        if (currentReader.getRemainingTimeSeconds() < 0) {
           this.#playlist.nextSet();
           this.events?.emit("finished");
           console.log("new set!");

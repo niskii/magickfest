@@ -196,13 +196,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@evan/opus@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "@evan/opus@npm:1.0.3"
-  checksum: 10c0/bac21730ebb64beecf5b63d73a226f91f4411ae83dc08797e5198978540ae49ba89d5290890bef1afa0ec8cb8a3c4dd4aa99769187d364da70a0e6fea879d9ac
-  languageName: node
-  linkType: hard
-
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -2316,7 +2309,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "server@workspace:."
   dependencies:
-    "@evan/opus": "npm:^1.0.3"
     "@tsconfig/recommended": "npm:^1.0.10"
     "@types/cors": "npm:^2"
     "@types/express": "npm:^5.0.5"
@@ -2325,7 +2317,7 @@ __metadata:
     express: "npm:^5.1.0"
     prettier: "npm:3.6.2"
     socket.io: "npm:^4.8.1"
-    socket.io-stream: "npm:^0.9.1"
+    socket.io-stream: "patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch"
     ts-node: "npm:^10.9.2"
     tsx: "npm:^4.20.6"
     typescript: "npm:^5.9.3"
@@ -2438,13 +2430,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"socket.io-stream@npm:^0.9.1":
+"socket.io-stream@npm:0.9.1":
   version: 0.9.1
   resolution: "socket.io-stream@npm:0.9.1"
   dependencies:
     component-bind: "npm:~1.0.0"
     debug: "npm:~2.2.0"
   checksum: 10c0/53c02c5ff7474a8ecfc8c453648abe5f7f0ebdf7f81f8a27b16ec6b301a3d671969ed6cc10dd5e5517230e5e3bda2812b39b5199e693e267085ada41d207f6f7
+  languageName: node
+  linkType: hard
+
+"socket.io-stream@patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch":
+  version: 0.9.1
+  resolution: "socket.io-stream@patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch::version=0.9.1&hash=a364d9"
+  dependencies:
+    component-bind: "npm:~1.0.0"
+    debug: "npm:~2.2.0"
+  checksum: 10c0/4d65c35812d4f8a06e48c0c1d8dfbf2b6aad13a3a7cb451f49da104ccf5f3e1644ed4b084df6f5a31ce9c7cae607585f28428fd3cefc969e22dcfd970b96dbb6
   languageName: node
   linkType: hard
 

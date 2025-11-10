@@ -8,7 +8,19 @@ To install the separate packages use Yarn 4
 
 ```
 yarn install
+
 ```
+
+Develop with vscode:
+
+```
+yarn dlx @yarnpkg/sdks vscode
+```
+```
+> Select TypeScript Version...
+> Workspace
+```
+
 
 run both with:
 

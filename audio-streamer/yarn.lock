@@ -1278,8 +1278,7 @@ __metadata:
     eslint-config-next: "npm:^16.0.1"
     eslint-config-prettier: "npm:^10.1.8"
     next: "npm:^16.0.0"
-    nextjs: "npm:^0.0.3"
-    ogg-opus-decoder: "npm:^1.7.3"
+    ogg-opus-decoder: "npm:1.7.3"
     prettier: "npm:^3.6.2"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"
@@ -3164,7 +3163,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ogg-opus-decoder@npm:^1.7.3":
+"ogg-opus-decoder@npm:1.7.3":
   version: 1.7.3
   resolution: "ogg-opus-decoder@npm:1.7.3"
   dependencies:
