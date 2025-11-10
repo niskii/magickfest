@@ -18,22 +18,19 @@ export class AudioStreamPlayer {
   #totalTimeScheduled; // time scheduled of all AudioBuffers
   #playStartedAt; // audioContext.currentTime of first sched
   #flushTimeoutId;
+  #bitrate;
 
-  constructor(socket: Socket, decoderName) {
-    switch (decoderName) {
-      case "OPUS":
-        break;
-      default:
-        throw Error("Unsupported decoderName", decoderName);
-    }
-
+  constructor(socket: Socket, bitrate: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
-
-    // pause for now
-    // this._audioCtx.suspend().then(_ => console.log('audio paused'));
+    this.#bitrate = bitrate;
 
     this.#socket = socket;
     this.reset();
+  }
+
+  setBitrate(bitrate: number) {
+    this.#bitrate = bitrate;
+    if (this.#stream) this.#stream.setBitrate(bitrate);
   }
 
   reset() {
@@ -74,8 +71,14 @@ export class AudioStreamPlayer {
     performance.mark(this.downloadMarkKey);
     this.#audioCtx = new window.AudioContext();
     this.#audioCtx.suspend();
+
     this.#timeKeeper = new TimeKeeper(this.#audioCtx);
-    const stream = new SocketAudioStream(this.#socket, this.#timeKeeper);
+
+    const stream = new SocketAudioStream(
+      this.#socket,
+      this.#timeKeeper,
+      this.#bitrate,
+    );
     stream.onFetch = this.#decode.bind(this);
     stream.onFlush = this.#flush.bind(this);
     this.#stream = stream;
@@ -99,11 +102,11 @@ export class AudioStreamPlayer {
   }
 
   getDownloadedAudioTime() {
-    return this.#timeKeeper.getDownloadedAudioTime();
+    return this.#timeKeeper.getDownloadedAudioDuration();
   }
 
   #flush() {
-    const timeout = this.#timeKeeper.getDownloadedAudioTime();
+    const timeout = this.#timeKeeper.getDownloadedAudioDuration();
 
     this.#flushTimeoutId = setTimeout(() => {
       decoder.flushAudio();

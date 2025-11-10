@@ -11,6 +11,7 @@ export function Player() {
   const [playState, setPlayState] = useState([0, 0, 0]);
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [coverImage, setCoverImage] = useState(null);
+  const [bitrate, setBitrate] = useState(64);
 
   const setInformation = new SetInfoFetcher(socket);
 
@@ -30,6 +31,12 @@ export function Player() {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    if (audioStreamPlayer !== null) {
+      audioStreamPlayer.setBitrate(bitrate);
+    }
+  }, [bitrate]);
 
   useEffect(() => {
     function newSetEvent() {
@@ -54,8 +61,7 @@ export function Player() {
 
       fetchInfo();
 
-      const player = new AudioStreamPlayer(socket, "OPUS");
-      player.reset();
+      const player = new AudioStreamPlayer(socket, bitrate);
       player.start();
       setAudioStreamPlayer(player);
 
@@ -64,7 +70,7 @@ export function Player() {
           setPlayState([
             player.getCurrentPlayPosition(),
             player.getTotalDuration(),
-            player.getDownloadedAudioTime()
+            player.getDownloadedAudioTime(),
           ]);
         }, config.UpdateInterval),
       );
@@ -94,6 +100,12 @@ export function Player() {
     }
   }
 
+  const changeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.type === "radio") {
+      setBitrate(Number(event.target.value));
+    }
+  };
+
   return (
     <div>
       Playing
@@ -101,8 +113,41 @@ export function Player() {
       <button onClick={disconnect}>disconnect</button>
       <button onClick={fetchInfo}>work</button>
       <div>
-        Playing: {playState[0].toFixed(2)} / {playState[1].toFixed(2)} Buffer: {playState[2].toFixed(2)}
+        Playing: {playState[0].toFixed(2)} / {playState[1].toFixed(2)} Buffer:{" "}
+        {playState[2].toFixed(2)}
       </div>
+      <form>
+        <label>
+          <input
+            name="low"
+            type="radio"
+            value="64"
+            checked={bitrate === 64}
+            onChange={changeHandler}
+          />
+          Low
+        </label>
+        <label>
+          <input
+            name="medium"
+            type="radio"
+            value="96"
+            checked={bitrate === 96}
+            onChange={changeHandler}
+          />
+          Medium
+        </label>
+        <label>
+          <input
+            name="high"
+            type="radio"
+            value="128"
+            checked={bitrate === 128}
+            onChange={changeHandler}
+          />
+          High
+        </label>
+      </form>
       <img src={coverImage} width={"300px"}></img>
     </div>
   );

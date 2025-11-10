@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import { Status } from "./status";
+import { ReadCode } from "./read-codes";
 import {
   HeaderObject,
   OpusFileSplitter,
@@ -132,17 +132,17 @@ export class OpusReader {
   getCurrentChunk() {
     const pageStart = this.getCurrentPage();
     const pageEnd = this.getPageRangeEnd(pageStart);
-    if (pageStart == pageEnd) return { chunk: null, status: Status.EOF };
+    if (pageStart == pageEnd) return { chunk: null, status: ReadCode.EOF };
     return {
       chunk: this.makeChunkFromRange(pageStart, pageEnd),
-      status: Status.OK,
+      status: ReadCode.CONTINUATION,
     };
   }
 
   getNextChunk(pageStart: number) {
     const currentPage = this.getCurrentPage();
     const pageEnd = this.getPageRangeEnd(pageStart);
-    if (pageStart == pageEnd) return { chunk: null, status: Status.EOF };
+    if (pageStart == pageEnd) return { chunk: null, status: ReadCode.EOF };
 
     console.log(
       "more data requested! %d, %d, %d",
@@ -151,13 +151,13 @@ export class OpusReader {
       this.#numberOfPages,
     );
     if (pageStart >= this.#numberOfPages || pageEnd >= this.#numberOfPages)
-      return { chunk: null, status: Status.EOF };
+      return { chunk: null, status: ReadCode.EOF };
     if (this.calculateRangeDuration(currentPage, pageStart) > 30)
-      return { chunk: null, status: Status.INVALID };
+      return { chunk: null, status: ReadCode.INVALID };
 
     return {
       chunk: this.makeChunkFromRange(pageStart, pageEnd),
-      status: Status.OK,
+      status: ReadCode.CONTINUATION,
     };
   }
 }

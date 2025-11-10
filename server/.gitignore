@@ -19,6 +19,7 @@ node_modules
 .pnp.*
 
 public/*
+!public/playlist.json
 temp/*
 
 .vscode

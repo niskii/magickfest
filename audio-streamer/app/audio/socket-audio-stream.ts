@@ -11,13 +11,25 @@ export class SocketAudioStream {
   #isFetching = false;
   #needsResync = false;
   #lastChunkPage = 0;
+  #bitrate;
 
   onFetch;
   onFlush;
 
-  constructor(socket: Socket, timeKeeper: TimeKeeper) {
+  constructor(socket: Socket, timeKeeper: TimeKeeper, bitrate: number) {
     this.#socket = socket;
     this.#timeKeeper = timeKeeper;
+    this.#bitrate = bitrate;
+  }
+
+  setBitrate(bitrate: number) {
+    this.#bitrate = bitrate;
+  }
+
+  async getMinimalNumberOfChunks() {
+    if (this.#timeKeeper.getDownloadedAudioDuration() < config.FetchThreshold) {
+      this.fetch();
+    }
   }
 
   handleChunk(chunk: Chunk) {
@@ -26,17 +38,15 @@ export class SocketAudioStream {
     this.onFetch(chunk.buffer);
   }
 
-  async getMinimalNumberOfChunks() {
-    if (this.#timeKeeper.getDownloadedAudioTime() < config.FetchThreshold) {
-      this.fetch();
-    }
-  }
-
   async fetchCurrent() {
     this.#isFetching = true;
-    this.#socket.emit("fetchSyncedChunk", (response) => {
-      console.log("Status code:", response.status);
-    });
+    this.#socket.emit(
+      "fetchSyncedChunk",
+      { bitrate: this.#bitrate },
+      (response) => {
+        console.log("Status code:", response.status);
+      },
+    );
 
     this.#socket.once("syncedChunk", async (chunk: Chunk) => {
       console.log("syncing!");
@@ -59,7 +69,7 @@ export class SocketAudioStream {
     console.log("trying to fetch!");
     this.#socket.emit(
       "fetchChunkFromPage",
-      { lastPage: this.#lastChunkPage },
+      { bitrate: this.#bitrate, lastPage: this.#lastChunkPage },
       (response) => {
         if (response.status == 1) {
           this.onFlush();
@@ -69,7 +79,7 @@ export class SocketAudioStream {
       },
     );
 
-    this.#socket.once("chunkFromPage", async (chunk: Chunk) => {
+    this.#socket.once("chunkFromPage", (chunk: Chunk) => {
       console.log(
         "Delay of:",
         chunk.serverTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),

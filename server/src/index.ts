@@ -1,14 +1,15 @@
 import express from "express";
-import path from "path"
+import path from "path";
 import { Server } from "socket.io";
 import { createReadStream, existsSync, readFileSync, writeFile } from "fs";
 import { createServer } from "http";
-import { Player, Quality } from "./player";
+import { Player } from "./player";
 import { Playlist } from "./playlist";
 import { imageMimeTypes } from "./mime-map";
 
 import cors from "cors";
-const socketStream = require("socket.io-stream")
+import { ReadCode } from "./read-codes";
+const socketStream = require("socket.io-stream");
 
 const playlistStateFilePath = "temp/playlist_state_";
 
@@ -22,8 +23,8 @@ const io = new Server(server, {
   connectTimeout: 20000,
 });
 
-process.on('warning', (warning) => {
-    console.log(warning.stack);
+process.on("warning", (warning) => {
+  console.log(warning.stack);
 });
 
 const playlist = new Playlist(readFileSync("public/playlist.json").toString());
@@ -55,8 +56,7 @@ function saveState() {
     playlistStateFilePath + state.id + ".json",
     JSON.stringify(state),
     (err) => {
-      if (err)
-        console.log(err);
+      if (err) console.log(err);
     },
   );
 }
@@ -76,8 +76,8 @@ io.on("connection", (socket) => {
     player.events?.off("finished", sendNewSetAlert);
   });
 
-  socket.on("fetchSyncedChunk", (callback) => {
-    const result = player.getCurrentReader(Quality.High)?.getCurrentChunk();
+  socket.on("fetchSyncedChunk", (data, callback) => {
+    const result = player.getCurrentReader(data.bitrate)?.getCurrentChunk();
     if (result?.chunk !== null) socket.emit("syncedChunk", result?.chunk);
     callback({
       status: result?.status,
@@ -85,23 +85,29 @@ io.on("connection", (socket) => {
   });
 
   socket.on("fetchChunkFromPage", (data, callback) => {
-    const result = player.getCurrentReader(Quality.High)?.getNextChunk(data.lastPage);
+    const result = player
+      .getCurrentReader(data.bitrate)
+      ?.getNextChunk(data.lastPage);
     if (result?.chunk !== null) socket.emit("chunkFromPage", result?.chunk);
     callback({
       status: result?.status,
     });
   });
 
-  socket.on('fetchSetInformation', () => {
-    console.log("going to stream image")
+  socket.on("fetchSetInformation", () => {
+    console.log("going to stream image");
     const imageStream = socketStream.createStream();
-    const currentSet = playlist.getCurrentSet()
+    const currentSet = playlist.getCurrentSet();
     const imageFile = currentSet.CoverFile;
-    const imageMimeType = imageMimeTypes.get(path.extname(imageFile))
+    const imageMimeType = imageMimeTypes.get(path.extname(imageFile));
 
-    socketStream(socket).emit('setInformation', imageStream, {title: currentSet.Title, author: currentSet.Author, fileMimeType: imageMimeType});
+    socketStream(socket).emit("setInformation", imageStream, {
+      title: currentSet.Title,
+      author: currentSet.Author,
+      fileMimeType: imageMimeType,
+    });
     createReadStream(imageFile).pipe(imageStream);
-    })
+  });
 });
 
 server.listen(8080, () => {

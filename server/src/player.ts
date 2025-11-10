@@ -2,11 +2,11 @@ import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
 
-export enum Quality {
+export enum Bitrate {
   High = 128,
   Medium = 96,
-  Low = 64
-} 
+  Low = 64,
+}
 
 export class Player {
   #readerCollection: Map<number, OpusReader>;
@@ -42,12 +42,12 @@ export class Player {
     this.#startTime = startTime;
     this.#playbackTimer?.close();
 
-    this.#readerCollection.clear()
+    this.#readerCollection.clear();
     this.#playlist.forEachCurrentAudioFile((audioFile) => {
-      const reader = new OpusReader(audioFile.File)
-      reader.setClock(startTime)
-      this.#readerCollection.set(audioFile.Quality, reader)
-    })
+      const reader = new OpusReader(audioFile.File);
+      reader.setClock(startTime);
+      this.#readerCollection.set(audioFile.Bitrate, reader);
+    });
 
     this.#setupPlaybackTimer();
   }
@@ -56,8 +56,9 @@ export class Player {
     this.playAt(Date.now());
   }
 
-  getCurrentReader(quality: number) {
-    return this.#readerCollection.get(quality);
+  getCurrentReader(bitrate: number) {
+    if (!this.#readerCollection.has(bitrate)) return null;
+    return this.#readerCollection.get(bitrate);
   }
 
   #setupPlaybackTimer() {
@@ -65,7 +66,7 @@ export class Player {
       // using the high quality reader as a baseline for tracking time
       // because a getting the duration of the file
       // would require a metadata reader.
-      const currentReader = this.#readerCollection.get(Quality.High)
+      const currentReader = this.#readerCollection.get(Bitrate.High);
       if (currentReader !== undefined) {
         console.log(currentReader.getRemainingTimeSeconds());
         if (currentReader.getRemainingTimeSeconds() < 0) {

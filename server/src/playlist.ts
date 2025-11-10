@@ -1,15 +1,15 @@
 import { createHash } from "crypto";
 
 interface AudioFile {
-  Quality: number
-  File: string
+  Bitrate: number;
+  File: string;
 }
 
 interface Set {
   Title: string;
   Author: string;
   AudioFiles: Array<AudioFile>;
-  CoverFile: string; 
+  CoverFile: string;
 }
 
 export class Playlist {
@@ -40,8 +40,10 @@ export class Playlist {
       this.#currentSet = setIndex;
   }
 
-  forEachCurrentAudioFile(callbackfn: (value: AudioFile, index: number, array: AudioFile[]) => void) {
-    this.getCurrentSet().AudioFiles.forEach(callbackfn)
+  forEachCurrentAudioFile(
+    callbackfn: (value: AudioFile, index: number, array: AudioFile[]) => void,
+  ) {
+    this.getCurrentSet().AudioFiles.forEach(callbackfn);
   }
 
   getHash() {

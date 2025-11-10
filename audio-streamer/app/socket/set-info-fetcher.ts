@@ -22,7 +22,7 @@ export class SetInfoFetcher {
     return new Promise<SetInfo>((resolve, reject) => {
       this.#socket.emit("fetchSetInformation");
 
-      const fileBuffer:Array<Uint8Array> = [];
+      const fileBuffer: Array<Uint8Array> = [];
       let bufferLength = 0;
 
       socketStream(this.#socket).once(
@@ -37,11 +37,11 @@ export class SetInfoFetcher {
           });
 
           stream.on("end", () => {
-            const filedata = new Uint8Array(bufferLength)
-            let  i = 0;
+            const filedata = new Uint8Array(bufferLength);
+            let i = 0;
 
             fileBuffer.forEach(function (buffer) {
-              filedata.set(buffer, i)
+              filedata.set(buffer, i);
               i += buffer.length;
             });
 
@@ -49,7 +49,7 @@ export class SetInfoFetcher {
               type: info.fileMimeType,
             });
             this.setInfo.coverURL = URL.createObjectURL(this.setInfo.coverBlob);
-            
+
             resolve(this.setInfo);
           });
 

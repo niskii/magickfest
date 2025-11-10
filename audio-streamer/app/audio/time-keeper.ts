@@ -34,9 +34,8 @@ export class TimeKeeper {
     return this.#totalDuration;
   }
 
-  getDownloadedAudioTime() {
-    if (!this.#audioContext)
-      return 0.0;
+  getDownloadedAudioDuration() {
+    if (!this.#audioContext) return 0.0;
 
     return (
       this.#totalTimeScheduled -
@@ -45,8 +44,7 @@ export class TimeKeeper {
   }
 
   getCurrentPlayPosition() {
-    if (!this.#audioContext)
-      return 0.0;
+    if (!this.#audioContext) return 0.0;
 
     return (
       this.#audioContext.currentTime -
