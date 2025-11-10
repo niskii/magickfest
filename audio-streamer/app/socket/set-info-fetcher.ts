@@ -24,8 +24,6 @@ export class SetInfoFetcher {
 
             const fileBuffer: Array<Uint8Array> = [];
             let bufferLength = 0;
-            const fileBuffer: Array<Uint8Array> = [];
-            let bufferLength = 0;
 
             socketStream(this.#socket).once(
                 "setInformation",
@@ -57,6 +55,7 @@ export class SetInfoFetcher {
                             this.setInfo.coverBlob = new Blob([filedata], {
                                 type: info.fileMimeType,
                             });
+
                             this.setInfo.coverURL = URL.createObjectURL(this.setInfo.coverBlob);
 
                             resolve(this.setInfo);

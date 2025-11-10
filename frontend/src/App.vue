@@ -1,11 +1,9 @@
 <script setup lang="ts">
-    import Controls from "./components/Controls.vue";
-    import Info from "./components/Info.vue";
+    import Player from './components/Player.vue';
 </script>
 
 <template>
     <div id="body">
-        <Info></Info>
-        <Controls></Controls>
+        <Player></Player>
     </div>
 </template>

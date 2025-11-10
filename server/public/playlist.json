@@ -1,44 +1,42 @@
 {
-  "Sets": [
-    {
-      "Author": "Author",
-      "Title": "Title",
-      "CoverFile": "public/cover.jpg",
-      "AudioFiles": 
-      [
+    "Sets": [
         {
-          "File": "public/1_128.opus",
-          "Bitrate": 128
+            "Author": "john Author",
+            "Title": "John's Finest Title",
+            "CoverFile": "public/cover.jpg",
+            "AudioFiles": [
+                {
+                    "File": "public/1_128.opus",
+                    "Bitrate": 128
+                },
+                {
+                    "File": "public/1_96.opus",
+                    "Bitrate": 96
+                },
+                {
+                    "File": "public/1_64.opus",
+                    "Bitrate": 64
+                }
+            ]
         },
         {
-          "File": "public/1_96.opus",
-          "Bitrate": 96
-        },
-        {
-          "File": "public/1_64.opus",
-          "Bitrate": 64
+            "Author": "john larks",
+            "Title": "the best set eve",
+            "CoverFile": "public/cover.jpg",
+            "AudioFiles": [
+                {
+                    "File": "public/2_128.opus",
+                    "Bitrate": 128
+                },
+                {
+                    "File": "public/2_96.opus",
+                    "Bitrate": 96
+                },
+                {
+                    "File": "public/2_64.opus",
+                    "Bitrate": 64
+                }
+            ]
         }
-      ]
-    },
-    {
-      "Author": "Author",
-      "Title": "Title",
-      "CoverFile": "public/cover.jpg",
-      "AudioFiles": 
-      [
-        {
-          "File": "public/2_128.opus",
-          "Bitrate": 128
-        },
-        {
-          "File": "public/2_96.opus",
-          "Bitrate": 96
-        },
-        {
-          "File": "public/2_64.opus",
-          "Bitrate": 64
-        }
-      ]
-    }
-  ]
+    ]
 }
