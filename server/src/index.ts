@@ -3,7 +3,7 @@ import path from "path"
 import { Server } from "socket.io";
 import { createReadStream, existsSync, readFileSync, writeFile } from "fs";
 import { createServer } from "http";
-import { Player } from "./player";
+import { Player, Quality } from "./player";
 import { Playlist } from "./playlist";
 import { imageMimeTypes } from "./mime-map";
 
@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("fetchSyncedChunk", (callback) => {
-    const result = player.getCurrentReader()?.getCurrentChunk();
+    const result = player.getCurrentReader(Quality.High)?.getCurrentChunk();
     if (result?.chunk !== null) socket.emit("syncedChunk", result?.chunk);
     callback({
       status: result?.status,
@@ -85,7 +85,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("fetchChunkFromPage", (data, callback) => {
-    const result = player.getCurrentReader()?.getNextChunk(data.lastPage);
+    const result = player.getCurrentReader(Quality.High)?.getNextChunk(data.lastPage);
     if (result?.chunk !== null) socket.emit("chunkFromPage", result?.chunk);
     callback({
       status: result?.status,

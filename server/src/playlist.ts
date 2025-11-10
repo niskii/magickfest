@@ -1,9 +1,14 @@
 import { createHash } from "crypto";
 
+interface AudioFile {
+  Quality: number
+  File: string
+}
+
 interface Set {
   Title: string;
   Author: string;
-  File: string;
+  AudioFiles: Array<AudioFile>;
   CoverFile: string; 
 }
 
@@ -13,7 +18,7 @@ export class Playlist {
   #id: string;
 
   constructor(playlist: string) {
-    this.#sets = JSON.parse(playlist)["sets"];
+    this.#sets = JSON.parse(playlist)["Sets"];
     this.#id = createHash("MD5").update(playlist).digest("hex");
 
     console.log("sets", this.#sets);
@@ -33,6 +38,10 @@ export class Playlist {
   setCurrentSet(setIndex: number) {
     if (setIndex >= 0 && setIndex < this.#sets.length)
       this.#currentSet = setIndex;
+  }
+
+  forEachCurrentAudioFile(callbackfn: (value: AudioFile, index: number, array: AudioFile[]) => void) {
+    this.getCurrentSet().AudioFiles.forEach(callbackfn)
   }
 
   getHash() {
