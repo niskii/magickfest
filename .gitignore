@@ -138,8 +138,5 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# discord stuff for now
-getting-started-activity-main/*
-discord-example-app/*
 
-
+discord-example-app
