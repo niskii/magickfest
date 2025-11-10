@@ -1,16 +1,15 @@
-<script setup lang="ts">
-    import { shallowRef, ref, onMounted, watch } from "vue";
-    import { socket } from "../../../audio-streamer/app/socket/socket";
-    import { AudioStreamPlayer } from "../../../audio-streamer/app/audio/audio-stream-player";
-    import { SetInfoFetcher } from "../../../audio-streamer/app/socket/set-info-fetcher";
-    import config from "../../../audio-streamer/config/client.json";
+import { shallowRef, ref, onMounted, onUnmounted, watch } from "vue";
+import { socket } from "../../../audio-streamer/app/socket/socket";
+import { AudioStreamPlayer } from "../../../audio-streamer/app/audio/audio-stream-player";
+import { SetInfoFetcher } from "../../../audio-streamer/app/socket/set-info-fetcher";
+import config from "../../../audio-streamer/config/client.json";
 
+export function usePlayer() {
     const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
     const stateInterval = ref<NodeJS.Timeout>(null);
     const playState = ref<[number, number]>([0, 0]);
     const isConnected = ref(socket.connected);
     const coverImage = ref(null);
-
     const setInformation = new SetInfoFetcher(socket);
 
     onMounted(() => {
@@ -25,14 +24,16 @@
         socket.on("connect", onConnect);
         socket.on("disconnect", onDisconnect);
 
-        return () => {
-            socket.disconnect();
-        };
+        onUnmounted(() => {
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
+            disconnect();
+        });
     })
 
     watch(isConnected, () => {
         function newSetEvent() {
-            if (isConnected) {
+            if (isConnected.value) {
                 audioStreamPlayer.value.reset();
                 audioStreamPlayer.value.start();
                 fetchInfo();
@@ -59,11 +60,11 @@
             audioStreamPlayer.value = player;
 
             stateInterval.value = setInterval(() => {
-                    playState.value = [
-                        player.getCurrentPlayPosition(),
-                        player.getTotalDuration(),
-                    ];
-                }, config.UpdateInterval);
+                playState.value = [
+                    player.getCurrentPlayPosition(),
+                    player.getTotalDuration(),
+                ];
+            }, config.UpdateInterval);
 
             isConnected.value = true;
         }
@@ -76,7 +77,7 @@
     }
 
     async function disconnect() {
-        if (isConnected) {
+        if (isConnected.value) {
             clearInterval(stateInterval.value);
             stateInterval.value = null;
 
@@ -90,25 +91,5 @@
         }
     }
 
-    // onMounted(() => {
-    //     socket = io(":8080", { autoConnect: false });
-    // });
-
-    // onBeforeUnmount(() => {
-    //     disconnect();
-    // });
-</script>
-
-<template>
-    <div>
-        <p>Playing</p>
-        <button @click="connect">connect</button>
-        <button @click="disconnect">disconnect</button>
-        <button @click="fetchInfo">work</button>
-        <div>
-            Playing: {{ playState[0].toFixed(2) }} / {{ playState[1].toFixed(2) }}
-        </div>
-        <img :src="coverImage" width="300px"></img>
-        {{ setInformation }}
-    </div>
-</template>
+    return { disconnect, connect, fetchInfo, playState, isConnected, coverImage, setInformation }
+}

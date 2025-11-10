@@ -1,5 +1,7 @@
 <script setup lang="ts">
     import { ref } from "vue";
+    import { usePlayer } from "../composables/Player"
+    const { playState } = usePlayer();
 
     const volume = ref<Number>(75);
 
@@ -27,7 +29,7 @@
             </div>
         </div>
         <div style="width: 60%; flex-direction: column;" class="alwaysVisible">
-            <!-- {{ playState[0] }} / {{ playState[1] }} -->
+            {{ playState[0] }} / {{ playState[1] }}
             <div id="progressbar">
                 <div id="filled" style="width: 31%"></div>
             </div>
