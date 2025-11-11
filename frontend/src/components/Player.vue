@@ -1,9 +1,9 @@
 <script setup lang="ts">
     import { shallowRef, ref, onMounted, onUnmounted, watch } from "vue";
-    import { socket } from "../../../audio-streamer/app/socket/socket";
-    import { AudioStreamPlayer } from "../../../audio-streamer/app/audio/audio-stream-player";
-    import { SetInfoFetcher } from "../../../audio-streamer/app/socket/set-info-fetcher";
-    import config from "../../../audio-streamer/config/client.json";
+    import { socket } from "../scripts/socket/socket";
+    import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
+    import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
+    import config from "../config/client.json";
     import Overlay from "./Overlay.vue";
 
     const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);

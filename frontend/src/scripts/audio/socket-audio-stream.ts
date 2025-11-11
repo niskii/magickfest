@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { Chunk } from "./chunk";
+import { type Chunk } from "./chunk";
 import { TimeKeeper } from "./time-keeper";
 
 import config from "../../config/client.json";

@@ -222,6 +222,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@eshaz/web-worker@npm:1.2.2":
+  version: 1.2.2
+  resolution: "@eshaz/web-worker@npm:1.2.2"
+  checksum: 10c0/4f1ad8287587d294af3c9dabfa88f7ffea54b958cf89ee50d928406436f10b7c4d733bf47e6566a57988c24f3773144fc1ba540dc4a7dd8031e6abb85ba76ba2
+  languageName: node
+  linkType: hard
+
 "@isaacs/balanced-match@npm:^4.0.1":
   version: 4.0.1
   resolution: "@isaacs/balanced-match@npm:4.0.1"
@@ -680,6 +687,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@wasm-audio-decoders/common@npm:9.0.7":
+  version: 9.0.7
+  resolution: "@wasm-audio-decoders/common@npm:9.0.7"
+  dependencies:
+    "@eshaz/web-worker": "npm:1.2.2"
+    simple-yenc: "npm:^1.0.4"
+  checksum: 10c0/1dcdc0da22f56d8b7e21725086647ea2ab118d6af815f68727268759aba3ec240f42f0287d8e316ab88d677460536df33482c5c609fc431268511a8d08f4a3f7
+  languageName: node
+  linkType: hard
+
+"@wasm-audio-decoders/opus-ml@npm:0.0.2":
+  version: 0.0.2
+  resolution: "@wasm-audio-decoders/opus-ml@npm:0.0.2"
+  dependencies:
+    "@wasm-audio-decoders/common": "npm:9.0.7"
+  checksum: 10c0/0777576226478aade37fabbc76b8483491add1ed853d84d3da9485b11f56628765c0930c01bb01a60cfd9ab299945fa232add7ed0680d7c3a9bbe9d65b898de2
+  languageName: node
+  linkType: hard
+
 "abbrev@npm:^4.0.0":
   version: 4.0.0
   resolution: "abbrev@npm:4.0.0"
@@ -968,6 +994,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"codec-parser@npm:2.5.0":
+  version: 2.5.0
+  resolution: "codec-parser@npm:2.5.0"
+  checksum: 10c0/ee017ce76251f75a7feacb5c11ae6c8269d8b76818facf4270e4a0e01c5fc5daaca840372d314a27d7aa12823012d2b46de30bb6c44726c0ca6898a266300c06
+  languageName: node
+  linkType: hard
+
 "color-convert@npm:^2.0.1":
   version: 2.0.1
   resolution: "color-convert@npm:2.0.1"
@@ -981,6 +1014,13 @@ __metadata:
   version: 1.1.4
   resolution: "color-name@npm:1.1.4"
   checksum: 10c0/a1a3f914156960902f46f7f56bc62effc6c94e84b2cae157a526b1c1f74b677a47ec602bf68a61abfa2b42d15b7c5651c6dbe72a43af720bc588dff885b10f95
+  languageName: node
+  linkType: hard
+
+"component-bind@npm:~1.0.0":
+  version: 1.0.0
+  resolution: "component-bind@npm:1.0.0"
+  checksum: 10c0/839485d60fdf21e1303cd739c76f5adac046f7b3d5d7b666ad1259ccff562c7e7afc8922b40e4a5c4665789a7fb6645e527214c80a922093f392d89685fda488
   languageName: node
   linkType: hard
 
@@ -1096,6 +1136,15 @@ __metadata:
     supports-color:
       optional: true
   checksum: 10c0/d79136ec6c83ecbefd0f6a5593da6a9c91ec4d7ddc4b54c883d6e71ec9accb5f67a1a5e96d00a328196b5b5c86d365e98d8a3a70856aaf16b4e7b1985e67f5a6
+  languageName: node
+  linkType: hard
+
+"debug@npm:~2.2.0":
+  version: 2.2.0
+  resolution: "debug@npm:2.2.0"
+  dependencies:
+    ms: "npm:0.7.1"
+  checksum: 10c0/d24d6200c9d9bef20e1dcb823a9895193a45c39505606468735f387bdd850a21baf4c7841df1787f9a02596cbf0f111d60726ba3fa7511e22198b91b33440fe9
   languageName: node
   linkType: hard
 
@@ -1451,7 +1500,9 @@ __metadata:
     "@vitejs/plugin-vue": "npm:^6.0.1"
     "@vue/tsconfig": "npm:^0.8.1"
     nodejs: "npm:^0.0.0"
+    ogg-opus-decoder: "npm:^1.7.3"
     socket.io-client: "npm:^4.8.1"
+    socket.io-stream: "npm:^0.9.1"
     typescript: "npm:~5.9.3"
     vite: "npm:^7.1.7"
     vite-plugin-node-polyfills: "npm:^0.24.0"
@@ -2002,6 +2053,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ms@npm:0.7.1":
+  version: 0.7.1
+  resolution: "ms@npm:0.7.1"
+  checksum: 10c0/caeb29c1eef02d38f03781d1937a59ddef897be8686c146507a9d33cda7fa4de678d0c6091f8ce7e45bf35585e655d398d9d5103e5197fd919643c46356887cc
+  languageName: node
+  linkType: hard
+
 "ms@npm:^2.1.3":
   version: 2.1.3
   resolution: "ms@npm:2.1.3"
@@ -2140,6 +2198,27 @@ __metadata:
     has-symbols: "npm:^1.1.0"
     object-keys: "npm:^1.1.1"
   checksum: 10c0/3b2732bd860567ea2579d1567525168de925a8d852638612846bd8082b3a1602b7b89b67b09913cbb5b9bd6e95923b2ae73580baa9d99cb4e990564e8cbf5ddc
+  languageName: node
+  linkType: hard
+
+"ogg-opus-decoder@npm:^1.7.3":
+  version: 1.7.3
+  resolution: "ogg-opus-decoder@npm:1.7.3"
+  dependencies:
+    "@wasm-audio-decoders/common": "npm:9.0.7"
+    "@wasm-audio-decoders/opus-ml": "npm:0.0.2"
+    codec-parser: "npm:2.5.0"
+    opus-decoder: "npm:0.7.11"
+  checksum: 10c0/7c96b73542507433d625d761525aa7e7d25e0d5ce203eb7d8ea1832932fea4f6864b232df596e5feea2474937af705a6da180efc5d987b907d3d5fa649db49cc
+  languageName: node
+  linkType: hard
+
+"opus-decoder@npm:0.7.11":
+  version: 0.7.11
+  resolution: "opus-decoder@npm:0.7.11"
+  dependencies:
+    "@wasm-audio-decoders/common": "npm:9.0.7"
+  checksum: 10c0/fae8d49d07aea9f26c142cceedf9df92820d0345d4d003799c12e107558d77b0acd8bcf638b401f1f9a852ad05150494f8b5ad3e9f4466d22b86623270619e7b
   languageName: node
   linkType: hard
 
@@ -2685,6 +2764,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"simple-yenc@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "simple-yenc@npm:1.0.4"
+  checksum: 10c0/5a476cf328e5e5b6006ac44af01daeda8a9832d3d2205c80d71fbdf3a9ff1ee5092ed41b909c77532c80b9f6db65b577e2c1283fcbb5a9b194f1e96b0077de73
+  languageName: node
+  linkType: hard
+
 "smart-buffer@npm:^4.2.0":
   version: 4.2.0
   resolution: "smart-buffer@npm:4.2.0"
@@ -2711,6 +2797,16 @@ __metadata:
     "@socket.io/component-emitter": "npm:~3.1.0"
     debug: "npm:~4.3.1"
   checksum: 10c0/9383b30358fde4a801ea4ec5e6860915c0389a091321f1c1f41506618b5cf7cd685d0a31c587467a0c4ee99ef98c2b99fb87911f9dfb329716c43b587f29ca48
+  languageName: node
+  linkType: hard
+
+"socket.io-stream@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "socket.io-stream@npm:0.9.1"
+  dependencies:
+    component-bind: "npm:~1.0.0"
+    debug: "npm:~2.2.0"
+  checksum: 10c0/53c02c5ff7474a8ecfc8c453648abe5f7f0ebdf7f81f8a27b16ec6b301a3d671969ed6cc10dd5e5517230e5e3bda2812b39b5199e693e267085ada41d207f6f7
   languageName: node
   linkType: hard
 
