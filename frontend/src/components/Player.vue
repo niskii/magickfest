@@ -120,7 +120,7 @@
 
 <template>
     <div id="main">
-        <img :src="coverImage" alt="cover artwork for set"> <!-- borken here -->
+        <img :src="coverImage" alt="cover artwork for set">
         <div>
             <h1>{{ setInformation.setInfo.title }}</h1>
             <h2>by {{ setInformation.setInfo.author }}</h2>
