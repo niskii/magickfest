@@ -43,9 +43,9 @@
         }
     })
 
-    watch(volume, () => {
+    watch([volume, muted], () => {
         if (audioStreamPlayer.value !== null) {
-            audioStreamPlayer.value.setVolume(Number(volume.value / 100))
+            audioStreamPlayer.value.setVolume(muted.value ? 0.0 : Number(volume.value / 100));
         }
     })
 
