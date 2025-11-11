@@ -116,6 +116,10 @@ export class AudioStreamPlayer {
     return this.#timeKeeper.getDownloadedAudioDuration();
   }
 
+  getServerDelay() {
+    return this.#timeKeeper.getDelay()
+  }
+
   #flush() {
     this.#flushTimeoutId = setTimeout(() => {
       decoder.flushAudio();
