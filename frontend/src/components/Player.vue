@@ -43,6 +43,12 @@
         }
     })
 
+    watch(volume, () => {
+        if (audioStreamPlayer.value !== null) {
+            audioStreamPlayer.value.setVolume(Number(volume.value / 100))
+        }
+    })
+
     watch(isConnected, () => {
         function newSetEvent() {
             if (isConnected.value) {

@@ -10,15 +10,16 @@ export class AudioStreamPlayer {
   #socket: Socket;
 
   // these are reset
-  #sessionId; // used to prevent race conditions between cancel/starts
+  #sessionId: number; // used to prevent race conditions between cancel/starts
   #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
+  #gainNode: GainNode;
   #stream: SocketAudioStream;
   #timeKeeper: TimeKeeper;
-  #audioSrcNodes; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
-  #totalTimeScheduled; // time scheduled of all AudioBuffers
-  #playStartedAt; // audioContext.currentTime of first sched
-  #flushTimeoutId;
-  #bitrate;
+  #audioSrcNodes: Array<AudioBufferSourceNode>; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
+  #totalTimeScheduled: number; // time scheduled of all AudioBuffers
+  #playStartedAt: number; // audioContext.currentTime of first sched
+  #flushTimeoutId: NodeJS.Timeout;
+  #bitrate: number;
 
   constructor(socket: Socket, bitrate: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
@@ -31,6 +32,10 @@ export class AudioStreamPlayer {
   setBitrate(bitrate: number) {
     this.#bitrate = bitrate;
     if (this.#stream) this.#stream.setBitrate(bitrate);
+  }
+
+  setVolume(volume: number) {
+    this.#gainNode.gain.value = volume
   }
 
   reset() {
@@ -70,6 +75,7 @@ export class AudioStreamPlayer {
     this.#sessionId = performance.now();
     performance.mark(this.downloadMarkKey);
     this.#audioCtx = new window.AudioContext();
+    this.#gainNode = this.#audioCtx.createGain()
     this.#audioCtx.suspend();
 
     this.#timeKeeper = new TimeKeeper(this.#audioCtx);
@@ -119,7 +125,7 @@ export class AudioStreamPlayer {
   }
 
   // prevent race condition by checking sessionId
-  #onDecode(event) {
+  #onDecode(event: any) {
     if (event.decoded.channelData) {
       if (!(this.#sessionId && this.#sessionId === event.sessionId)) {
         console.log("race condition detected for closed session");
@@ -139,7 +145,7 @@ export class AudioStreamPlayer {
     return performance.getEntriesByName(this.downloadMarkKey)[0].startTime;
   }
 
-  #schedulePlayback({ channelData, length, numberOfChannels, sampleRate }) {
+  #schedulePlayback({ channelData, length, numberOfChannels, sampleRate }: any) {
     const audioSrc = this.#audioCtx.createBufferSource(),
       audioBuffer = this.#audioCtx.createBuffer(
         numberOfChannels,
@@ -195,7 +201,9 @@ export class AudioStreamPlayer {
     }
 
     audioSrc.buffer = audioBuffer;
-    audioSrc.connect(this.#audioCtx.destination);
+    audioSrc.connect(this.#gainNode)
+    this.#gainNode.connect(this.#audioCtx.destination)
+    // audioSrc.connect(this.#audioCtx.destination);
 
     const startAt = Math.max(
       this.#audioCtx.currentTime,
