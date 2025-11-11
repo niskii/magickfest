@@ -5,6 +5,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "minimist": "^1.2.8",
     "socket.io": "^4.8.1",
     "socket.io-stream": "patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch"
   },
@@ -12,6 +13,7 @@
     "@tsconfig/recommended": "^1.0.10",
     "@types/cors": "^2",
     "@types/express": "^5.0.5",
+    "@types/minimist": "^1",
     "@types/node": "^24.9.1",
     "prettier": "3.6.2",
     "ts-node": "^10.9.2",

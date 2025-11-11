@@ -10,14 +10,20 @@ export enum Bitrate {
 
 export class Player {
   #readerCollection: Map<number, OpusReader>;
-  #startTime: number | null = null;
+  #startTime: number;
   #playbackTimer: NodeJS.Timeout | null = null;
   #playlist;
   events: EventEmitter | undefined;
 
-  constructor(playlist: Playlist) {
+  //testing
+  #loop = false
+
+  constructor(playlist: Playlist, loop: boolean) {
     this.#playlist = playlist;
     this.#readerCollection = new Map();
+    this.#startTime = Date.now()
+
+    this.#loop = loop
 
     this.events = new EventEmitter();
     if (this.events === undefined) {
@@ -28,14 +34,14 @@ export class Player {
   getState() {
     return {
       id: this.#playlist.getHash(),
-      setIndex: this.#playlist.getCurrentSet(),
+      setIndex: this.#playlist.getCurrentIndex(),
       startTime: this.#startTime,
     };
   }
 
   setState(setIndex: number, startTime: number) {
     this.#playlist.setCurrentSet(setIndex);
-    this.playAt(startTime);
+    this.#startTime = startTime
   }
 
   playAt(startTime: number) {
@@ -52,7 +58,11 @@ export class Player {
     this.#setupPlaybackTimer();
   }
 
-  play() {
+  playAtState() {
+    this.playAt(this.#startTime)
+  }
+
+  playAtStart() {
     this.playAt(Date.now());
   }
 
@@ -70,10 +80,11 @@ export class Player {
       if (currentReader !== undefined) {
         console.log(currentReader.getRemainingTimeSeconds());
         if (currentReader.getRemainingTimeSeconds() < 0) {
-          this.#playlist.nextSet();
+          if (!this.#loop)
+            this.#playlist.nextSet();
+          this.playAtStart();
           this.events?.emit("finished");
           console.log("new set!");
-          this.play();
         }
       }
     }, 1000);

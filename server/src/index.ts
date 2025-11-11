@@ -8,10 +8,7 @@ import { Playlist } from "./playlist";
 import { imageMimeTypes } from "./mime-map";
 
 import cors from "cors";
-import { ReadCode } from "./read-codes";
 const socketStream = require("socket.io-stream");
-
-const playlistStateFilePath = "temp/playlist_state_";
 
 const app = express();
 app.use(cors);
@@ -27,18 +24,38 @@ process.on("warning", (warning) => {
     console.log(warning.stack);
 });
 
-const playlist = new Playlist(readFileSync("public/playlist.json").toString());
-const player = new Player(playlist);
+const argv = require('minimist')(process.argv.slice(2));
 
-const hasSavedState = false;
-if (!hasSavedState) {
-    player.play();
-    // saveState();
+console.log(argv)
+
+const playlistFile = argv.playlist ? argv.playlist : "public/playlist.json"
+const useSavedState = argv.usestate !== undefined
+const loop = argv.loop !== undefined
+
+const playlistStateFilePath = "temp/playlist_state_";
+const playlist = new Playlist(readFileSync(playlistFile).toString());
+const player = new Player(playlist, loop);
+
+if (argv.setindex !== undefined || argv.starttime !== undefined) {
+  const startTime = argv.starttime ? Date.now() - argv.starttime * 1000 : Date.now() 
+  const setIndex = argv.setindex ? argv.setindex : 0
+  player.setState(setIndex, startTime)
 }
 
-player.events?.on("finished", () => {
-    // saveState();
-});
+if (useSavedState) {
+  player.events?.on("finished", () => {
+    saveState();
+  });
+  
+  let hasSavedState = false
+  if (argv.setindex === undefined && argv.starttime === undefined)
+    hasSavedState = loadState();
+  if (!hasSavedState) {
+    saveState();
+  }
+}
+
+player.playAtState()
 
 function loadState() {
     const playlistStateFile =

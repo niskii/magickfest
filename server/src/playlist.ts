@@ -35,6 +35,10 @@ export class Playlist {
     return this.#sets[this.#currentSet];
   }
 
+  getCurrentIndex() {
+    return this.#currentSet;
+  }
+
   setCurrentSet(setIndex: number) {
     if (setIndex >= 0 && setIndex < this.#sets.length)
       this.#currentSet = setIndex;

@@ -148,10 +148,6 @@ export class AudioStreamPlayer {
     return `download-start-${this.#sessionId}`;
   }
 
-  #getDownloadStartTime() {
-    return performance.getEntriesByName(this.downloadMarkKey)[0].startTime;
-  }
-
   #schedulePlayback({
     channelData,
     length,
