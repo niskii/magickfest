@@ -4,6 +4,7 @@
     import { AudioStreamPlayer } from "../../../audio-streamer/app/audio/audio-stream-player";
     import { SetInfoFetcher } from "../../../audio-streamer/app/socket/set-info-fetcher";
     import config from "../../../audio-streamer/config/client.json";
+    import Overlay from "./Overlay.vue";
 
     const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
     const stateInterval = ref<NodeJS.Timeout>(null);
@@ -12,6 +13,10 @@
     const coverImage = ref(null);
     const setInformation = new SetInfoFetcher(socket);
     const bitrate = ref(128);
+
+    const overlayToggle = ref<boolean>(true);
+    const volume = ref<number>(75);
+    const muted = ref<boolean>(false);
 
     onMounted(() => {
         function onConnect() {
@@ -99,7 +104,7 @@
         }
     }
 
-    // redundant because react sucks and vue is better (v-model)
+    // redundant because react
 
     // const changeHandler = (event: Event & { target: HTMLInputElement }) => {
     //     if (event.target.type === "radio") {
@@ -116,26 +121,43 @@
         const el = e.target as HTMLDivElement;
         bitrate.value = parseInt(el.innerHTML.replace('kbps', ''));
     }
+
+    function overlayClick() {
+        connect();
+        overlayToggle.value = false;
+    }
 </script>
 
 <template>
     <div id="main">
-        <img :src="coverImage" alt="cover artwork for set">
+        <Overlay msg="in order to listen, press 'connect'" :func="overlayClick" btn-content="connect" :visible="overlayToggle"></Overlay>
+        <img :src="coverImage ? coverImage : '/src/assets/nostream.png'" alt="cover artwork for set">
         <div>
-            <h1>{{ setInformation.setInfo.title }}</h1>
-            <h2>by {{ setInformation.setInfo.author }}</h2>
-            <h3 style="color: white;">temp shit</h3>
+            <h1>{{ setInformation.setInfo.title ? setInformation.setInfo.title : 'no set avilable' }}</h1>
+            <h2> {{ setInformation.setInfo.author ? 'by ' + setInformation.setInfo.author : null }}</h2>
+            <!-- <h3 style="color: white;">temp shit</h3>
             <button @click="connect">connect</button>
             <button @click="disconnect">disconnect</button>
-            <button @click="fetchInfo">work</button>
+            <button @click="fetchInfo">work</button> -->
         </div>
     </div>
     <div id="bottomBar">
+        <select class="mobileOnly" v-model="bitrate">
+            <option value="128">128kbps</option>
+            <option value="96">96kbps</option>
+            <option value="64">64kbps</option>
+        </select>
         <div style="width: 20%" class="fullOnly">
-            <img src="../assets/volume_icon.png" alt="volume icon"
-                style="height: 5vh; width: 4.5vh; filter: invert() opacity(0.8);">
+            <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
+                style="height: 5vh; cursor: pointer;" @click="() => {muted = !muted}">
             <div id="volumeSlider">
-                <div id="draggable" style="left: 75%"></div>
+                <input
+                    v-model="volume"
+                    type="range"
+                    min="0"
+                    max="100"
+                />
+                <div :style="{ width: volume + '%' }"></div>
             </div>
         </div>
         <div style="width: 60%; flex-direction: column;" class="alwaysVisible">
