@@ -4,14 +4,14 @@ export class TimeKeeper {
   #totalTimeScheduled: number;
   #totalDuration: number;
   #startPosition: number;
-  #offset: number;
+  #delay: number;
 
   constructor(audioContext: AudioContext) {
     this.#audioContext = audioContext;
     this.#startedAt = 0.0;
     this.#totalTimeScheduled = 0.0;
     this.#totalDuration = 0.0;
-    this.#offset = 0.0;
+    this.#delay = 0.0;
   }
 
   setStartedAt(startedAt: number) {
@@ -50,7 +50,7 @@ export class TimeKeeper {
       this.#audioContext.currentTime -
       this.#startedAt +
       this.#startPosition +
-      this.#offset
+      this.#delay
     );
   }
 
@@ -59,7 +59,11 @@ export class TimeKeeper {
   }
 
   addDelay(delay: number) {
-    this.#offset = delay;
+    this.#delay = delay;
+  }
+
+  getDelay() {
+    return this.#delay
   }
 
   getCurrentTime() {

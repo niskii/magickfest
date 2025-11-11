@@ -3,8 +3,6 @@ import { SocketAudioStream } from "./socket-audio-stream";
 import { TimeKeeper } from "./time-keeper";
 import * as decoder from "./decoder-service";
 
-import config from "../../config/client.json";
-
 export class AudioStreamPlayer {
   // these shouldn't change once set
   #socket: Socket;
@@ -20,10 +18,12 @@ export class AudioStreamPlayer {
   #playStartedAt: number; // audioContext.currentTime of first sched
   #flushTimeoutId: NodeJS.Timeout;
   #bitrate: number;
+  #volume: number;
 
-  constructor(socket: Socket, bitrate: number) {
+  constructor(socket: Socket, bitrate: number, volume: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
     this.#bitrate = bitrate;
+    this.#volume = volume;
 
     this.#socket = socket;
     this.reset();
@@ -35,10 +35,14 @@ export class AudioStreamPlayer {
   }
 
   setVolume(volume: number) {
-    this.#gainNode.gain.value = volume
+    this.#volume = volume;
+    this.#gainNode.gain.value = volume;
   }
 
   reset() {
+    this.#socket.removeListener("chunkFromPage");
+    this.#socket.removeListener("syncedChunk");
+
     if (this.#stream) this.#stream.reset();
     this.#stream = null;
 
@@ -75,7 +79,8 @@ export class AudioStreamPlayer {
     this.#sessionId = performance.now();
     performance.mark(this.downloadMarkKey);
     this.#audioCtx = new window.AudioContext();
-    this.#gainNode = this.#audioCtx.createGain()
+    this.#gainNode = this.#audioCtx.createGain();
+    this.#gainNode.gain.value = this.#volume;
     this.#audioCtx.suspend();
 
     this.#timeKeeper = new TimeKeeper(this.#audioCtx);
@@ -112,14 +117,12 @@ export class AudioStreamPlayer {
   }
 
   #flush() {
-    const timeout = this.#timeKeeper.getDownloadedAudioDuration();
-
     this.#flushTimeoutId = setTimeout(() => {
       decoder.flushAudio();
-    }, timeout);
+    }, 100);
   }
 
-  #decode(buffer: ArrayBuffer) {
+  #decode(buffer: Uint8Array<ArrayBufferLike>) {
     decoder.decodeAudio(buffer, this.#sessionId);
     clearTimeout(this.#flushTimeoutId);
   }
@@ -145,7 +148,12 @@ export class AudioStreamPlayer {
     return performance.getEntriesByName(this.downloadMarkKey)[0].startTime;
   }
 
-  #schedulePlayback({ channelData, length, numberOfChannels, sampleRate }: any) {
+  #schedulePlayback({
+    channelData,
+    length,
+    numberOfChannels,
+    sampleRate,
+  }: any) {
     const audioSrc = this.#audioCtx.createBufferSource(),
       audioBuffer = this.#audioCtx.createBuffer(
         numberOfChannels,
@@ -157,7 +165,7 @@ export class AudioStreamPlayer {
       this.#audioSrcNodes.shift();
 
       if (
-        this.#audioCtx.currentTime >
+        this.#audioCtx.currentTime - this.#timeKeeper.getDelay() >
         this.#playStartedAt + this.#totalTimeScheduled
       ) {
         this.pause();
@@ -201,8 +209,8 @@ export class AudioStreamPlayer {
     }
 
     audioSrc.buffer = audioBuffer;
-    audioSrc.connect(this.#gainNode)
-    this.#gainNode.connect(this.#audioCtx.destination)
+    audioSrc.connect(this.#gainNode);
+    this.#gainNode.connect(this.#audioCtx.destination);
     // audioSrc.connect(this.#audioCtx.destination);
 
     const startAt = Math.max(

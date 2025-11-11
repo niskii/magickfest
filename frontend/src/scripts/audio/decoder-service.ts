@@ -20,11 +20,11 @@ export const handlers: {
 };
 
 const playbackBuffer = new DecodedAudioPlaybackBuffer({ onFlush });
-let sessionId, flushTimeoutId;
+let sessionId: number, flushTimeoutId: number;
 
 export { decodeAudio, flushAudio };
 
-function evalSessionId(newSessionId) {
+function evalSessionId(newSessionId: number) {
     // detect new session and reset decoder
     if (sessionId && sessionId === newSessionId) {
         return;
@@ -34,7 +34,7 @@ function evalSessionId(newSessionId) {
     playbackBuffer.reset();
 }
 
-async function decodeAudio(arrayBuffer: ArrayBuffer, sessionId) {
+async function decodeAudio(arrayBuffer: Uint8Array<ArrayBufferLike>, sessionId: number) {
     evalSessionId(sessionId);
     await decoder.ready;
     const buffer = new Uint8Array(arrayBuffer);
@@ -64,7 +64,7 @@ function toDecodedFormat(decodedAudio: OggOpusDecodedAudio) {
     };
 }
 
-function onDecodeInternal({ left, right, samplesDecoded, sampleRate }) {
+function onDecodeInternal({ left, right, samplesDecoded, sampleRate }: any) {
     // Decoder recovers when it receives new files, and samplesDecoded is negative.
     // For cause, see https://github.com/AnthumChris/opus-stream-decoder/issues/7
     if (samplesDecoded <= 0) {
@@ -75,7 +75,7 @@ function onDecodeInternal({ left, right, samplesDecoded, sampleRate }) {
     scheduleLastFlush();
 }
 
-function onFlush({ left, right }) {
+function onFlush({ left, right }: any) {
     const decoded = {
         channelData: [left, right],
         length: left.length,

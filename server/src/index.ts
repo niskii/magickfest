@@ -88,9 +88,10 @@ io.on("connection", (socket) => {
         const result = player
             .getCurrentReader(data.bitrate)
             ?.getNextChunk(data.lastPage);
-        if (result?.chunk !== null) socket.emit("chunkFromPage", result?.chunk);
+        if (result?.chunk !== null) 
+          socket.emit("chunkFromPage", result?.chunk);
         callback({
-            status: result?.status,
+          status: result?.status,
         });
     });
 

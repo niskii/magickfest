@@ -1,0 +1,12 @@
+node_modules
+docs
+.prettierignore
+.stylelintignore
+.eslintignore
+.yarn
+dist/**
+public/**
+
+*.log
+*.cjs
+*.mjs

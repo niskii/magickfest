@@ -55,8 +55,7 @@ export class OpusReader {
   getRemainingTimeSeconds() {
     return (
       this.#totalDurationSeconds -
-      this.getCurrentTimeMillis() / 1000 -
-      this.#preskipSeconds
+      this.getCurrentTimeMillis() / 1000
     );
   }
 
@@ -112,13 +111,12 @@ export class OpusReader {
   getPageRangeEnd(pageStart: number) {
     return Math.min(
       pageStart + this.#minPagesForChunk,
-      this.#numberOfPages - 1,
+      this.#numberOfPages,
     );
   }
 
   makeChunkFromRange(start: number, end: number) {
     const chunks = this.#fileSplitter.sliceByPage(start, end);
-    console.log(start, end);
     return {
       buffer: chunks,
       pageStart: start,
@@ -148,9 +146,9 @@ export class OpusReader {
       "more data requested! %d, %d, %d",
       currentPage,
       pageStart,
-      this.#numberOfPages,
+      this.#numberOfPages - 1,
     );
-    if (pageStart >= this.#numberOfPages || pageEnd >= this.#numberOfPages)
+    if (pageStart > this.#numberOfPages || pageEnd > this.#numberOfPages)
       return { chunk: null, status: ReadCode.EOF };
     if (this.calculateRangeDuration(currentPage, pageStart) > 30)
       return { chunk: null, status: ReadCode.INVALID };

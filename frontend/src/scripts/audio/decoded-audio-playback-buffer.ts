@@ -26,7 +26,7 @@ export class DecodedAudioPlaybackBuffer {
     1 / (DecodedAudioPlaybackBuffer.maxGrows - 1),
   );
 
-  static flushLength = (flushCount) => {
+  static flushLength = (flushCount: number) => {
     const flushes = Math.min(
       flushCount,
       DecodedAudioPlaybackBuffer.maxGrows - 1,
@@ -42,11 +42,11 @@ export class DecodedAudioPlaybackBuffer {
   #bufferL = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
   #bufferR = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
 
-  #bufferPos; // last filled position in buffer
-  #onFlush; // user-provided function
-  #flushCount; // number of times we've already flushed
+  #bufferPos: number; // last filled position in buffer
+  #onFlush: ({}) => void; // user-provided function
+  #flushCount: number; // number of times we've already flushed
 
-  constructor({ onFlush }) {
+  constructor({ onFlush }: any) {
     if (typeof onFlush !== "function")
       throw Error("onFlush must be a function");
 
@@ -59,7 +59,7 @@ export class DecodedAudioPlaybackBuffer {
     this.#flushCount = 0;
   }
 
-  add({ left, right }) {
+  add({ left, right }: any) {
     const srcLen = left.length;
     let bufferLen,
       srcStart = 0,
