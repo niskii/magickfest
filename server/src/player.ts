@@ -31,6 +31,10 @@ export class Player {
     }
   }
 
+  getPlaylist() {
+    return this.#playlist;
+  }
+
   getState() {
     return {
       id: this.#playlist.getHash(),
