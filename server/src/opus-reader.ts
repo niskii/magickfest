@@ -53,10 +53,7 @@ export class OpusReader {
   }
 
   getRemainingTimeSeconds() {
-    return (
-      this.#totalDurationSeconds -
-      this.getCurrentTimeMillis() / 1000
-    );
+    return this.#totalDurationSeconds - this.getCurrentTimeMillis() / 1000;
   }
 
   getPlayTimeSeconds() {
@@ -109,10 +106,7 @@ export class OpusReader {
   }
 
   getPageRangeEnd(pageStart: number) {
-    return Math.min(
-      pageStart + this.#minPagesForChunk,
-      this.#numberOfPages,
-    );
+    return Math.min(pageStart + this.#minPagesForChunk, this.#numberOfPages);
   }
 
   makeChunkFromRange(start: number, end: number) {

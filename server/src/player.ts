@@ -16,14 +16,14 @@ export class Player {
   events: EventEmitter | undefined;
 
   //testing
-  #loop = false
+  #loop = false;
 
   constructor(playlist: Playlist, loop: boolean) {
     this.#playlist = playlist;
     this.#readerCollection = new Map();
-    this.#startTime = Date.now()
+    this.#startTime = Date.now();
 
-    this.#loop = loop
+    this.#loop = loop;
 
     this.events = new EventEmitter();
     if (this.events === undefined) {
@@ -44,17 +44,16 @@ export class Player {
   }
 
   setState(setIndex: number | null, startTime: number | null) {
-    if (setIndex !== null)
-      this.#playlist.setCurrentSet(setIndex);
+    if (setIndex !== null) this.#playlist.setCurrentSet(setIndex);
     if (startTime !== null) {
-      this.#startTime = startTime
+      this.#startTime = startTime;
     }
   }
 
   playAt(startTime: number) {
-    console.log(this.#playlist.getCurrentIndex(), this.#playlist.getLength())
+    console.log(this.#playlist.getCurrentIndex(), this.#playlist.getLength());
     if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
-      throw new Error("The playlist has ended")
+      throw new Error("The playlist has ended");
     }
 
     this.#startTime = startTime;
@@ -72,7 +71,7 @@ export class Player {
   }
 
   playAtState() {
-    this.playAt(this.#startTime)
+    this.playAt(this.#startTime);
   }
 
   playAtStart() {
@@ -93,8 +92,7 @@ export class Player {
       if (currentReader !== undefined) {
         console.log(currentReader.getRemainingTimeSeconds().toFixed(1));
         if (currentReader.getRemainingTimeSeconds() < 0) {
-          if (!this.#loop)
-            this.#playlist.nextSet();
+          if (!this.#loop) this.#playlist.nextSet();
           this.playAtStart();
           this.events?.emit("finished");
           console.log("new set!");

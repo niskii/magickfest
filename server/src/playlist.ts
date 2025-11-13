@@ -43,12 +43,12 @@ export class Playlist {
     if (setIndex >= 0 && setIndex < this.#sets.length)
       this.#currentSet = setIndex;
     else {
-      throw new Error("The index is out of bounds")
+      throw new Error("The index is out of bounds");
     }
   }
 
   getLength() {
-    return this.#sets.length
+    return this.#sets.length;
   }
 
   forEachCurrentAudioFile(
