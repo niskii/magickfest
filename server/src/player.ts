@@ -43,16 +43,25 @@ export class Player {
     };
   }
 
-  setState(setIndex: number, startTime: number) {
-    this.#playlist.setCurrentSet(setIndex);
-    this.#startTime = startTime
+  setState(setIndex: number | null, startTime: number | null) {
+    if (setIndex !== null)
+      this.#playlist.setCurrentSet(setIndex);
+    if (startTime !== null) {
+      this.#startTime = startTime
+    }
   }
 
   playAt(startTime: number) {
+    console.log(this.#playlist.getCurrentIndex(), this.#playlist.getLength())
+    if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
+      throw new Error("The playlist has ended")
+    }
+
     this.#startTime = startTime;
     this.#playbackTimer?.close();
 
     this.#readerCollection.clear();
+
     this.#playlist.forEachCurrentAudioFile((audioFile) => {
       const reader = new OpusReader(audioFile.File);
       reader.setClock(startTime);
@@ -82,7 +91,7 @@ export class Player {
       // would require a metadata reader.
       const currentReader = this.#readerCollection.get(Bitrate.High);
       if (currentReader !== undefined) {
-        console.log(currentReader.getRemainingTimeSeconds());
+        console.log(currentReader.getRemainingTimeSeconds().toFixed(1));
         if (currentReader.getRemainingTimeSeconds() < 0) {
           if (!this.#loop)
             this.#playlist.nextSet();

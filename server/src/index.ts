@@ -1,4 +1,5 @@
 import express from "express";
+import router, { configureRouter } from "./api"
 import { existsSync, readFileSync, writeFile } from "fs";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -9,8 +10,17 @@ import {socketSetup} from './socket'
 import cors from "cors";
 import * as commandline from "./commandline";
 
+const playlistStateFilePath = "temp/playlist_state_";
+const playlist = new Playlist(readFileSync(commandline.playlistFile).toString());
+const player = new Player(playlist, commandline.isLooped);
+configureRouter(player)
+
 const app = express();
-app.use(cors);
+app.use(cors({origin: "http://localhost:80"}));
+app.use(router)
+
+app.listen(8000)
+
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
@@ -23,9 +33,7 @@ process.on("warning", (warning) => {
     console.log(warning.stack);
 });
 
-const playlistStateFilePath = "temp/playlist_state_";
-const playlist = new Playlist(readFileSync(commandline.playlistFile).toString());
-const player = new Player(playlist, commandline.doesLoop);
+player.setState(commandline.setIndex, commandline.startTime)
 
 if (commandline.useSavedState) {
   player.events?.on("finished", () => {
@@ -35,9 +43,6 @@ if (commandline.useSavedState) {
   let hasSavedState = false
   if (commandline.isLoadOverriden)
     hasSavedState = loadState();
-  else {
-    player.setState(commandline.setIndex, commandline.startTime)
-  }
 
   if (!hasSavedState) {
     saveState();
