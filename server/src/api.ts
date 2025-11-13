@@ -13,7 +13,6 @@ export function configureRouter(player: Player) {
       });
     })
     .post((req, res) => {
-      console.log(req.query.time);
       const parsedTime = parseTime(req.query.time);
       if (parsedTime === null) {
         res.sendStatus(422);
@@ -33,7 +32,7 @@ export function configureRouter(player: Player) {
       const setIndex = Number(req.query.setindex);
       if (Number.isInteger(setIndex)) {
         try {
-          player.getPlaylist().setCurrentSet(setIndex);
+          player.setState(setIndex, null);
         } catch (error) {
           res.status(422).send("The index is out of bounds");
           return;
@@ -45,9 +44,9 @@ export function configureRouter(player: Player) {
       }
     });
 
-  router.route("/playnext").get((_, res) => {
+  router.route("/playnext").post((_, res) => {
     try {
-      player.getPlaylist().nextSet();
+      player.nextSet();
       player.playAtStart();
     } catch (error) {
       console.log(error);

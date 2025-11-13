@@ -63,7 +63,7 @@ export class TimeKeeper {
   }
 
   getDelay() {
-    return this.#delay
+    return this.#delay;
   }
 
   getCurrentTime() {

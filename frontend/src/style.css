@@ -1,85 +1,85 @@
 * {
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 body {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 #body {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
 }
 
 #main {
-    background-color: #0c0c11;
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 90%;
-    justify-content: center;
-    align-items: center;
+  background-color: #0c0c11;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 90%;
+  justify-content: center;
+  align-items: center;
 }
 
-#main>* {
-    margin: 0 1vw;
+#main > * {
+  margin: 0 1vw;
 }
 
 h1 {
-    color: white;
-    font-size: 3vmax;
+  color: white;
+  font-size: 3vmax;
 }
 
 h2 {
-    color: #848485;
-    font-size: 1.5vmax;
+  color: #848485;
+  font-size: 1.5vmax;
 }
 
 #main img {
-    object-fit: contain;
-    height: 80vh;
+  object-fit: contain;
+  height: 80vh;
 }
 
 #bottomBar {
-    background-color: #232326;
-    width: 100%;
-    height: 10%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  background-color: #232326;
+  width: 100%;
+  height: 10%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
-#bottomBar>div {
-    justify-content: center;
-    display: flex;
-    align-items: center;
-    color: #ebeaff;
-    font-size: 1.25vmax;
+#bottomBar > div {
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  color: #ebeaff;
+  font-size: 1.25vmax;
 }
 
 #progressbar {
-    position: relative;
-    width: 100%;
-    height: 1vh;
-    background-color: #505056;
-    margin-top: 1vh;
+  position: relative;
+  width: 100%;
+  height: 1vh;
+  background-color: #505056;
+  margin-top: 1vh;
 }
 
 #filled {
-    position: absolute;
-    height: 100%;
-    background-color: #cbcbdb;
-    z-index: 2;
+  position: absolute;
+  height: 100%;
+  background-color: #cbcbdb;
+  z-index: 2;
 }
 
 #buffered {
-    position: absolute;
-    height: 100%;
-    background-color: #797981;
-    z-index: 1;
+  position: absolute;
+  height: 100%;
+  background-color: #797981;
+  z-index: 1;
 }
 
 /* #volumeSlider {
@@ -88,50 +88,50 @@ h2 {
 } */
 
 #volumeSlider {
-    width: 50%;
-    height: 1vh;
-    background-color: #676770;
-    margin-left: 1vw;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 50%;
+  height: 1vh;
+  background-color: #676770;
+  margin-left: 1vw;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #volumeSlider input {
-    -webkit-appearance: none;
-    background: transparent;
-    position: absolute;
-    outline: none;
-    border: none;
-    height: 100%;
-    width: 100%;
-    border-radius: 5px;
-    z-index: 2;
+  -webkit-appearance: none;
+  background: transparent;
+  position: absolute;
+  outline: none;
+  border: none;
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  z-index: 2;
 }
 
 #volumeSlider input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 10px;
-    height: 10px;
-    cursor: pointer;
-    transition: box-shadow 0.5s;
-    background: #c8c7d8;
-    box-shadow: 0 0 0 3px #1a1a1a;
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  cursor: pointer;
+  transition: box-shadow 0.5s;
+  background: #c8c7d8;
+  box-shadow: 0 0 0 3px #1a1a1a;
 }
 
 #volumeSlider input:active::-webkit-slider-thumb {
-    box-shadow: 0 0 0 3px #5f5f5f;
+  box-shadow: 0 0 0 3px #5f5f5f;
 }
 
 #volumeSlider div {
-    position: absolute;
-    left: 0;
-    width: 50%;
-    height: 100%;
-    border-radius: 5px;
-    background: #c8c7d8;
-    z-index: 1;
+  position: absolute;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  border-radius: 5px;
+  background: #c8c7d8;
+  z-index: 1;
 }
 
 /* #draggable {
@@ -146,156 +146,156 @@ h2 {
 } */
 
 #dropdown {
-    display: none;
-    position: absolute;
-    flex-direction: column;
-    z-index: 1;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    right: 0vw;
-    bottom: 105%;
-    text-align: center;
+  display: none;
+  position: absolute;
+  flex-direction: column;
+  z-index: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  right: 0vw;
+  bottom: 105%;
+  text-align: center;
 }
 
 #dropdown div {
-    width: 100%;
-    outline: 2px solid #5a5a61;
-    background-color: #38383d;
-    margin: 0;
-    padding: 0.5vh 0;
+  width: 100%;
+  outline: 2px solid #5a5a61;
+  background-color: #38383d;
+  margin: 0;
+  padding: 0.5vh 0;
 }
 
 #dropdown div:hover {
-    background-color: #5a5a61;
+  background-color: #5a5a61;
 }
 
 #dropdownBtn {
-    margin-left: 1vw;
-    font-size: 1em;
-    background-color: #38383d;
-    color: #c2c2d3;
-    border: none;
-    outline: 2px solid #5a5a61;
-    cursor: pointer;
-    position: relative;
-    padding: 0.2vh 0.2vw;
+  margin-left: 1vw;
+  font-size: 1em;
+  background-color: #38383d;
+  color: #c2c2d3;
+  border: none;
+  outline: 2px solid #5a5a61;
+  cursor: pointer;
+  position: relative;
+  padding: 0.2vh 0.2vw;
 }
 
 #dropdownBtn:hover {
-    background-color: #5a5a61;
+  background-color: #5a5a61;
 }
 
 #dropdownBtn:hover #dropdown {
-    display: flex;
+  display: flex;
 }
 
 .dropdownSelected {
-    background-color: #202022 !important;
-    color: #5a5a61 !important;
-    cursor: not-allowed;
+  background-color: #202022 !important;
+  color: #5a5a61 !important;
+  cursor: not-allowed;
 }
 
 .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 0 !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
 }
 
 .mobileOnly {
-    display: none;
+  display: none;
 }
 
 @media screen and (max-height: 400px) {
-    .fullOnly {
-        display: none !important;
-    }
+  .fullOnly {
+    display: none !important;
+  }
 
-    h1 {
-        font-size: 5vw;
-    }
+  h1 {
+    font-size: 5vw;
+  }
 
-    h2 {
-        font-size: 3vw;
-    }
+  h2 {
+    font-size: 3vw;
+  }
 
-    .alwaysVisible {
-        width: 95% !important;
-        font-size: 3vw !important;
-    }
+  .alwaysVisible {
+    width: 95% !important;
+    font-size: 3vw !important;
+  }
 
-    #progressbar {
-        height: 6vh !important;
-    }
+  #progressbar {
+    height: 6vh !important;
+  }
 
-    #main {
-        height: 85%;
-    }
+  #main {
+    height: 85%;
+  }
 
-    #bottomBar {
-        justify-content: center !important;
-        height: 15%;
-    }
+  #bottomBar {
+    justify-content: center !important;
+    height: 15%;
+  }
 }
 
 @media screen and (min-height: 401px) and (max-width: 500px) {
-    * {
-        flex-direction: column !important;
-    }
+  * {
+    flex-direction: column !important;
+  }
 
-    .fullOnly {
-        display: none !important;
-    }
+  .fullOnly {
+    display: none !important;
+  }
 
-    #main img {
-        width: 90vw;
-    }
+  #main img {
+    width: 90vw;
+  }
 
-    #main {
-        height: 80%;
-    }
+  #main {
+    height: 80%;
+  }
 
-    #bottomBar {
-        height: 20%;
-        justify-content: center !important;
-    }
+  #bottomBar {
+    height: 20%;
+    justify-content: center !important;
+  }
 
-    #main div {
-        margin-bottom: 10vh;
-    }
+  #main div {
+    margin-bottom: 10vh;
+  }
 
-    .alwaysVisible {
-        width: 95% !important;
-        font-size: 3vmax !important;
-    }
+  .alwaysVisible {
+    width: 95% !important;
+    font-size: 3vmax !important;
+  }
 
-    #progressbar {
-        height: 4vh !important;
-    }
+  #progressbar {
+    height: 4vh !important;
+  }
 
-    h1 {
-        font-size: 5vmax;
-    }
+  h1 {
+    font-size: 5vmax;
+  }
 
-    h2 {
-        font-size: 2.5vmax;
-    }
+  h2 {
+    font-size: 2.5vmax;
+  }
 
-    .mobileOnly {
-        display: flex;
-        height: 5vh;
-        margin-bottom: 1vh;
-        align-items: center;
-        width: 40vw;
-        font-size: 3vmax;
-    }
+  .mobileOnly {
+    display: flex;
+    height: 5vh;
+    margin-bottom: 1vh;
+    align-items: center;
+    width: 40vw;
+    font-size: 3vmax;
+  }
 }

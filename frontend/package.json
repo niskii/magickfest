@@ -1,28 +1,28 @@
 {
-    "name": "frontend",
-    "version": "0.0.0",
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "vue-tsc -b && vite build",
-        "preview": "vite preview"
-    },
-    "dependencies": {
-        "nodejs": "^0.0.0",
-        "ogg-opus-decoder": "^1.7.3",
-        "socket.io-client": "^4.8.1",
-        "socket.io-stream": "^0.9.1",
-        "vite-plugin-node-polyfills": "^0.24.0",
-        "vue": "^3.5.22"
-    },
-    "devDependencies": {
-        "@types/node": "^24.6.0",
-        "@vitejs/plugin-vue": "^6.0.1",
-        "@vue/tsconfig": "^0.8.1",
-        "prettier": "3.6.2",
-        "typescript": "~5.9.3",
-        "vite": "^7.1.7",
-        "vue-tsc": "^3.1.0"
-    },
-    "packageManager": "yarn@4.10.3"
+  "name": "frontend",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "nodejs": "^0.0.0",
+    "ogg-opus-decoder": "^1.7.3",
+    "socket.io-client": "^4.8.1",
+    "socket.io-stream": "^0.9.1",
+    "vite-plugin-node-polyfills": "^0.24.0",
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.8.1",
+    "prettier": "3.6.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vue-tsc": "^3.1.0"
+  },
+  "packageManager": "yarn@4.10.3"
 }

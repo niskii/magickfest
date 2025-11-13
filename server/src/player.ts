@@ -44,10 +44,20 @@ export class Player {
   }
 
   setState(setIndex: number | null, startTime: number | null) {
-    if (setIndex !== null) this.#playlist.setCurrentSet(setIndex);
+    if (setIndex !== null) {
+      if (this.#playlist.getCurrentIndex() != setIndex) {
+        this.events?.emit("newSet");
+      }
+      this.#playlist.setCurrentSet(setIndex);
+    }
     if (startTime !== null) {
       this.#startTime = startTime;
     }
+  }
+
+  nextSet() {
+    this.#playlist.nextSet();
+    this.events?.emit("newSet");
   }
 
   playAt(startTime: number) {
@@ -67,6 +77,8 @@ export class Player {
       this.#readerCollection.set(audioFile.Bitrate, reader);
     });
 
+    this.events?.emit("changedState");
+
     this.#setupPlaybackTimer();
   }
 
@@ -79,7 +91,6 @@ export class Player {
   }
 
   getCurrentReader(bitrate: number) {
-    if (!this.#readerCollection.has(bitrate)) return null;
     return this.#readerCollection.get(bitrate);
   }
 
@@ -88,13 +99,12 @@ export class Player {
       // using the high quality reader as a baseline for tracking time
       // because a getting the duration of the file
       // would require a metadata reader.
-      const currentReader = this.#readerCollection.get(Bitrate.High);
+      const currentReader = this.getCurrentReader(Bitrate.High);
       if (currentReader !== undefined) {
         console.log(currentReader.getRemainingTimeSeconds().toFixed(1));
         if (currentReader.getRemainingTimeSeconds() < 0) {
-          if (!this.#loop) this.#playlist.nextSet();
+          if (!this.#loop) this.nextSet();
           this.playAtStart();
-          this.events?.emit("finished");
           console.log("new set!");
         }
       }

@@ -1,4 +1,4 @@
-const re = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/g;
+const re = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
 
 export function parseTime(time: any) {
   const asNumber = Number(time);

@@ -4,10 +4,8 @@ import { TimeKeeper } from "./time-keeper";
 import * as decoder from "./decoder-service";
 
 export class AudioStreamPlayer {
-  // these shouldn't change once set
   #socket: Socket;
 
-  // these are reset
   #sessionId: number; // used to prevent race conditions between cancel/starts
   #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
   #gainNode: GainNode;
@@ -49,7 +47,14 @@ export class AudioStreamPlayer {
     if (this.#sessionId) {
       performance.clearMarks(this.downloadMarkKey);
     }
+
+    decoder.clear();
+
     this.#sessionId = null;
+    if (this.#audioCtx) {
+      this.#audioCtx.suspend();
+      this.#audioCtx.close();
+    }
     this.#audioCtx = null;
     this.#audioSrcNodes = [];
     this.#totalTimeScheduled = 0;
@@ -117,7 +122,7 @@ export class AudioStreamPlayer {
   }
 
   getServerDelay() {
-    return this.#timeKeeper.getDelay()
+    return this.#timeKeeper.getDelay();
   }
 
   #flush() {

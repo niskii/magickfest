@@ -11,15 +11,20 @@ export function socketSetup(io: Server, player: Player) {
     console.log("a user connected");
 
     const sendNewSetAlert = () => {
-      console.log("Sending new set!");
       socket.emit("newSet");
     };
 
-    player.events?.on("finished", sendNewSetAlert);
+    const sendChangedStateAlert = () => {
+      socket.emit("changedState");
+    };
+
+    player.events?.on("newSet", sendNewSetAlert);
+    player.events?.on("changedState", sendChangedStateAlert);
 
     socket.on("disconnect", () => {
       console.log("a user disconnected");
-      player.events?.off("finished", sendNewSetAlert);
+      player.events?.off("newSet", sendNewSetAlert);
+      player.events?.off("changedState", sendChangedStateAlert);
     });
 
     socket.on("fetchSyncedChunk", (data, callback) => {
