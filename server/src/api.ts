@@ -1,6 +1,7 @@
 import express from "express";
 import { Bitrate, Player } from "./player";
 import { parseTime } from "./time-parser";
+import { SetInfo } from "./models/set";
 
 const router = express.Router();
 
@@ -26,7 +27,13 @@ export function configureRouter(player: Player) {
   router
     .route("/set")
     .get((_, res) => {
-      res.send(player.getPlaylist().getCurrentIndex());
+      const currentSet = player.getPlaylist().getCurrentSet();
+      const set: SetInfo = {
+        SetIndex: player.getPlaylist().getCurrentIndex(),
+        Titel: currentSet.Title,
+        Author: currentSet.Author,
+      };
+      res.json(set);
     })
     .post((req, res) => {
       const setIndex = Number(req.query.setindex);

@@ -4,6 +4,7 @@ import {
   OggOpusDecoderWebWorker,
 } from "ogg-opus-decoder";
 import { DecodedAudioPlaybackBuffer } from "./decoded-audio-playback-buffer";
+import type { ChanneledAudioBuffer, DecodedAudioBuffer } from "./AudioTypes";
 
 const decoder = new OggOpusDecoderWebWorker({
   forceStereo: true,
@@ -17,13 +18,13 @@ const decoder = new OggOpusDecoderWebWorker({
 
 // Let me note this handler was written by copilot. Couldn't find anything about handlers online at the moment.
 export const handlers: {
-  onDecode: (event: any, transfer?: any[]) => void;
+  onDecode: (event: any) => void;
 } = {
-  onDecode: (_event: any, _transfer?: any[]) => {},
+  onDecode: (_event: any) => {},
 };
 
-const playbackBuffer = new DecodedAudioPlaybackBuffer({ onFlush });
-let sessionId: number, flushTimeoutId: number;
+const playbackBuffer = new DecodedAudioPlaybackBuffer(onFlush);
+let sessionId: number, flushTimeoutId: NodeJS.Timeout;
 
 export { decodeAudio, flushAudio, clear };
 
@@ -35,6 +36,7 @@ function evalSessionId(newSessionId: number) {
 
   sessionId = newSessionId;
   playbackBuffer.reset();
+  decoder.reset();
 }
 
 async function decodeAudio(
@@ -61,7 +63,13 @@ function flushAudio() {
     });
 }
 
-function toDecodedFormat(decodedAudio: OggOpusDecodedAudio) {
+async function clear() {
+  await decoder.reset();
+}
+
+function toDecodedFormat(
+  decodedAudio: OggOpusDecodedAudio,
+): DecodedAudioBuffer {
   return {
     left: decodedAudio.channelData[0],
     right: decodedAudio.channelData[1],
@@ -70,38 +78,39 @@ function toDecodedFormat(decodedAudio: OggOpusDecodedAudio) {
   };
 }
 
-function onDecodeInternal({ left, right, samplesDecoded, sampleRate }: any) {
+function onDecodeInternal(buffer: DecodedAudioBuffer) {
   // Decoder recovers when it receives new files, and samplesDecoded is negative.
   // For cause, see https://github.com/AnthumChris/opus-stream-decoder/issues/7
-  if (samplesDecoded <= 0) {
+  if (buffer.samplesDecoded <= 0) {
     return;
   }
 
-  playbackBuffer.add({ left, right });
+  playbackBuffer.add(buffer);
   scheduleLastFlush();
 }
 
-function onFlush({ left, right }: any) {
-  const decoded = {
-    channelData: [left, right],
-    length: left.length,
+function onFlush({
+  left,
+  right,
+  samplesDecoded,
+  sampleRate,
+}: DecodedAudioBuffer) {
+  const decoded: ChanneledAudioBuffer = {
+    channelData: [new Float32Array(left), new Float32Array(right)],
+    length: samplesDecoded,
     numberOfChannels: 2,
-    sampleRate: 48000,
+    sampleRate: sampleRate,
   };
 
   // Forward to the externally-bindable handler. Consumers can replace
   // `handlers.onDecode` by importing `handlers` and assigning a new function.
-  handlers.onDecode({ decoded: decoded, sessionId: sessionId });
-}
-
-async function clear() {
-  await decoder.reset();
+  handlers.onDecode({ decoded, sessionId });
 }
 
 // No End of file is signaled from decoder. This ensures last bytes always flush
 function scheduleLastFlush() {
   clearTimeout(flushTimeoutId);
-  flushTimeoutId = setTimeout((_) => {
+  flushTimeoutId = setTimeout(() => {
     playbackBuffer.flush();
   }, 100);
 }

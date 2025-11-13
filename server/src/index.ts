@@ -19,7 +19,7 @@ const player = new Player(playlist, commandline.isLooped);
 configureRouter(player);
 
 const app = express();
-app.use(cors({ origin: "http://localhost:80" }));
+app.use(cors({ origin: ["http://localhost:80"] }));
 app.use(isAuthorized);
 app.use(router);
 

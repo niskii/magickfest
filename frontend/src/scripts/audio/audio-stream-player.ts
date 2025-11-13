@@ -1,7 +1,8 @@
 import { Socket } from "socket.io-client";
+import type { ChanneledAudioBuffer } from "./AudioTypes";
+import * as decoder from "./decoder-service";
 import { SocketAudioStream } from "./socket-audio-stream";
 import { TimeKeeper } from "./time-keeper";
-import * as decoder from "./decoder-service";
 
 export class AudioStreamPlayer {
   #socket: Socket;
@@ -158,7 +159,7 @@ export class AudioStreamPlayer {
     length,
     numberOfChannels,
     sampleRate,
-  }: any) {
+  }: ChanneledAudioBuffer) {
     const audioSrc = this.#audioCtx.createBufferSource(),
       audioBuffer = this.#audioCtx.createBuffer(
         numberOfChannels,

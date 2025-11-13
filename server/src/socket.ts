@@ -29,7 +29,7 @@ export function socketSetup(io: Server, player: Player) {
 
     socket.on("fetchSyncedChunk", (data, callback) => {
       const result = player.getCurrentReader(data.bitrate)?.getCurrentChunk();
-      if (result?.chunk !== null) socket.emit("syncedChunk", result?.chunk);
+      if (result?.data !== null) socket.emit("syncedChunk", result?.data);
       callback({
         status: result?.status,
       });
@@ -39,7 +39,7 @@ export function socketSetup(io: Server, player: Player) {
       const result = player
         .getCurrentReader(data.bitrate)
         ?.getNextChunk(data.lastPage);
-      if (result?.chunk !== null) socket.emit("chunkFromPage", result?.chunk);
+      if (result?.data !== null) socket.emit("chunkFromPage", result?.data);
       callback({
         status: result?.status,
       });

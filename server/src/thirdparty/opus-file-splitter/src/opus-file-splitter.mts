@@ -263,7 +263,7 @@ export class OpusFileSplitter {
       this.#bytes === null ||
       this.#headerBytes === null
     )
-      return;
+      return null;
 
     const bytesStart = boundaries.hasOwnProperty(begin)
       ? boundaries[begin].offset

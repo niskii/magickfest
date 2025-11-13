@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { type Chunk } from "./chunk";
+import { type AudioPacket } from "./chunk";
 import { TimeKeeper } from "./time-keeper";
 
 import config from "../../config/client.json";
@@ -32,10 +32,10 @@ export class SocketAudioStream {
     }
   }
 
-  handleChunk(chunk: Chunk) {
+  handleChunk(data: AudioPacket) {
     this.#isFetching = false;
-    this.#lastChunkPage = chunk.pageEnd;
-    this.onFetch(chunk.buffer);
+    this.#lastChunkPage = data.PageEnd;
+    this.onFetch(data.Buffer);
   }
 
   async fetchCurrent() {
@@ -48,17 +48,17 @@ export class SocketAudioStream {
       },
     );
 
-    this.#socket.once("syncedChunk", async (chunk: Chunk) => {
+    this.#socket.once("syncedChunk", async (data: AudioPacket) => {
       console.log("syncing!", this.#lastChunkPage);
       this.#needsResync = false;
-      this.#timeKeeper.setStartPosition(chunk.chunkPlayPosition);
-      this.#timeKeeper.setTotalDuration(chunk.totalDuration);
+      this.#timeKeeper.setStartPosition(data.ChunkPlayPosition);
+      this.#timeKeeper.setTotalDuration(data.TotalDuration);
       this.#timeKeeper.addDelay(
-        chunk.chunkPlayPosition -
-          chunk.serverTime / 1000 -
+        data.ChunkPlayPosition -
+          data.ServerTime / 1000 -
           this.#timeKeeper.getCurrentTime(),
       );
-      this.handleChunk(chunk);
+      this.handleChunk(data);
     });
   }
 
@@ -79,14 +79,14 @@ export class SocketAudioStream {
       },
     );
 
-    this.#socket.once("chunkFromPage", (chunk: Chunk) => {
+    this.#socket.once("chunkFromPage", (chunk: AudioPacket) => {
       console.log(
         "Delay of:",
-        chunk.serverTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
+        chunk.ServerTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
       );
       if (
         this.#timeKeeper.getCurrentPlayPosition() <
-        chunk.serverTime / 1000 - config.MaxOutOfSync
+        chunk.ServerTime / 1000 - config.MaxOutOfSync
       ) {
         this.#needsResync = true;
       }

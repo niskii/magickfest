@@ -5,6 +5,7 @@ import {
   OpusFileSplitter,
   Page,
 } from "./thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
+import { AudioPacket } from "./models/audio-packet";
 
 export class OpusReader {
   #fileSplitter: OpusFileSplitter;
@@ -111,22 +112,27 @@ export class OpusReader {
 
   makeChunkFromRange(start: number, end: number) {
     const chunks = this.#fileSplitter.sliceByPage(start, end);
-    return {
-      buffer: chunks,
-      pageStart: start,
-      pageEnd: end,
-      chunkPlayPosition: this.#headerObject.audioPageSize * start,
-      totalDuration: this.#totalDurationSeconds,
-      serverTime: this.getCurrentTimeMillis(),
-    };
+    if (chunks !== null) {
+      const packet: AudioPacket = {
+        Buffer: chunks,
+        PageStart: start,
+        PageEnd: end,
+        ChunkPlayPosition: this.#headerObject.audioPageSize * start,
+        TotalDuration: this.#totalDurationSeconds,
+        ServerTime: this.getCurrentTimeMillis(),
+      };
+      return packet;
+    } else {
+      return null;
+    }
   }
 
   getCurrentChunk() {
     const pageStart = this.getCurrentPage();
     const pageEnd = this.getPageRangeEnd(pageStart);
-    if (pageStart == pageEnd) return { chunk: null, status: ReadCode.EOF };
+    if (pageStart == pageEnd) return { data: null, status: ReadCode.EOF };
     return {
-      chunk: this.makeChunkFromRange(pageStart, pageEnd),
+      data: this.makeChunkFromRange(pageStart, pageEnd),
       status: ReadCode.CONTINUATION,
     };
   }
@@ -134,7 +140,7 @@ export class OpusReader {
   getNextChunk(pageStart: number) {
     const currentPage = this.getCurrentPage();
     const pageEnd = this.getPageRangeEnd(pageStart);
-    if (pageStart == pageEnd) return { chunk: null, status: ReadCode.EOF };
+    if (pageStart == pageEnd) return { data: null, status: ReadCode.EOF };
 
     console.log(
       "more data requested! %d, %d, %d",
@@ -143,12 +149,12 @@ export class OpusReader {
       this.#numberOfPages - 1,
     );
     if (pageStart > this.#numberOfPages || pageEnd > this.#numberOfPages)
-      return { chunk: null, status: ReadCode.EOF };
+      return { data: null, status: ReadCode.EOF };
     if (this.calculateRangeDuration(currentPage, pageStart) > 30)
-      return { chunk: null, status: ReadCode.INVALID };
+      return { data: null, status: ReadCode.INVALID };
 
     return {
-      chunk: this.makeChunkFromRange(pageStart, pageEnd),
+      data: this.makeChunkFromRange(pageStart, pageEnd),
       status: ReadCode.CONTINUATION,
     };
   }

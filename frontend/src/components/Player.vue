@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { shallowRef, ref, onMounted, onUnmounted, watch } from "vue";
-import { socket } from "../scripts/socket/socket";
+import { onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
+import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
-import config from "../config/client.json";
+import { socket } from "../scripts/socket/socket";
 import Overlay from "./Overlay.vue";
 
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
@@ -155,100 +155,74 @@ function overlayClick() {
 </script>
 
 <template>
-  <div id="main">
-    <Overlay
-      msg="in order to listen, press 'connect'"
-      :func="overlayClick"
-      btn-content="connect"
-      :visible="overlayToggle"
-    ></Overlay>
-    <img
-      :src="coverImage ? coverImage : '/src/assets/nostream.png'"
-      alt="cover artwork for set"
-    />
-    <div>
-      <h1>
-        {{
-          setInformation.setInfo.title
-            ? setInformation.setInfo.title
-            : "no set avilable"
-        }}
-      </h1>
-      <h2>
-        {{
-          setInformation.setInfo.author
-            ? "by " + setInformation.setInfo.author
-            : null
-        }}
-      </h2>
-      <!-- <h3 style="color: white;">temp shit</h3>
+<div id="main">
+  <Overlay msg="in order to listen, press 'connect'" :func="overlayClick" btn-content="connect"
+    :visible="overlayToggle"></Overlay>
+  <img :src="coverImage ? coverImage : '/src/assets/nostream.png'" alt="cover artwork for set" />
+  <div>
+    <h1>
+      {{
+        setInformation.setInfo.title
+          ? setInformation.setInfo.title
+          : "no set avilable"
+      }}
+    </h1>
+    <h2>
+      {{
+        setInformation.setInfo.author
+          ? "by " + setInformation.setInfo.author
+          : null
+      }}
+    </h2>
+    <!-- <h3 style="color: white;">temp shit</h3>
             <button @click="connect">connect</button>
             <button @click="disconnect">disconnect</button>
             <button @click="fetchInfo">work</button> -->
+  </div>
+</div>
+<div id="bottomBar">
+  <select class="mobileOnly" v-model="bitrate">
+    <option value="128">128kbps</option>
+    <option value="96">96kbps</option>
+    <option value="64">64kbps</option>
+  </select>
+  <div style="width: 20%" class="fullOnly">
+    <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
+      style="height: 5vh; cursor: pointer" @click="
+        () => {
+          muted = !muted;
+        }
+      " />
+    <div id="volumeSlider">
+      <input v-model="volume" type="range" min="0" max="100" />
+      <div :style="{ width: volume + '%' }"></div>
     </div>
   </div>
-  <div id="bottomBar">
-    <select class="mobileOnly" v-model="bitrate">
-      <option value="128">128kbps</option>
-      <option value="96">96kbps</option>
-      <option value="64">64kbps</option>
-    </select>
-    <div style="width: 20%" class="fullOnly">
-      <img
-        :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'"
-        alt="volume icon"
-        style="height: 5vh; cursor: pointer"
-        @click="
-          () => {
-            muted = !muted;
-          }
-        "
-      />
-      <div id="volumeSlider">
-        <input v-model="volume" type="range" min="0" max="100" />
-        <div :style="{ width: volume + '%' }"></div>
-      </div>
+  <div style="width: 60%; flex-direction: column" class="alwaysVisible">
+    {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
+    <div id="progressbar">
+      <div id="buffered" :style="{
+        width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
+      }"></div>
+      <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
     </div>
-    <div style="width: 60%; flex-direction: column" class="alwaysVisible">
-      {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
-      <div id="progressbar">
-        <div
-          id="buffered"
-          :style="{
-            width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
-          }"
-        ></div>
-        <div
-          id="filled"
-          :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"
-        ></div>
-      </div>
-    </div>
-    <div style="width: 20%; font-size: 1.65vmax" class="fullOnly">
-      quality:
-      <div id="dropdownBtn">
-        <text id="dropdownBtnText">{{ bitrate }}kbps &nbsp;▴</text>
-        <div id="dropdown">
-          <div
-            :class="bitrate == 64 ? 'dropdownSelected' : null"
-            @click="switchQuality"
-          >
-            64kbps
-          </div>
-          <div
-            :class="bitrate == 96 ? 'dropdownSelected' : null"
-            @click="switchQuality"
-          >
-            96kbps
-          </div>
-          <div
-            :class="bitrate == 128 ? 'dropdownSelected' : null"
-            @click="switchQuality"
-          >
-            128kbps
-          </div>
+  </div>
+  <div style="width: 20%; font-size: 1.65vmax" class="fullOnly">
+    quality:
+    <div id="dropdownBtn">
+      <text id="dropdownBtnText">{{ bitrate }}kbps &nbsp;▴</text>
+      <div id="dropdown">
+        <div :class="bitrate == 64 ? 'dropdownSelected' : null" @click="switchQuality">
+          64kbps
+        </div>
+        <div :class="bitrate == 96 ? 'dropdownSelected' : null" @click="switchQuality">
+          96kbps
+        </div>
+        <div :class="bitrate == 128 ? 'dropdownSelected' : null" @click="switchQuality">
+          128kbps
         </div>
       </div>
     </div>
   </div>
+</div>
 </template>

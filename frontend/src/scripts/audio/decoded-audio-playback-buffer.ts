@@ -1,3 +1,5 @@
+import type { DecodedAudioBuffer } from "./AudioTypes";
+
 /* This solves https://github.com/AnthumChris/fetch-stream-audio/issues/11
  *
  * Controls decoded audio playback by filling a buffer and
@@ -43,10 +45,10 @@ export class DecodedAudioPlaybackBuffer {
   #bufferR = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
 
   #bufferPos: number; // last filled position in buffer
-  #onFlush: ({}) => void; // user-provided function
+  #onFlush: (buffer: DecodedAudioBuffer) => void; // user-provided function
   #flushCount: number; // number of times we've already flushed
 
-  constructor({ onFlush }: any) {
+  constructor(onFlush: (buffer: DecodedAudioBuffer) => void) {
     if (typeof onFlush !== "function")
       throw Error("onFlush must be a function");
 
@@ -59,8 +61,8 @@ export class DecodedAudioPlaybackBuffer {
     this.#flushCount = 0;
   }
 
-  add({ left, right }: any) {
-    const srcLen = left.length;
+  add(buffer: DecodedAudioBuffer) {
+    const srcLen = buffer.left.length;
     let bufferLen,
       srcStart = 0,
       bufferPos = this.#bufferPos;
@@ -69,8 +71,8 @@ export class DecodedAudioPlaybackBuffer {
       bufferLen = DecodedAudioPlaybackBuffer.flushLength(this.#flushCount);
       const len = Math.min(bufferLen - bufferPos, srcLen - srcStart);
       const end = srcStart + len;
-      this.#bufferL.set(left.slice(srcStart, end), bufferPos);
-      this.#bufferR.set(right.slice(srcStart, end), bufferPos);
+      this.#bufferL.set(buffer.left.slice(srcStart, end), bufferPos);
+      this.#bufferR.set(buffer.right.slice(srcStart, end), bufferPos);
       srcStart += len;
       bufferPos += len;
       this.#bufferPos = bufferPos;
@@ -87,6 +89,8 @@ export class DecodedAudioPlaybackBuffer {
     this.#onFlush({
       left: this.#bufferL.slice(0, bufferPos),
       right: this.#bufferR.slice(0, bufferPos),
+      samplesDecoded: bufferPos,
+      sampleRate: 48000,
     });
     this.#flushCount++;
     this.#bufferPos = 0;
