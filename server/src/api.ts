@@ -19,8 +19,8 @@ export function configureRouter(player: Player) {
         res.sendStatus(422);
         return;
       }
-      player.setState(null, Date.now() - parsedTime * 1000);
-      player.playAtState();
+      player.setState(null, null, parsedTime * 1000);
+      player.playAtForwarded();
       res.sendStatus(200);
     });
 
@@ -39,7 +39,7 @@ export function configureRouter(player: Player) {
       const setIndex = Number(req.query.setindex);
       if (Number.isInteger(setIndex)) {
         try {
-          player.setState(setIndex, null);
+          player.setState(setIndex, null, null);
         } catch (error) {
           res.status(422).send("The index is out of bounds");
           return;

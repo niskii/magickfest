@@ -10,8 +10,8 @@ import { isAuthorized } from "./auth";
 
 import cors from "cors";
 import * as commandline from "./commandline";
+import { PlayerStateManager } from "./player-state-manager";
 
-const playlistStateFilePath = "temp/playlist_state_";
 const playlist = new Playlist(
   readFileSync(commandline.playlistFile).toString(),
 );
@@ -37,45 +37,28 @@ process.on("warning", (warning) => {
   console.log(warning.stack);
 });
 
-player.setState(commandline.setIndex, commandline.startTime);
+player.setState(commandline.setIndex, null, commandline.forwarded);
 
-if (commandline.useSavedState) {
-  player.events?.on("finished", () => {
-    saveState();
-  });
+const playerStateManager = new PlayerStateManager(
+  player,
+  commandline.useSavedState,
+);
 
-  let hasSavedState = false;
-  if (commandline.isLoadOverriden) hasSavedState = loadState();
-
-  if (!hasSavedState) {
-    saveState();
-  }
-}
-
-player.playAtState();
-
-function loadState() {
-  const playlistStateFile =
-    playlistStateFilePath + playlist.getHash() + ".json";
-  if (!existsSync(playlistStateFile)) return false;
-  const state = JSON.parse(readFileSync(playlistStateFile).toString());
-  player.setState(state["setIndex"], state["startTime"]);
-  return true;
-}
-
-function saveState() {
-  const state = player.getState();
-  console.log("Saving!", state);
-  writeFile(
-    playlistStateFilePath + state.id + ".json",
-    JSON.stringify(state),
-    (err) => {
-      if (err) console.log("Saving error:", err);
-    },
-  );
-}
+playerStateManager.setupAutoSave(commandline.isLoadOverriden);
 
 socketSetup(io, player);
+
+setTimeout(
+  () => {
+    if (playerStateManager.hasLoaded) {
+      player.playAtState();
+    } else {
+      player.playAtForwarded();
+      playerStateManager.saveState();
+    }
+  },
+  Math.max(1, commandline.scheduledStart - Date.now()),
+);
 
 server.listen(8080, () => {
   console.log("server running at http://localhost:8080");

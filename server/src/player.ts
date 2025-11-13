@@ -11,6 +11,7 @@ export enum Bitrate {
 export class Player {
   #readerCollection: Map<number, OpusReader>;
   #startTime: number;
+  #forwarded: number;
   #playbackTimer: NodeJS.Timeout | null = null;
   #playlist;
   events: EventEmitter | undefined;
@@ -21,7 +22,8 @@ export class Player {
   constructor(playlist: Playlist, loop: boolean) {
     this.#playlist = playlist;
     this.#readerCollection = new Map();
-    this.#startTime = Date.now();
+    this.#startTime = 0;
+    this.#forwarded = 0;
 
     this.#loop = loop;
 
@@ -40,10 +42,15 @@ export class Player {
       id: this.#playlist.getHash(),
       setIndex: this.#playlist.getCurrentIndex(),
       startTime: this.#startTime,
+      forwarded: this.#forwarded,
     };
   }
 
-  setState(setIndex: number | null, startTime: number | null) {
+  setState(
+    setIndex: number | null,
+    startTime: number | null,
+    forwarded: number | null,
+  ) {
     if (setIndex !== null) {
       if (this.#playlist.getCurrentIndex() != setIndex) {
         this.events?.emit("newSet");
@@ -53,6 +60,9 @@ export class Player {
     if (startTime !== null) {
       this.#startTime = startTime;
     }
+    if (forwarded !== null) {
+      this.#forwarded = forwarded;
+    }
   }
 
   nextSet() {
@@ -60,20 +70,23 @@ export class Player {
     this.events?.emit("newSet");
   }
 
-  playAt(startTime: number) {
+  playAt(forwarded: number, startTime?: number) {
     console.log(this.#playlist.getCurrentIndex(), this.#playlist.getLength());
     if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
       throw new Error("The playlist has ended");
     }
 
-    this.#startTime = startTime;
+    this.#forwarded = forwarded;
+    if (startTime !== undefined) this.#startTime = startTime;
+    else this.#startTime = Date.now();
+
     this.#playbackTimer?.close();
 
     this.#readerCollection.clear();
 
     this.#playlist.forEachCurrentAudioFile((audioFile) => {
       const reader = new OpusReader(audioFile.File);
-      reader.setClock(startTime);
+      reader.setClock(this.#startTime - forwarded);
       this.#readerCollection.set(audioFile.Bitrate, reader);
     });
 
@@ -83,11 +96,15 @@ export class Player {
   }
 
   playAtState() {
-    this.playAt(this.#startTime);
+    this.playAt(this.#forwarded, this.#startTime);
+  }
+
+  playAtForwarded() {
+    this.playAt(this.#forwarded, Date.now());
   }
 
   playAtStart() {
-    this.playAt(Date.now());
+    this.playAt(0, Date.now());
   }
 
   getCurrentReader(bitrate: number) {
