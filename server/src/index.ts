@@ -1,13 +1,12 @@
 import express from "express";
-import router, { configureRouter } from "./api";
-import { existsSync, readFileSync, writeFile } from "fs";
-import { createServer } from "http";
+import { readFileSync } from "fs";
+import https from "https";
 import { Server } from "socket.io";
+import router, { configureRouter } from "./api";
+import { isAuthorized } from "./auth";
 import { Player } from "./player";
 import { Playlist } from "./playlist";
 import { setupAuthentication, socketSetup } from "./socket";
-import { isAuthorized } from "./auth";
-import https from "https";
 
 import cors from "cors";
 import * as commandline from "./commandline";

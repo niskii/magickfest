@@ -1,13 +1,14 @@
 import { Socket } from "socket.io-client";
 import { Duplex } from "stream";
 import socketStream from "socket.io-stream";
+import { type SocketSetInfo } from "@shared/types/set";
 
-export class SetInfo {
-  coverURL: string;
-  coverBlob: Blob;
-  title: string;
-  author: string;
-}
+export type SetInfo = {
+  coverURL?: string;
+  coverBlob?: Blob;
+  title?: string;
+  author?: string;
+};
 
 export class SetInfoFetcher {
   #socket: Socket;
@@ -15,7 +16,7 @@ export class SetInfoFetcher {
 
   constructor(socket: Socket) {
     this.#socket = socket;
-    this.setInfo = new SetInfo();
+    this.setInfo = {};
   }
 
   async fetchInformation() {
@@ -27,9 +28,10 @@ export class SetInfoFetcher {
 
       socketStream(this.#socket).once(
         "setInformation",
-        (stream: Duplex, info) => {
-          this.setInfo.title = info.title;
-          this.setInfo.author = info.author;
+        (stream: Duplex, info: SocketSetInfo) => {
+          console.log(info);
+          this.setInfo.title = info.Title;
+          this.setInfo.author = info.Author;
 
           stream.on("data", (data) => {
             fileBuffer.push(data);
@@ -46,7 +48,7 @@ export class SetInfoFetcher {
             });
 
             this.setInfo.coverBlob = new Blob([filedata], {
-              type: info.fileMimeType,
+              type: info.ImageMimeType,
             });
             this.setInfo.coverURL = URL.createObjectURL(this.setInfo.coverBlob);
 

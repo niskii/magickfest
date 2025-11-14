@@ -1,10 +1,10 @@
+import { NextFunction, Request, Response } from "express";
+import { createReadStream } from "fs";
 import path from "path";
 import { Server } from "socket.io";
-import { Player } from "./player";
 import { imageMimeTypes } from "./mime-map";
-import { createReadStream } from "fs";
-import { Request, NextFunction, Response } from "express";
-import { isAuthorized } from "./auth";
+import { Player } from "./player";
+import { SocketSetInfo } from "@shared/types/set";
 
 const socketStream = require("socket.io-stream");
 const connectedUsers = new Set<string>();
@@ -14,7 +14,7 @@ export function setupAuthentication(io: Server) {
     (
       req: Request & { user: string; _query: Record<string, string> },
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ) => {
       const isHandshake = req._query.sid === undefined;
       console.log(isHandshake);
@@ -27,7 +27,7 @@ export function setupAuthentication(io: Server) {
       } else {
         next();
       }
-    }
+    },
   );
 }
 
@@ -80,11 +80,13 @@ export function socketSetup(io: Server, player: Player) {
       const imageFile = currentSet.CoverFile;
       const imageMimeType = imageMimeTypes.get(path.extname(imageFile));
 
-      socketStream(socket).emit("setInformation", imageStream, {
-        title: currentSet.Title,
-        author: currentSet.Author,
-        fileMimeType: imageMimeType,
-      });
+      const setInfo: SocketSetInfo = {
+        Title: currentSet.Title,
+        Author: currentSet.Author,
+        ImageMimeType: imageMimeType,
+      };
+
+      socketStream(socket).emit("setInformation", imageStream, setInfo);
       createReadStream(imageFile).pipe(imageStream);
     });
   });

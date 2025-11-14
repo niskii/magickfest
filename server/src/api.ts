@@ -1,7 +1,7 @@
 import express from "express";
 import { Bitrate, Player } from "./player";
 import { parseTime } from "./time-parser";
-import { SetInfo } from "./models/set";
+import { ApiSetInfo } from "./types/set";
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ export function configureRouter(player: Player) {
     .route("/set")
     .get((_, res) => {
       const currentSet = player.getPlaylist().getCurrentSet();
-      const set: SetInfo = {
+      const set: ApiSetInfo = {
         SetIndex: player.getPlaylist().getCurrentIndex(),
         Titel: currentSet.Title,
         Author: currentSet.Author,

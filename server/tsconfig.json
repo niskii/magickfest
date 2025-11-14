@@ -20,8 +20,13 @@
     "skipLibCheck": true,
     "moduleResolution": "node16",
 
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    },
+
+    "outDir": "./dist"
+    // "rootDir": "./src"
   },
   "include": ["**/*.ts"],
   "exclude": ["dist"]

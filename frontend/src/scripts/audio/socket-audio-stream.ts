@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { type AudioPacket } from "./chunk";
+import { type AudioPacket } from "@shared/types/audio-packet";
 import { TimeKeeper } from "./time-keeper";
 
 import config from "../../config/client.json";

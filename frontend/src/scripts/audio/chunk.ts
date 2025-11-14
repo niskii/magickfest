@@ -1,8 +1,0 @@
-export interface AudioPacket {
-  Buffer: Uint8Array;
-  PageStart: number;
-  PageEnd: number;
-  ChunkPlayPosition: number;
-  ServerTime: number;
-  TotalDuration: number;
-}

@@ -5,7 +5,7 @@ import {
   OpusFileSplitter,
   Page,
 } from "./thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
-import { AudioPacket } from "./models/audio-packet";
+import { AudioPacket } from "@shared/types/audio-packet";
 
 export class OpusReader {
   #fileSplitter: OpusFileSplitter;
