@@ -14,6 +14,7 @@ export class Player {
   #forwarded: number;
   #playbackTimer: NodeJS.Timeout | null = null;
   #playlist;
+  #waitnextset = false;
   events: EventEmitter | undefined;
 
   //testing
@@ -114,15 +115,23 @@ export class Player {
   #setupPlaybackTimer() {
     this.#playbackTimer = setInterval(() => {
       // using the high quality reader as a baseline for tracking time
-      // because a getting the duration of the file
-      // would require a metadata reader.
+      // because getting the duration of the file
+      // would require a dedicated metadata reader.
       const currentReader = this.getCurrentReader(Bitrate.High);
       if (currentReader !== undefined) {
-        console.log(currentReader.getRemainingTimeSeconds().toFixed(1));
-        if (currentReader.getRemainingTimeSeconds() < 0) {
-          if (!this.#loop) this.nextSet();
-          this.playAtStart();
-          console.log("new set!");
+        console.log(
+          currentReader.getCurrentTimeMillis() / 1000,
+          "-",
+          currentReader.getRemainingTimeSeconds().toFixed(1),
+        );
+        if (currentReader.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
+          this.#waitnextset = true;
+          setTimeout(() => {
+            this.#waitnextset = false;
+            if (!this.#loop) this.nextSet();
+            this.playAtStart();
+            console.log("new set!");
+          }, 5000);
         }
       }
     }, 1000);
