@@ -5,8 +5,8 @@ import { Server } from "socket.io";
 import { imageMimeTypes } from "./mime-map";
 import { Player } from "./player";
 import { SocketSetInfo } from "@shared/types/set";
+import socketStream from "socket.io-stream";
 
-const socketStream = require("socket.io-stream");
 const connectedUsers = new Set<string>();
 
 export function setupAuthentication(io: Server) {
