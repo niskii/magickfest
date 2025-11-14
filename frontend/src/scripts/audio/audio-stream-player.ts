@@ -171,7 +171,7 @@ export class AudioStreamPlayer {
       this.#audioSrcNodes.shift();
 
       if (
-        this.#audioCtx.currentTime - this.#timeKeeper.getDelay() >
+        this.#audioCtx.currentTime >
         this.#playStartedAt + this.#totalTimeScheduled
       ) {
         this.pause();
