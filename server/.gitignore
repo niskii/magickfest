@@ -25,3 +25,5 @@ temp/*
 .vscode
 
 dist
+
+security/*

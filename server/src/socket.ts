@@ -3,12 +3,39 @@ import { Server } from "socket.io";
 import { Player } from "./player";
 import { imageMimeTypes } from "./mime-map";
 import { createReadStream } from "fs";
+import { Request, NextFunction, Response } from "express";
+import { isAuthorized } from "./auth";
 
 const socketStream = require("socket.io-stream");
+const connectedUsers = new Set<string>();
+
+export function setupAuthentication(io: Server) {
+  io.engine.use(
+    (
+      req: Request & { user: string; _query: Record<string, string> },
+      res: Response,
+      next: NextFunction
+    ) => {
+      const isHandshake = req._query.sid === undefined;
+      console.log(isHandshake);
+      if (isHandshake) {
+        const token = req.headers["authentication"];
+        if (token !== undefined) req.user = token.toString();
+        if (!connectedUsers.has(req.user)) {
+          next();
+        }
+      } else {
+        next();
+      }
+    }
+  );
+}
 
 export function socketSetup(io: Server, player: Player) {
   io.on("connection", (socket) => {
-    console.log("a user connected");
+    const req = socket.request as Request & { user: string };
+    console.log("a user connected", req.user);
+    connectedUsers.add(req.user);
 
     const sendNewSetAlert = () => {
       socket.emit("newSet");
@@ -22,6 +49,7 @@ export function socketSetup(io: Server, player: Player) {
     player.events?.on("changedState", sendChangedStateAlert);
 
     socket.on("disconnect", () => {
+      connectedUsers.delete(req.user);
       console.log("a user disconnected");
       player.events?.off("newSet", sendNewSetAlert);
       player.events?.off("changedState", sendChangedStateAlert);

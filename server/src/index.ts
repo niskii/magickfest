@@ -5,12 +5,18 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { Player } from "./player";
 import { Playlist } from "./playlist";
-import { socketSetup } from "./socket";
+import { setupAuthentication, socketSetup } from "./socket";
 import { isAuthorized } from "./auth";
+import https from "https";
 
 import cors from "cors";
 import * as commandline from "./commandline";
 import { PlayerStateManager } from "./player-state-manager";
+
+const httpsOptions = {
+  key: readFileSync("./security/cert.key"),
+  cert: readFileSync("./security/cert.pem"),
+};
 
 const playlist = new Playlist(
   readFileSync(commandline.playlistFile).toString(),
@@ -19,18 +25,24 @@ const player = new Player(playlist, commandline.isLooped);
 configureRouter(player);
 
 const app = express();
-app.use(cors({ origin: ["http://localhost:80"] }));
+app.use(cors({ origin: ["http://localhost:80", "https://localhost:443"] }));
 app.use(isAuthorized);
 app.use(router);
 
-app.listen(8000);
+app.get("/", (req, res) => {
+  res.send("Hello!");
+});
 
-const server = createServer(app);
+const server = https.createServer(httpsOptions, app);
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
   },
   connectTimeout: 20000,
+});
+
+server.listen(8080, () => {
+  console.log("server running at http://localhost:8080");
 });
 
 process.on("warning", (warning) => {
@@ -46,6 +58,7 @@ const playerStateManager = new PlayerStateManager(
 
 playerStateManager.setupAutoSave(commandline.isLoadOverriden);
 
+setupAuthentication(io);
 socketSetup(io, player);
 
 setTimeout(
@@ -59,7 +72,3 @@ setTimeout(
   },
   Math.max(1, commandline.scheduledStart - Date.now()),
 );
-
-server.listen(8080, () => {
-  console.log("server running at http://localhost:8080");
-});

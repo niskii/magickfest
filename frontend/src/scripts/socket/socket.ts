@@ -1,3 +1,9 @@
 import { io } from "socket.io-client";
 
-export const socket = io(":8080", { autoConnect: false, timeout: 20000 });
+export const socket = io("https://localhost:8080", {
+  extraHeaders: {
+    authentication: "1234",
+  },
+  autoConnect: false,
+  timeout: 20000,
+});
