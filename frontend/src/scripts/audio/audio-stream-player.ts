@@ -3,23 +3,24 @@ import type { ChanneledAudioBuffer } from "./AudioTypes";
 import * as decoder from "./decoder-service";
 import { SocketAudioStream } from "./socket-audio-stream";
 import { TimeKeeper } from "./time-keeper";
+import { Bitrate } from "@shared/types/audio-transfer";
 
 export class AudioStreamPlayer {
   #socket: Socket;
+  #stream: SocketAudioStream;
 
   #sessionId: number; // used to prevent race conditions between cancel/starts
   #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
-  #gainNode: GainNode;
-  #stream: SocketAudioStream;
-  #timeKeeper: TimeKeeper;
   #audioSrcNodes: Array<AudioBufferSourceNode>; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
+  #gainNode: GainNode;
+  #timeKeeper: TimeKeeper;
   #totalTimeScheduled: number; // time scheduled of all AudioBuffers
   #playStartedAt: number; // audioContext.currentTime of first sched
   #flushTimeoutId: NodeJS.Timeout;
-  #bitrate: number;
+  #bitrate: Bitrate;
   #volume: number;
 
-  constructor(socket: Socket, bitrate: number, volume: number) {
+  constructor(socket: Socket, bitrate: Bitrate, volume: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
     this.#bitrate = bitrate;
     this.#volume = volume;
@@ -28,7 +29,7 @@ export class AudioStreamPlayer {
     this.reset();
   }
 
-  setBitrate(bitrate: number) {
+  setBitrate(bitrate: Bitrate) {
     this.#bitrate = bitrate;
     if (this.#stream) this.#stream.setBitrate(bitrate);
   }

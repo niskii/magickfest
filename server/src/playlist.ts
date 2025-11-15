@@ -1,7 +1,8 @@
 import { createHash } from "crypto";
+import { Bitrate } from "@shared/types/audio-transfer";
 
 interface AudioFile {
-  Bitrate: number;
+  Bitrate: Bitrate;
   File: string;
 }
 
@@ -14,7 +15,7 @@ interface Set {
 
 export class Playlist {
   #sets: Array<Set>;
-  #currentSet;
+  #currentSet: number = 0;
   #id: string;
 
   constructor(playlist: string) {
@@ -27,8 +28,6 @@ export class Playlist {
       throw Error("Could not parse the JSON string");
 
     if (this.#sets.length === 0) throw Error("The playlist is empty");
-
-    this.#currentSet = 0;
   }
 
   getCurrentSet() {

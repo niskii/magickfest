@@ -1,12 +1,7 @@
 import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
-
-export enum Bitrate {
-  High = 128,
-  Medium = 96,
-  Low = 64,
-}
+import { Bitrate } from "@shared/types/audio-transfer";
 
 export class Player {
   #readerCollection: Map<number, OpusReader>;

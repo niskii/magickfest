@@ -1,5 +1,6 @@
 import express from "express";
-import { Bitrate, Player } from "./player";
+import { Player } from "./player";
+import { Bitrate } from "@shared/types/audio-transfer";
 import { parseTime } from "./time-parser";
 import { ApiSetInfo } from "./types/set";
 

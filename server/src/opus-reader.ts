@@ -1,11 +1,11 @@
 import { readFileSync } from "fs";
-import { ReadCode } from "./read-codes";
+import { ReadCode } from "@shared/types/read-codes";
+import { AudioPacket } from "@shared/types/audio-transfer";
 import {
   HeaderObject,
   OpusFileSplitter,
   Page,
 } from "./thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
-import { AudioPacket } from "@shared/types/audio-packet";
 
 export class OpusReader {
   #fileSplitter: OpusFileSplitter;

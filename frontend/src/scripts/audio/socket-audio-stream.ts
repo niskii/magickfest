@@ -1,7 +1,7 @@
 import { Socket } from "socket.io-client";
-import { type AudioPacket } from "@shared/types/audio-packet";
+import { type AudioPacket, Bitrate } from "@shared/types/audio-transfer";
 import { TimeKeeper } from "./time-keeper";
-
+import { ReadCode } from "@shared/types/read-codes";
 import config from "../../config/client.json";
 
 export class SocketAudioStream {
@@ -11,18 +11,18 @@ export class SocketAudioStream {
   #isFetching = false;
   #needsResync = false;
   #lastChunkPage = 0;
-  #bitrate;
+  #bitrate: Bitrate;
 
   onFetch: (buffer: Uint8Array<ArrayBufferLike>) => void;
   onFlush: () => void;
 
-  constructor(socket: Socket, timeKeeper: TimeKeeper, bitrate: number) {
+  constructor(socket: Socket, timeKeeper: TimeKeeper, bitrate: Bitrate) {
     this.#socket = socket;
     this.#timeKeeper = timeKeeper;
     this.#bitrate = bitrate;
   }
 
-  setBitrate(bitrate: number) {
+  setBitrate(bitrate: Bitrate) {
     this.#bitrate = bitrate;
   }
 
@@ -43,7 +43,7 @@ export class SocketAudioStream {
     this.#socket.emit(
       "fetchSyncedChunk",
       { bitrate: this.#bitrate },
-      (response: any) => {
+      (response: { status: ReadCode }) => {
         console.log("Status code:", response.status);
       },
     );
@@ -70,8 +70,8 @@ export class SocketAudioStream {
     this.#socket.emit(
       "fetchChunkFromPage",
       { bitrate: this.#bitrate, lastPage: this.#lastChunkPage },
-      (response: any) => {
-        if (response.status == 1) {
+      (response: { status: ReadCode }) => {
+        if (response.status == ReadCode.EOF) {
           this.onFlush();
           this.reset();
           return;

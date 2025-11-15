@@ -5,6 +5,7 @@ import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
 import { socket } from "../scripts/socket/socket";
 import Overlay from "./Overlay.vue";
+import { Bitrate } from '@shared/types/audio-transfer'
 
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
@@ -12,7 +13,7 @@ const playState = ref<[number, number, number]>([0, 0, 0]);
 const isConnected = ref(socket.connected);
 const coverImage = ref(null);
 const setInformation = new SetInfoFetcher(socket);
-const bitrate = ref(128);
+const bitrate = ref(Bitrate.High);
 
 const overlayToggle = ref<boolean>(true);
 const volume = ref<number>(75);
