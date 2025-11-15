@@ -2,9 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { createReadStream } from "fs";
 import path from "path";
 import { Server } from "socket.io";
-import { imageMimeTypes } from "./mime-map";
+import { imageMimeTypes } from "./types/mime-map";
 import { Player } from "./player";
 import { SocketSetInfo } from "@shared/types/set";
+import { Bitrate } from "@shared/types/audio-transfer";
 import socketStream from "socket.io-stream";
 
 const connectedUsers = new Set<string>();
@@ -55,23 +56,26 @@ export function socketSetup(io: Server, player: Player) {
       player.events?.off("changedState", sendChangedStateAlert);
     });
 
-    socket.on("fetchSyncedChunk", (data, callback) => {
+    socket.on("fetchSyncedChunk", (data: { bitrate: Bitrate }, callback) => {
       const result = player.getCurrentReader(data.bitrate)?.getCurrentChunk();
-      if (result?.data !== null) socket.emit("syncedChunk", result?.data);
+      if (result !== undefined) socket.emit("syncedChunk", result.data);
       callback({
         status: result?.status,
       });
     });
 
-    socket.on("fetchChunkFromPage", (data, callback) => {
-      const result = player
-        .getCurrentReader(data.bitrate)
-        ?.getNextChunk(data.lastPage);
-      if (result?.data !== null) socket.emit("chunkFromPage", result?.data);
-      callback({
-        status: result?.status,
-      });
-    });
+    socket.on(
+      "fetchChunkFromPage",
+      (data: { bitrate: Bitrate; lastPage: number }, callback) => {
+        const result = player
+          .getCurrentReader(data.bitrate)
+          ?.getNextChunk(data.lastPage);
+        if (result !== undefined) socket.emit("chunkFromPage", result.data);
+        callback({
+          status: result?.status,
+        });
+      },
+    );
 
     socket.on("fetchSetInformation", () => {
       console.log("going to stream image");

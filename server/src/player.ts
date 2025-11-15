@@ -103,7 +103,7 @@ export class Player {
     this.playAt(0, Date.now());
   }
 
-  getCurrentReader(bitrate: number) {
+  getCurrentReader(bitrate: Bitrate) {
     return this.#readerCollection.get(bitrate);
   }
 
