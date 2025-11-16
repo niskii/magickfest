@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { Bitrate } from "@shared/types/audio-transfer";
+import { readFileSync } from "fs";
 
 interface AudioFile {
   Bitrate: Bitrate;
@@ -9,8 +10,8 @@ interface AudioFile {
 interface Set {
   Title: string;
   Author: string;
-  AudioFiles: Array<AudioFile>;
   CoverFile: string;
+  AudioFiles: Array<AudioFile>;
 }
 
 export class Playlist {
@@ -19,7 +20,13 @@ export class Playlist {
   #id: string;
 
   constructor(playlist: string) {
-    this.#sets = JSON.parse(playlist)["Sets"];
+    const setfiles: Array<string> = JSON.parse(playlist)["Sets"];
+    this.#sets = new Array();
+    setfiles.forEach((file) => {
+      const set: Set = JSON.parse(readFileSync(file).toString());
+      this.#sets.push(set);
+    });
+
     this.#id = createHash("MD5").update(playlist).digest("hex");
 
     console.log("sets", this.#sets);

@@ -12,7 +12,10 @@ if (isDefined(argv.scheduledstart)) {
   scheduledTime = Date.parse(argv.scheduledstart);
 }
 
-const playlistFile = getOrDefault(argv.playlist, "public/playlist.json");
+const playlistFile = getOrDefault(
+  argv.playlist,
+  process.env.SETS_LOCATION + "/playlist.json",
+);
 const useSavedState = isDefined(argv.usestate);
 const isLooped = isDefined(argv.loop);
 const setIndex = getOrDefault(argv.setindex, 0);

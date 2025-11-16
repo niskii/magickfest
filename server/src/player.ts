@@ -81,7 +81,7 @@ export class Player {
     this.#readerCollection.clear();
 
     this.#playlist.forEachCurrentAudioFile((audioFile) => {
-      const reader = new OpusReader(audioFile.File);
+      const reader = new OpusReader(process.env.SETS_LOCATION + audioFile.File);
       reader.setClock(this.#startTime - forwarded);
       this.#readerCollection.set(audioFile.Bitrate, reader);
     });

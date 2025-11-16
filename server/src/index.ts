@@ -7,6 +7,9 @@ import { isAuthorized } from "./auth";
 import { Player } from "./player";
 import { Playlist } from "./playlist";
 import { setupAuthentication, socketSetup } from "./socket";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".env" });
 
 import cors from "cors";
 import * as commandline from "./commandline";

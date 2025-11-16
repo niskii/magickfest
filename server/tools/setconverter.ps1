@@ -58,12 +58,14 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
   
   $process.PercentComplete = 0
 
+  $basePath = "sets/$($_.BaseName)"
+
   foreach ($bitrate in $bitratesCopy) {
     $process.Status = "Converting $($_.BaseName) $percent/100"
-    $outputPath = Join-Path -Path $using:folder -ChildPath "sets\$($_.BaseName)\$($_.BaseName)_$bitrate.opus"
+    $outputPath = Join-Path -Path $using:folder -ChildPath "$($basePath)\$($_.BaseName)_$bitrate.opus"
 
     if ($_.Name -like "*.mp3" -or $_.Name -like "*.m4a" -or $_.Name -like ".aif" -or $_.Name -like "*.flac" -or $_.Name -like "*.wav") {
-       ffmpeg -progress pipe:1 -nostats -y -i "$($_.FullName)" -c:a libopus -b:a "$($bitrate)k" -frame_duration:a 40 "$($outputPath)" | Select-String 'out_time_ms=(\d+)' | ForEach-Object {
+      ffmpeg -progress pipe:1 -nostats -y -i "$($_.FullName)" -c:a libopus -b:a "$($bitrate)k" -frame_duration:a 40 "$($outputPath)" | Select-String 'out_time_ms=(\d+)' | ForEach-Object {
         $converted = [int] $_.Matches.Groups[1].Value
         $progress.($bitrate) = $converted / 1000000
         $sum = 0
@@ -75,15 +77,15 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     }
   }
 
-  $jsonPath = Join-Path -Path $using:folder -ChildPath "sets\$($_.BaseName)\set.json"
+  $jsonPath = Join-Path -Path $using:folder -ChildPath "$($basePath)\set.json"
   @{
     Title = ""
     Author = ""
-    Cover = "./cover.jpg"
+    CoverFile = "$($basePath)/cover.jpg"
     AudioFiles = @(
       foreach($bitrate in $($using:bitrates)) {
         @{
-          File="./$($_.BaseName)_$bitrate.opus"
+          File="$($basePath)/$($_.BaseName)_$bitrate.opus"
           Bitrate=$bitrate
         }
       }
