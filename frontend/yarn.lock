@@ -513,6 +513,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/web-bluetooth@npm:^0.0.21":
+  version: 0.0.21
+  resolution: "@types/web-bluetooth@npm:0.0.21"
+  checksum: 10c0/5f47c5ec452ca31e6a9b44c8aaa54b66c4f57d4aca00166c45902a3883139580e14b254b774172ff982ba4458cc444b5aa59bb4573c2fd34562cfa599721f8e4
+  languageName: node
+  linkType: hard
+
 "@vitejs/plugin-vue@npm:^6.0.1":
   version: 6.0.1
   resolution: "@vitejs/plugin-vue@npm:6.0.1"
@@ -684,6 +691,35 @@ __metadata:
     vue:
       optional: true
   checksum: 10c0/f4e37182dc2560ce2c78e66fbf837000dba5460c12913ef37f5d54b6c0da518df1118fcc1968ff51d9541287a9d9d105fb17072b0dbb095919cfb50d1fe67a78
+  languageName: node
+  linkType: hard
+
+"@vueuse/core@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "@vueuse/core@npm:14.0.0"
+  dependencies:
+    "@types/web-bluetooth": "npm:^0.0.21"
+    "@vueuse/metadata": "npm:14.0.0"
+    "@vueuse/shared": "npm:14.0.0"
+  peerDependencies:
+    vue: ^3.5.0
+  checksum: 10c0/f82c8c7f8fcf62881982a98090bc4790eb0b781d8dec9f060b56759f0c252c681ad0e52aaebe59d82a97d54f180c3586524e905a92a2ab0a21d2d07a42af9299
+  languageName: node
+  linkType: hard
+
+"@vueuse/metadata@npm:14.0.0":
+  version: 14.0.0
+  resolution: "@vueuse/metadata@npm:14.0.0"
+  checksum: 10c0/04868a4b366e096f59edac78b95f743a80bea16a14966323f6b6bdb017333871598a7e9c68089a01fa439fe850e50fd3f8eddcbc87a820583629652e307bc4d8
+  languageName: node
+  linkType: hard
+
+"@vueuse/shared@npm:14.0.0":
+  version: 14.0.0
+  resolution: "@vueuse/shared@npm:14.0.0"
+  peerDependencies:
+    vue: ^3.5.0
+  checksum: 10c0/4d3e017782965fc9e317ac3574af6af8140a7f618980d7d207f4b92fe6665a34bccd2d8fcfa654833af5c051a832f0670d510eb9c3cf09d2b9989def742e76a8
   languageName: node
   linkType: hard
 
@@ -1499,6 +1535,7 @@ __metadata:
     "@types/node": "npm:^24.6.0"
     "@vitejs/plugin-vue": "npm:^6.0.1"
     "@vue/tsconfig": "npm:^0.8.1"
+    "@vueuse/core": "npm:^14.0.0"
     nodejs: "npm:^0.0.0"
     ogg-opus-decoder: "npm:^1.7.3"
     prettier: "npm:3.6.2"

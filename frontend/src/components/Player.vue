@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
+import { Bitrate } from '@shared/types/audio-transfer';
+import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
 import { socket } from "../scripts/socket/socket";
 import Overlay from "./Overlay.vue";
-import { Bitrate } from '@shared/types/audio-transfer'
+
+import Visualiser from "./Visualiser.vue";
+type visualiserType = InstanceType<typeof Visualiser>
 
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
@@ -14,10 +17,10 @@ const isConnected = ref(socket.connected);
 const coverImage = ref(null);
 const setInformation = new SetInfoFetcher(socket);
 const bitrate = ref(Bitrate.High);
-
 const overlayToggle = ref<boolean>(true);
 const volume = ref<number>(75);
 const muted = ref<boolean>(false);
+const analyser = useTemplateRef<visualiserType>("visualiser")
 
 onMounted(() => {
   function onConnect() {
@@ -63,6 +66,7 @@ watch(isConnected, () => {
     if (isConnected.value) {
       audioStreamPlayer.value.reset();
       audioStreamPlayer.value.start();
+      analyser.value.setAnalyser(audioStreamPlayer.value.getAnalyzer())
     }
   }
 
@@ -98,6 +102,9 @@ async function connect() {
       ];
     }, config.UpdateInterval);
 
+    analyser.value.setAnalyser(player.getAnalyzer())
+    analyser.value.resume()
+
     isConnected.value = true;
   }
 }
@@ -122,14 +129,6 @@ async function disconnect() {
     isConnected.value = false;
   }
 }
-
-// redundant because react
-
-// const changeHandler = (event: Event & { target: HTMLInputElement }) => {
-//     if (event.target.type === "radio") {
-//         bitrate.value = Number(event.target.value);
-//     }
-// };
 
 const timeConverter = (time: number) => {
   time = Math.round(time);
@@ -180,6 +179,11 @@ function overlayClick() {
             <button @click="disconnect">disconnect</button>
             <button @click="fetchInfo">work</button> -->
   </div>
+</div>
+<div style="display: flex; justify-content: center; padding: 1em 0;">
+  <Visualiser ref="visualiser" :fftSize=8192 :fpsLimit=12 :lineWidth=3 lineColor="#888" ResolutionY="140px"
+    ResolutionX="2000px" backgroundColor="#222" style="width: 80%; border-radius: 1em;">
+  </Visualiser>
 </div>
 <div id="bottomBar">
   <select class="mobileOnly" v-model="bitrate">

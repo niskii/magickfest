@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vueuse/core": "^14.0.0",
     "nodejs": "^0.0.0",
     "ogg-opus-decoder": "^1.7.3",
     "socket.io-client": "^4.8.1",

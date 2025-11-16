@@ -1,9 +1,9 @@
+import { Bitrate } from "@shared/types/audio-transfer";
 import { Socket } from "socket.io-client";
 import type { ChanneledAudioBuffer } from "./AudioTypes";
 import * as decoder from "./decoder-service";
 import { SocketAudioStream } from "./socket-audio-stream";
 import { TimeKeeper } from "./time-keeper";
-import { Bitrate } from "@shared/types/audio-transfer";
 
 export class AudioStreamPlayer {
   #socket: Socket;
@@ -19,6 +19,8 @@ export class AudioStreamPlayer {
   #flushTimeoutId: NodeJS.Timeout;
   #bitrate: Bitrate;
   #volume: number;
+
+  #analyzer: AnalyserNode;
 
   constructor(socket: Socket, bitrate: Bitrate, volume: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
@@ -37,6 +39,10 @@ export class AudioStreamPlayer {
   setVolume(volume: number) {
     this.#volume = volume;
     this.#gainNode.gain.value = volume;
+  }
+
+  getAnalyzer() {
+    return this.#analyzer;
   }
 
   reset() {
@@ -87,6 +93,7 @@ export class AudioStreamPlayer {
     performance.mark(this.downloadMarkKey);
     this.#audioCtx = new window.AudioContext();
     this.#gainNode = this.#audioCtx.createGain();
+    this.#analyzer = this.#audioCtx.createAnalyser();
     this.#gainNode.gain.value = this.#volume;
     this.#audioCtx.suspend();
 
@@ -217,6 +224,7 @@ export class AudioStreamPlayer {
 
     audioSrc.buffer = audioBuffer;
     audioSrc.connect(this.#gainNode);
+    this.#gainNode.connect(this.#analyzer);
     this.#gainNode.connect(this.#audioCtx.destination);
     // audioSrc.connect(this.#audioCtx.destination);
 
