@@ -62,8 +62,8 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     $process.Status = "Converting $($_.BaseName) $percent/100"
     $outputPath = Join-Path -Path $using:folder -ChildPath "sets\$($_.BaseName)\$($_.BaseName)_$bitrate.opus"
 
-    if ($_.Name -like "*.mp3" -or $_.Name -like "*.m4a" -or $_.Name -like ".aif" -or $_.Name -like ".flac" -or $_.Name -like ".wav") {
-       ffmpeg -progress pipe:1 -nostats -y -i "$($_.FullName)" -c:a libopus -b:a 128k -frame_duration:a 40 "$($outputPath)" | Select-String 'out_time_ms=(\d+)' | ForEach-Object {
+    if ($_.Name -like "*.mp3" -or $_.Name -like "*.m4a" -or $_.Name -like ".aif" -or $_.Name -like "*.flac" -or $_.Name -like "*.wav") {
+       ffmpeg -progress pipe:1 -nostats -y -i "$($_.FullName)" -c:a libopus -b:a "$($bitrate)k" -frame_duration:a 40 "$($outputPath)" | Select-String 'out_time_ms=(\d+)' | ForEach-Object {
         $converted = [int] $_.Matches.Groups[1].Value
         $progress.($bitrate) = $converted / 1000000
         $sum = 0
