@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useRafFn, type Pausable } from '@vueuse/core';
-import { onMounted, shallowRef, useTemplateRef, watchEffect } from 'vue';
+import { useRafFn } from '@vueuse/core';
+import { onMounted, ref, shallowRef, useTemplateRef, watchEffect } from 'vue';
 import { Oscilloscope } from "../scripts/osc/Oscilloscope";
 
 const props = defineProps<{
@@ -13,32 +13,19 @@ const props = defineProps<{
     ResolutionY: string
 }>()
 
-const fpsLimit = 60
+const fpsLimit = ref(60)
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas")
 const visualiser = shallowRef<Oscilloscope>(null)
-let isPaused = true;
 
 function setAnalyser(analyser: AnalyserNode) {
     visualiser.value.setAnalyzer(analyser, props.fftSize)
 }
 
-function pause() {
-    visualiserUpdater.pause()
-    isPaused = true;
-}
-
-function resume() {
-    visualiserUpdater.resume()
-    isPaused = false
-}
-
-let visualiserUpdater: Pausable
-visualiserUpdater = useRafFn(() => {
+const { pause, resume } = useRafFn(() => {
     if (visualiser.value !== null) {
         visualiser.value.draw()
     }
-}, { fpsLimit })
-visualiserUpdater.pause()
+}, { fpsLimit, immediate: false })
 
 defineExpose({
     pause,
@@ -48,15 +35,21 @@ defineExpose({
 
 watchEffect(() => {
     if (props.fpsLimit !== undefined) {
-        visualiserUpdater = useRafFn(() => {
-            if (visualiser.value !== null) {
-                visualiser.value.draw()
-            }
-        }, { fpsLimit: props.fpsLimit })
-        if (isPaused)
-            visualiserUpdater.pause()
-        else
-            visualiserUpdater.resume()
+        fpsLimit.value = props.fpsLimit
+    }
+    if (visualiser.value !== null) {
+        if (props.lineWidth !== undefined) {
+            visualiser.value.lineWidth = props.lineWidth
+        }
+        if (props.backgroundColor !== undefined) {
+            visualiser.value.backgroundColor = props.backgroundColor
+        }
+        if (props.lineColor !== undefined) {
+            visualiser.value.lineColor = props.lineColor
+        }
+        if (props.fftSize !== undefined) {
+            visualiser.value.setfftSize(props.fftSize)
+        }
     }
 })
 
@@ -66,7 +59,7 @@ onMounted(() => {
     oscilloscope.lineColor = props.lineColor
     oscilloscope.lineWidth = props.lineWidth
     oscilloscope.backgroundColor = props.backgroundColor
-    visualiserUpdater.pause()
+    pause()
 })
 
 </script>

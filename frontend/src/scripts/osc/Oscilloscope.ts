@@ -25,7 +25,14 @@ export class Oscilloscope {
 
   setAnalyzer(analyser: AnalyserNode, fftSize?: number) {
     this.#analyser = analyser;
-    this.#analyser.fftSize = fftSize;
+    this.setfftSize(fftSize);
+  }
+
+  setfftSize(fftSize: number) {
+    if (this.#analyser === undefined) return;
+    const powered = Math.min(Math.max(32, Math.pow(2, fftSize)), 32768);
+
+    this.#analyser.fftSize = powered;
     this.#bufferLength = this.#analyser.frequencyBinCount;
     this.#dataArray = new Uint8Array(this.#bufferLength);
     this.#analyser.getByteTimeDomainData(this.#dataArray);
