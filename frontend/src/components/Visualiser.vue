@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { useRafFn } from '@vueuse/core';
-import { onMounted, shallowRef, useTemplateRef } from 'vue';
+import { useRafFn, type Pausable } from '@vueuse/core';
+import { onMounted, shallowRef, useTemplateRef, watchEffect } from 'vue';
 import { Oscilloscope } from "../scripts/osc/Oscilloscope";
 
 const props = defineProps<{
     fftSize?: number
+    fpsLimit: number
     lineColor: string
     backgroundColor: string
     lineWidth: number
@@ -12,24 +13,51 @@ const props = defineProps<{
     ResolutionY: string
 }>()
 
-let fpsLimit = 60
+const fpsLimit = 60
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas")
 const visualiser = shallowRef<Oscilloscope>(null)
+let isPaused = true;
 
 function setAnalyser(analyser: AnalyserNode) {
     visualiser.value.setAnalyzer(analyser, props.fftSize)
 }
 
-const { resume, pause } = useRafFn(() => {
+function pause() {
+    visualiserUpdater.pause()
+    isPaused = true;
+}
+
+function resume() {
+    visualiserUpdater.resume()
+    isPaused = false
+}
+
+let visualiserUpdater: Pausable
+visualiserUpdater = useRafFn(() => {
     if (visualiser.value !== null) {
         visualiser.value.draw()
     }
 }, { fpsLimit })
+visualiserUpdater.pause()
 
 defineExpose({
-    resume,
     pause,
+    resume,
     setAnalyser
+})
+
+watchEffect(() => {
+    if (props.fpsLimit !== undefined) {
+        visualiserUpdater = useRafFn(() => {
+            if (visualiser.value !== null) {
+                visualiser.value.draw()
+            }
+        }, { fpsLimit: props.fpsLimit })
+        if (isPaused)
+            visualiserUpdater.pause()
+        else
+            visualiserUpdater.resume()
+    }
 })
 
 onMounted(() => {
@@ -38,7 +66,7 @@ onMounted(() => {
     oscilloscope.lineColor = props.lineColor
     oscilloscope.lineWidth = props.lineWidth
     oscilloscope.backgroundColor = props.backgroundColor
-    pause()
+    visualiserUpdater.pause()
 })
 
 </script>
