@@ -81,7 +81,7 @@ export function socketSetup(io: Server, player: Player) {
       console.log("going to stream image");
       const imageStream = socketStream.createStream();
       const currentSet = player.getPlaylist().getCurrentSet();
-      const imageFile = process.env.SETS_LOCATION + currentSet.CoverFile;
+      const imageFile = currentSet.CoverFile;
       const imageMimeType = imageMimeTypes.get(path.extname(imageFile));
 
       const setInfo: SocketSetInfo = {

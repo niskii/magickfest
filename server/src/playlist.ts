@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { Bitrate } from "@shared/types/audio-transfer";
 import { readFileSync } from "fs";
+import path from "path";
 
 interface AudioFile {
   Bitrate: Bitrate;
@@ -20,10 +21,23 @@ export class Playlist {
   #id: string;
 
   constructor(playlist: string) {
-    const setfiles: Array<string> = JSON.parse(playlist)["Sets"];
+    const location = path.dirname(playlist) + "/";
+
+    const setfiles: Array<string> = JSON.parse(
+      readFileSync(playlist).toString(),
+    )["Sets"];
+
     this.#sets = new Array();
     setfiles.forEach((file) => {
-      const set: Set = JSON.parse(readFileSync(file).toString());
+      const set: Set = JSON.parse(
+        readFileSync(path.join(location, file)).toString(),
+      );
+
+      // Handle the relative paths.
+      set.CoverFile = location + set.CoverFile;
+      set.AudioFiles.map((af) => {
+        af.File = path.join(location, af.File);
+      });
       this.#sets.push(set);
     });
 

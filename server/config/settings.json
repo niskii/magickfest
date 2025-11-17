@@ -1,0 +1,8 @@
+{
+  "setsLocation": "public",
+  "chunkDuration": 4,
+  "maxSecondsLoadAhead": 30,
+  "playerUpdateInterval": 1000,
+  "playerNewSetTimeout": 5000,
+  "port": 8080
+}

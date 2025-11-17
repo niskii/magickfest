@@ -14,7 +14,6 @@ export class OpusReader {
   #pages: Array<Page>;
   #numberOfPages: number;
   #minPagesForChunk: number;
-  #preskipSeconds: number;
   #totalDurationSeconds: number;
   #positions: Array<number>;
 
@@ -25,10 +24,9 @@ export class OpusReader {
     this.#pages = this.#fileSplitter.pages;
     this.#numberOfPages = this.#pages.length;
     this.#minPagesForChunk = this.calculateMinPages(
-      3,
+      globalThis.settings.chunkDuration,
       this.#headerObject.audioPageSize,
     );
-    this.#preskipSeconds = this.#fileSplitter.preSkipSeconds;
     this.#totalDurationSeconds = this.#fileSplitter.calculateDurationSeconds(
       BigInt(this.#headerObject.preskipGranule),
       this.#headerObject.PCMLength,
@@ -150,7 +148,10 @@ export class OpusReader {
     );
     if (pageStart > this.#numberOfPages || pageEnd > this.#numberOfPages)
       return { data: null, status: ReadCode.EOF };
-    if (this.calculateRangeDuration(currentPage, pageStart) > 30)
+    if (
+      this.calculateRangeDuration(currentPage, pageStart) >
+      globalThis.settings.maxSecondsLoadAhead
+    )
       return { data: null, status: ReadCode.INVALID };
 
     return {

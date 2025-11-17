@@ -25,3 +25,5 @@ and create a folder for each audio file with the name of the audio file.
 The script can also be runned directly in the folder of the audio file and
 it will create the same "sets" structure inside the folder. This structure
 can then be merged with other 'sets' folders.
+
+The set.json has to be filled with details about the title, author and coverfile.

@@ -1,29 +1,29 @@
+import settings from "config/settings.json";
+globalThis.settings = settings;
+
 import express from "express";
-import { readFileSync } from "fs";
+import router, { configureRouter } from "./api";
 import https from "https";
 import { Server } from "socket.io";
-import router, { configureRouter } from "./api";
 import { isAuthorized } from "./auth";
+import { readFileSync } from "fs";
 import { Player } from "./player";
 import { Playlist } from "./playlist";
+import { PlayerStateManager } from "./player-state-manager";
 import { setupAuthentication, socketSetup } from "./socket";
-import dotenv from "dotenv";
-
-dotenv.config({ path: ".env" });
+import { readCommands } from "./commandline";
 
 import cors from "cors";
-import * as commandline from "./commandline";
-import { PlayerStateManager } from "./player-state-manager";
+
+const commandLineOptions = readCommands();
 
 const httpsOptions = {
   key: readFileSync("./security/cert.key"),
   cert: readFileSync("./security/cert.pem"),
 };
 
-const playlist = new Playlist(
-  readFileSync(commandline.playlistFile).toString(),
-);
-const player = new Player(playlist, commandline.isLooped);
+const playlist = new Playlist(commandLineOptions.playlistFile);
+const player = new Player(playlist, commandLineOptions.isLooped);
 configureRouter(player);
 
 const app = express();
@@ -43,7 +43,7 @@ const io = new Server(server, {
   connectTimeout: 20000,
 });
 
-server.listen(8080, () => {
+server.listen(globalThis.settings.port, () => {
   console.log("server running at http://localhost:8080");
 });
 
@@ -51,14 +51,18 @@ process.on("warning", (warning) => {
   console.log(warning.stack);
 });
 
-player.setState(commandline.setIndex, null, commandline.forwarded);
+player.setState(
+  commandLineOptions.setIndex,
+  null,
+  commandLineOptions.forwarded,
+);
 
 const playerStateManager = new PlayerStateManager(
   player,
-  commandline.useSavedState,
+  commandLineOptions.useSavedState,
 );
 
-playerStateManager.setupAutoSave(commandline.isLoadOverriden);
+playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
 
 setupAuthentication(io);
 socketSetup(io, player);
@@ -72,5 +76,5 @@ setTimeout(
       playerStateManager.saveState();
     }
   },
-  Math.max(1, commandline.scheduledStart - Date.now()),
+  Math.max(1, commandLineOptions.scheduledStart - Date.now()),
 );
