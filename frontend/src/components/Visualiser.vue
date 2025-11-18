@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useRafFn } from '@vueuse/core';
+import { useElementSize, useRafFn } from '@vueuse/core';
 import { onMounted, ref, shallowRef, useTemplateRef, watchEffect } from 'vue';
 import { Oscilloscope } from "../scripts/osc/Oscilloscope";
 
@@ -9,13 +9,15 @@ const props = defineProps<{
     lineColor: string
     backgroundColor: string
     lineWidth: number
-    ResolutionX: string
-    ResolutionY: string
 }>()
 
 const fpsLimit = ref(60)
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas")
 const visualiser = shallowRef<Oscilloscope>(null)
+
+const container = useTemplateRef<HTMLDivElement>('container')
+const { width, height } = useElementSize(container)
+
 
 function setAnalyser(analyser: AnalyserNode) {
     visualiser.value.setAnalyzer(analyser, props.fftSize)
@@ -56,12 +58,44 @@ watchEffect(() => {
 onMounted(() => {
     const oscilloscope = new Oscilloscope(canvas)
     visualiser.value = oscilloscope
-    oscilloscope.lineColor = props.lineColor
-    oscilloscope.lineWidth = props.lineWidth
-    oscilloscope.backgroundColor = props.backgroundColor
     pause()
 })
 
 </script>
 
-<template><canvas ref="canvas" :width=props.ResolutionX :height=props.ResolutionY></canvas></template>
+<style scoped>
+#container {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    padding: 3px;
+    border-radius: 1em;
+    background: #636363;
+    background: linear-gradient(180deg, rgb(6, 6, 6) 0%, rgb(149 147 147) 100%);
+}
+
+#gradient {
+    width: 98%;
+    height: 98%;
+    position: absolute;
+    border-radius: 1em;
+    background: rgba(255, 255, 255, 2.3);
+    background: linear-gradient(180deg, rgb(78 78 78 / 78%) 0%, rgb(203 203 203 / 0%) 7%, rgb(185 185 185 / 3%) 19%, rgb(255 255 255 / 10%) 40%, rgba(255, 255, 255, 0) 60%, rgba(19, 19, 19, 0.03) 84%, rgba(26, 26, 26, 0.5) 99%);
+}
+
+#canvas {
+    border-radius: 1em;
+    border: 1px solid #111;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<template>
+<div ref="container" id="container">
+    <div id="gradient"></div>
+    <canvas id="canvas" ref="canvas" :width="width * 2" :height="height * 2"></canvas>
+</div>
+</template>

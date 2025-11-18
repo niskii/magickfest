@@ -181,8 +181,8 @@ function overlayClick() {
   </div>
 </div>
 <div style="display: flex; justify-content: center; padding: 1em 0;">
-  <Visualiser ref="visualiser" :fftSize=14 :fpsLimit=40 :lineWidth=3 lineColor="#888" ResolutionY="140px"
-    ResolutionX="2000px" backgroundColor="#222" style="width: 80%; border-radius: 1em;">
+  <Visualiser ref="visualiser" :fftSize=15 :fpsLimit=40 :lineWidth=3 lineColor="#ddd" backgroundColor="#222"
+    style="width: 15em; height: 5em;">
   </Visualiser>
 </div>
 <div id="bottomBar">
