@@ -18,7 +18,9 @@ export class Oscilloscope {
     fftSize?: number,
   ) {
     this.#canvas = canvas;
-    this.#canvascontext = canvas.value.getContext("2d");
+    this.#canvascontext = canvas.value.getContext("2d", {
+      willReadFrequently: true,
+    });
 
     if (analyser) this.setAnalyzer(analyser, fftSize);
   }
@@ -42,7 +44,7 @@ export class Oscilloscope {
     this.#analyser.getByteTimeDomainData(this.#dataArray);
 
     this.#canvascontext.fillStyle = this.backgroundColor;
-    this.#canvascontext.fillRect(
+    this.#canvascontext.clearRect(
       0,
       0,
       this.#canvas.value.width,
@@ -75,6 +77,7 @@ export class Oscilloscope {
       this.#canvas.value.width,
       this.#canvas.value.height / 2,
     );
+
     this.#canvascontext.stroke();
   }
 }

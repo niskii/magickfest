@@ -174,6 +174,9 @@ function overlayClick() {
           : null
       }}
     </h2>
+    <Visualiser ref="visualiser" :fftSize=13 :fpsLimit=16 :lineWidth=8 lineColor="#b75" backgroundColor="#0c0c11"
+      style="width: 30em; height: 12em;">
+    </Visualiser>
     <!-- <h3 style="color: white;">temp shit</h3>
             <button @click="connect">connect</button>
             <button @click="disconnect">disconnect</button>
@@ -181,9 +184,6 @@ function overlayClick() {
   </div>
 </div>
 <div style="display: flex; justify-content: center; padding: 1em 0;">
-  <Visualiser ref="visualiser" :fftSize=15 :fpsLimit=40 :lineWidth=3 lineColor="#ddd" backgroundColor="#222"
-    style="width: 15em; height: 5em;">
-  </Visualiser>
 </div>
 <div id="bottomBar">
   <select class="mobileOnly" v-model="bitrate">
