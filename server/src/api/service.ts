@@ -1,12 +1,21 @@
 import express from "express";
-import { Player } from "./player";
+import { Player } from "../player";
 import { Bitrate } from "@shared/types/audio-transfer";
-import { parseTime } from "./time-parser";
-import { ApiSetInfo } from "./types/set";
+import { parseTime } from "../time-parser";
+import { ApiSetInfo } from "../types/set";
 
 const router = express.Router();
 
 export function configureRouter(player: Player) {
+  router.route("/*splat").post((req, res, next) => {
+    //TODO: Check user privileges before allowing post request.
+    if (req.session.user?.IsAdmin) {
+      next();
+    } else {
+      next("No access!");
+    }
+  });
+
   router
     .route("/playposition")
     .get((_, res) => {

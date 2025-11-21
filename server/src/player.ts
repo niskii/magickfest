@@ -115,7 +115,7 @@ export class Player {
       const currentReader = this.getCurrentReader(Bitrate.High);
       if (currentReader !== undefined) {
         console.log(
-          currentReader.getCurrentTimeMillis() / 1000,
+          (currentReader.getCurrentTimeMillis() / 1000).toFixed(1),
           "-",
           currentReader.getRemainingTimeSeconds().toFixed(1),
         );
