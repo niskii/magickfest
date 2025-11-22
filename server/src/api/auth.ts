@@ -1,10 +1,9 @@
-import express, { NextFunction, Request, Response } from "express";
-import session from "express-session";
 import axios from "axios";
+import express, { NextFunction, Request, Response } from "express";
 import { getDiscordEnvironment } from "../envs";
-import { User } from "src/user";
 
 const router = express.Router();
+const envs = getDiscordEnvironment();
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
   console.log(req.session);
@@ -12,58 +11,70 @@ export function isAuthorized(req: Request, res: Response, next: NextFunction) {
   else next("Not Authorized");
 }
 
+async function authenticate(code: string, redirect: boolean): Promise<string> {
+  const formData = new URLSearchParams({
+    client_id: envs.DiscordClientID,
+    client_secret: envs.DiscordClientSecret,
+    grant_type: "authorization_code",
+    code: code.toString(),
+  });
+
+  if (redirect)
+    formData.set("redirect_uri", "https://localhost:8080/api/auth/redirect");
+
+  const authResponse = await axios.post(
+    "https://discord.com/api/v10/oauth2/token",
+    formData,
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    },
+  );
+
+  if (authResponse.status !== 200) {
+    throw new Error("Something went wrong with the authorization!");
+  }
+
+  return authResponse.data.access_token;
+}
+
+async function getGuildMember(accessToken: string): Promise<object> {
+  const userResponse = await axios.get(
+    `https://discord.com/api/v10/users/@me/guilds/${envs.DiscordGuildID}/member`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (userResponse.status === 404) {
+    throw new Error("You are not an exclusive member!");
+  }
+
+  return userResponse.data;
+}
+
 router.get("/redirect", async (req, res) => {
-  const envs = getDiscordEnvironment();
   const { code } = req.query;
 
   if (code) {
-    const formData = new URLSearchParams({
-      client_id: envs.DiscordClientID,
-      client_secret: envs.DiscordClientSecret,
-      grant_type: "authorization_code",
-      code: code.toString(),
-      redirect_uri: "https://localhost:8080/api/auth/redirect",
-    });
-
-    const authResponse = await axios
-      .post("https://discord.com/api/v10/oauth2/token", formData, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      })
-      .catch((reason) => {
-        console.log(reason);
-      });
-
-    if (authResponse === undefined) {
-      res.status(500).send("Something went wrong with the authorization!");
-      return;
-    }
-
-    const access = authResponse.data.access_token;
-    const userResponse = await axios
-      .get(
-        `https://discord.com/api/v10/users/@me/guilds/${envs.DiscordGuildID}/member`,
-        {
-          headers: {
-            Authorization: `Bearer ${access}`,
-          },
-        },
-      )
-      .catch((reason) => {
-        if (reason.status !== 404) console.log(reason);
-      });
-
-    if (userResponse === undefined) {
-      res.status(403).send("You are not an exclusive member!");
-      return;
-    }
+    const accessToken = await authenticate(code.toString(), true);
+    const userData = await getGuildMember(accessToken);
 
     // Certified tmw user!
-    console.log(userResponse.data);
+    console.log(userData);
   }
 
   res.sendStatus(200);
+});
+
+router.post("/token", async (req, res) => {
+  const body = JSON.parse(await req.body);
+  const accessToken = await authenticate(body.code, false);
+
+  res.send(accessToken);
 });
 
 router.get("/login", (req, res, next) => {
