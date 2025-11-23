@@ -1,11 +1,13 @@
 import connectSqlite3 from "connect-sqlite3";
 import cors from "cors";
-import { Express } from "express";
+import { Express, Request } from "express";
 import session, { Store } from "express-session";
 import { Server } from "socket.io";
 import authAPI, { isAuthorized } from "./api/auth";
 import serviceAPI from "./api/service";
-import { setupAuthentication } from "./socket";
+
+const wrap = (middleware: any) => (socket: any, next: any) =>
+  middleware(socket.request, {}, next);
 
 export function setupMiddleware(app: Express, io: Server) {
   app.use(
@@ -43,5 +45,16 @@ export function setupMiddleware(app: Express, io: Server) {
   app.use(isAuthorized);
   app.use("/api/service", serviceAPI);
 
-  setupAuthentication(io, sessionMiddleware);
+  io.use(wrap(sessionMiddleware));
+  io.use((socket, next) => {
+    const req = socket.request as Request;
+    const token = req.headers["authentication"];
+    const user = req.session.user;
+    if (user) {
+      // is user already logged in?
+      next();
+    } else {
+      next(new Error("unauthorized"));
+    }
+  });
 }

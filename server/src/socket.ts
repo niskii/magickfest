@@ -10,33 +10,6 @@ import socketStream from "socket.io-stream";
 
 const connectedUsers = new Set<number>();
 
-export function setupAuthentication(io: Server, session: Express.Application) {
-  io.engine.use(session);
-  io.engine.use(
-    (
-      req: Request & { _query: Record<string, string> },
-      res: Response,
-      next: NextFunction,
-    ) => {
-      const isHandshake = req._query.sid === undefined;
-      if (isHandshake) {
-        const token = req.headers["authentication"];
-        if (req.session.user) {
-          if (token !== undefined) req.session.user.token = token.toString();
-          if (!connectedUsers.has(req.session.user.Id)) {
-            next();
-          }
-        } else {
-          const err = new Error("not authorized");
-          next(err);
-        }
-      } else {
-        next();
-      }
-    },
-  );
-}
-
 export function socketSetup(io: Server, player: Player) {
   io.on("connection", (socket) => {
     const req = socket.request as Request;
