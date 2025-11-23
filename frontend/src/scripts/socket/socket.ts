@@ -9,7 +9,3 @@ export const socket = io("https://localhost:8080", {
   autoConnect: false,
   timeout: 20000,
 });
-
-socket.on("connect_error", () => {
-  socket.disconnect();
-});

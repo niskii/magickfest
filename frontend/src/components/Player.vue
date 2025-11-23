@@ -25,17 +25,58 @@ const analyser = useTemplateRef<visualiserType>("visualiser")
 onMounted(() => {
   function onConnect() {
     isConnected.value = true;
+
+    fetchInfo();
+
+    const player = new AudioStreamPlayer(
+      socket,
+      bitrate.value,
+      volume.value / 100,
+    );
+
+    player.reset();
+    player.start();
+    audioStreamPlayer.value = player;
+
+    clearInterval(stateInterval.value)
+    stateInterval.value = setInterval(() => {
+      playState.value = [
+        player.getCurrentPlayPosition(),
+        player.getTotalDuration(),
+        player.getDownloadedAudioTime(),
+      ];
+    }, config.UpdateInterval);
+
+    analyser.value.setAnalyser(player.getAnalyzer())
+    analyser.value.resume()
+
+    isConnected.value = true;
   }
 
   function onDisconnect() {
     isConnected.value = false;
   }
 
+  function onConnectError(err: Error) {
+    socket.disconnect();
+    isConnected.value = false
+    if (err.message === 'unauthorized') {
+      overlayToggle.value = true;
+      // TODO: Show a modal about logging in.
+    } else {
+      setTimeout(() => {
+        connect();
+      }, 10000)
+    }
+  }
+
   socket.on("connect", onConnect);
+  socket.on("connect_error", onConnectError)
   socket.on("disconnect", onDisconnect);
 
   onUnmounted(() => {
     socket.off("connect", onConnect);
+    socket.off("connect_error", onConnectError);
     socket.off("disconnect", onDisconnect);
     disconnect();
   });
@@ -82,30 +123,6 @@ async function connect() {
   if (!isConnected.value) {
     console.log("Joining audio!");
     socket.connect();
-
-    fetchInfo();
-
-    const player = new AudioStreamPlayer(
-      socket,
-      bitrate.value,
-      volume.value / 100,
-    );
-    player.reset();
-    player.start();
-    audioStreamPlayer.value = player;
-
-    stateInterval.value = setInterval(() => {
-      playState.value = [
-        player.getCurrentPlayPosition(),
-        player.getTotalDuration(),
-        player.getDownloadedAudioTime(),
-      ];
-    }, config.UpdateInterval);
-
-    analyser.value.setAnalyser(player.getAnalyzer())
-    analyser.value.resume()
-
-    isConnected.value = true;
   }
 }
 
