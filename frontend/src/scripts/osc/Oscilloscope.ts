@@ -56,11 +56,14 @@ export class Oscilloscope {
 
     this.#canvascontext.beginPath();
 
-    const sliceWidth = (this.#canvas.value.width * 1.0) / this.#bufferLength;
+    const stepsize = Math.ceil(this.#bufferLength / this.#canvas.value.width);
+
+    const sliceWidth =
+      ((this.#canvas.value.width * 1.0) / this.#bufferLength) * stepsize;
     const inverseHeight = this.#canvas.value.height / 2;
     let x = 0;
 
-    for (let i = 0; i < this.#bufferLength; i++) {
+    for (let i = 0; i < this.#bufferLength - stepsize; i += stepsize) {
       const v = this.#dataArray[i] * 0.0078125;
       const y = v * inverseHeight;
 

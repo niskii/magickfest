@@ -90,7 +90,7 @@ onMounted(() => {
             <filter id="f1" x="0" y="0">
                 <feTurbulence type="fractalNoise" baseFrequency="0.38 0.003" numOctaves="1" :seed=seed1
                     stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence" />
-                <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="20" xChannelSelector="R"
+                <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="14" xChannelSelector="R"
                     yChannelSelector="B" x="0%" y="0%" width="100%" height="100%" result="displacementMap" />
                 <feTurbulence type="turbulence" baseFrequency="0.22 0.22" numOctaves="2" :seed=seed2
                     stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
