@@ -13,6 +13,7 @@ import { Player } from "./player";
 import { PlayerStateManager } from "./player-state-manager";
 import { Playlist } from "./playlist";
 import { socketSetup as setupSocket } from "./socket";
+import { UserManager } from "./user-manager";
 
 const commandLineOptions = readCommands();
 
@@ -39,8 +40,10 @@ const io = new Server(server, {
   connectTimeout: 20000,
 });
 
-setupMiddleware(app, io);
-setupSocket(io, player);
+const userManager = new UserManager();
+
+setupMiddleware(app, io, userManager);
+setupSocket(io, player, userManager);
 
 server.listen(globalThis.settings.port, () => {
   console.log("server running at http://localhost:8080");

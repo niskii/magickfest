@@ -5,8 +5,13 @@ import session, { Store } from "express-session";
 import { Server } from "socket.io";
 import authAPI, { isAuthorized } from "../api/auth";
 import serviceAPI from "../api/service";
+import { UserManager } from "src/user-manager";
 
-export function setupMiddleware(app: Express, io: Server) {
+export function setupMiddleware(
+  app: Express,
+  io: Server,
+  userManager: UserManager,
+) {
   app.use(
     cors({
       origin: [
@@ -52,8 +57,11 @@ export function setupMiddleware(app: Express, io: Server) {
     const token = req.headers["authentication"];
     const user = req.session.user;
     if (user) {
-      // is user already logged in?
-      next();
+      if (!userManager.isConnected(user)) {
+        next();
+      } else {
+        next(new Error("already_connected"));
+      }
     } else {
       next(new Error("unauthorized"));
     }

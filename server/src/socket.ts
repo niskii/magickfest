@@ -1,21 +1,24 @@
-import { NextFunction, Request, Response } from "express";
+import { Bitrate } from "@shared/types/audio-transfer";
+import { SocketSetInfo } from "@shared/types/set";
+import { Request } from "express";
 import { createReadStream } from "fs";
 import path from "path";
 import { Server } from "socket.io";
-import { imageMimeTypes } from "./types/mime-map";
-import { Player } from "./player";
-import { SocketSetInfo } from "@shared/types/set";
-import { Bitrate } from "@shared/types/audio-transfer";
 import socketStream from "socket.io-stream";
+import { Player } from "./player";
+import { imageMimeTypes } from "./types/mime-map";
+import { UserManager } from "./user-manager";
 
-const connectedUsers = new Set<number>();
-
-export function socketSetup(io: Server, player: Player) {
+export function socketSetup(
+  io: Server,
+  player: Player,
+  userManager: UserManager,
+) {
   io.on("connection", (socket) => {
     const req = socket.request as Request;
     const user = req.session.user;
     console.log("a user connected", user);
-    connectedUsers.add(user?.Id!);
+    userManager.setUser(user!);
 
     const sendNewSetAlert = () => {
       socket.emit("newSet");
@@ -29,7 +32,7 @@ export function socketSetup(io: Server, player: Player) {
     player.events?.on("changedState", sendChangedStateAlert);
 
     socket.on("disconnect", () => {
-      connectedUsers.delete(user?.Id!);
+      userManager.removeUser(user!);
       console.log("a user disconnected");
       player.events?.off("newSet", sendNewSetAlert);
       player.events?.off("changedState", sendChangedStateAlert);
