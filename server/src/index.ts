@@ -8,7 +8,7 @@ import https from "https";
 import { Server } from "socket.io";
 import { configureRouter } from "./api/service";
 import { readCommands } from "./commandline";
-import { setupMiddleware as setupMiddlewares } from "./middlewares";
+import { setupMiddleware } from "./api/middlewares";
 import { Player } from "./player";
 import { PlayerStateManager } from "./player-state-manager";
 import { Playlist } from "./playlist";
@@ -39,7 +39,7 @@ const io = new Server(server, {
   connectTimeout: 20000,
 });
 
-setupMiddlewares(app, io);
+setupMiddleware(app, io);
 setupSocket(io, player);
 
 server.listen(globalThis.settings.port, () => {

@@ -3,11 +3,8 @@ import cors from "cors";
 import { Express, Request } from "express";
 import session, { Store } from "express-session";
 import { Server } from "socket.io";
-import authAPI, { isAuthorized } from "./api/auth";
-import serviceAPI from "./api/service";
-
-const wrap = (middleware: any) => (socket: any, next: any) =>
-  middleware(socket.request, {}, next);
+import authAPI, { isAuthorized } from "../api/auth";
+import serviceAPI from "../api/service";
 
 export function setupMiddleware(app: Express, io: Server) {
   app.use(
@@ -29,6 +26,7 @@ export function setupMiddleware(app: Express, io: Server) {
     secret: process.env.SessionSecret!,
     resave: false,
     name: "s.id",
+
     saveUninitialized: false,
     store: new SQLiteStore({
       table: "sessions",
@@ -37,6 +35,9 @@ export function setupMiddleware(app: Express, io: Server) {
     }) as Store,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 5,
+      sameSite: "none",
+      secure: true,
+      httpOnly: false,
     },
   });
 
@@ -45,7 +46,7 @@ export function setupMiddleware(app: Express, io: Server) {
   app.use(isAuthorized);
   app.use("/api/service", serviceAPI);
 
-  io.use(wrap(sessionMiddleware));
+  io.engine.use(sessionMiddleware);
   io.use((socket, next) => {
     const req = socket.request as Request;
     const token = req.headers["authentication"];
