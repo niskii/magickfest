@@ -1,10 +1,23 @@
 import axios from "axios";
 import express, { NextFunction, Request, Response } from "express";
 import { getDiscordEnvironment } from "../envs";
-import { createUserFromGuildMemberObject, User } from "src/user";
+import { User } from "src/user/user";
 
 const router = express.Router();
 const envs = getDiscordEnvironment();
+
+function createUserFromGuildMemberObject(guildUserData: any): User {
+  return {
+    Id: guildUserData.user.id,
+    Name: guildUserData.user.username,
+    IsAdmin: isUserAdmin(guildUserData.roles),
+    Token: null,
+  };
+}
+
+function isUserAdmin(userRoles: string[]) {
+  return userRoles.includes("892525015147380767");
+}
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
   console.log(req.session);
@@ -57,7 +70,7 @@ async function getGuildMember(accessToken: string): Promise<any> {
   }
 }
 
-function loginHandler(
+function sessionHandler(
   user: User,
   req: Request,
   res: Response,
@@ -85,7 +98,7 @@ router.get("/redirect", async (req, res, next) => {
     const user = createUserFromGuildMemberObject(guildUserData);
     console.log(user);
 
-    loginHandler(user, req, res, next);
+    sessionHandler(user, req, res, next);
   }
 });
 
@@ -96,9 +109,9 @@ router.post("/token", async (req, res) => {
   res.send(accessToken);
 });
 
-router.get("/halp", (req, res, next) => {
-  const user: User = { Id: 12444, Name: "ba", IsAdmin: true, Token: "2" };
-  loginHandler(user, req, res, next);
+router.get("/fakeuser", (req, res, next) => {
+  const user: User = { Id: 0, Name: "user", IsAdmin: true, Token: "0" };
+  sessionHandler(user, req, res, next);
 });
 
 router.get("/login", (req, res, next) => {

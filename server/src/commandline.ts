@@ -1,7 +1,7 @@
-import { parseTime } from "./time-parser";
+import { parseTime } from "./parsing/time-parser";
 import path from "path";
 
-const readCommands = () => {
+export const readCommands = () => {
   const argv = require("minimist")(process.argv.slice(2));
 
   const parsedForwardTime = parseTime(getOrDefault(argv.forward, "0"));
@@ -36,8 +36,6 @@ const readCommands = () => {
     scheduledStart,
   };
 };
-
-export { readCommands };
 
 function getOrDefault(variable: any, def: any) {
   if (variable !== undefined) return variable;

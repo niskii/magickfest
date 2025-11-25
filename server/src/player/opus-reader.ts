@@ -5,7 +5,7 @@ import {
   HeaderObject,
   OpusFileSplitter,
   Page,
-} from "./thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
+} from "../thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
 
 export class OpusReader {
   #fileSplitter: OpusFileSplitter;

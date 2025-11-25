@@ -27,7 +27,7 @@ export class PlayerStateManager {
       playlistStateFilePath + this.#player.getPlaylist().getHash() + ".json";
     if (!existsSync(playlistStateFile)) return false;
     const state = JSON.parse(readFileSync(playlistStateFile).toString());
-    console.log(state);
+    console.log("Loaded", state);
     this.#player.setState(
       state["setIndex"],
       state["startTime"],

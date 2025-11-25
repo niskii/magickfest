@@ -5,9 +5,9 @@ import { createReadStream } from "fs";
 import path from "path";
 import { Server } from "socket.io";
 import socketStream from "socket.io-stream";
-import { Player } from "./player";
-import { imageMimeTypes } from "./types/mime-map";
-import { UserManager } from "./user-manager";
+import { Player } from "../player/player";
+import { imageMimeTypes } from "../types/mime-map";
+import { UserManager } from "../user/user-manager";
 
 export function socketSetup(
   io: Server,

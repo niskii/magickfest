@@ -9,11 +9,11 @@ import { Server } from "socket.io";
 import { configureRouter } from "./api/service";
 import { readCommands } from "./commandline";
 import { setupMiddleware } from "./api/middlewares";
-import { Player } from "./player";
-import { PlayerStateManager } from "./player-state-manager";
-import { Playlist } from "./playlist";
-import { socketSetup as setupSocket } from "./socket";
-import { UserManager } from "./user-manager";
+import { Player } from "./player/player";
+import { PlayerStateManager } from "./player/player-state-manager";
+import { Playlist } from "./player/playlist";
+import { socketSetup as setupSocket } from "./transport/socket";
+import { UserManager } from "./user/user-manager";
 
 const commandLineOptions = readCommands();
 
@@ -46,7 +46,7 @@ setupMiddleware(app, io, userManager);
 setupSocket(io, player, userManager);
 
 server.listen(globalThis.settings.port, () => {
-  console.log("server running at http://localhost:8080");
+  console.log(`server running at https://localhost:${settings.port}`);
 });
 
 process.on("warning", (warning) => {

@@ -1,11 +1,11 @@
 import connectSqlite3 from "connect-sqlite3";
 import cors from "cors";
-import { Express, Request } from "express";
+import { Express, NextFunction, Request, Response } from "express";
 import session, { Store } from "express-session";
 import { Server } from "socket.io";
 import authAPI, { isAuthorized } from "../api/auth";
 import serviceAPI from "../api/service";
-import { UserManager } from "src/user-manager";
+import { UserManager } from "src/user/user-manager";
 
 export function setupMiddleware(
   app: Express,
@@ -14,12 +14,7 @@ export function setupMiddleware(
 ) {
   app.use(
     cors({
-      origin: [
-        "http://localhost:5173",
-        "https://localhost:5173",
-        "http://localhost:80",
-        "https://localhost:443",
-      ],
+      origin: ["https://localhost:5173", "https://localhost:443"],
       credentials: true,
       allowedHeaders: ["Access-Control-Allow-Origin"],
     }),
@@ -39,10 +34,10 @@ export function setupMiddleware(
       dir: "./temp",
     }) as Store,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 5,
-      sameSite: "none",
+      maxAge: 1000 * 60 * 60 * 24 * 10,
+      sameSite: "lax",
       secure: true,
-      httpOnly: false,
+      httpOnly: true,
     },
   });
 
@@ -50,6 +45,7 @@ export function setupMiddleware(
   app.use("/api/auth", authAPI);
   app.use(isAuthorized);
   app.use("/api/service", serviceAPI);
+  app.use(error);
 
   io.engine.use(sessionMiddleware);
   io.use((socket, next) => {
@@ -66,4 +62,11 @@ export function setupMiddleware(
       next(new Error("unauthorized"));
     }
   });
+}
+
+function error(err: any, req: Request, res: Response, next: NextFunction) {
+  if (err) {
+    res.status(500).send(err.toString());
+  }
+  next();
 }
