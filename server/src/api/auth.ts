@@ -20,7 +20,6 @@ function isUserAdmin(userRoles: string[]) {
 }
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
-  console.log(req.session);
   if (req.session.user) next();
   else next("Not Authorized");
 }
