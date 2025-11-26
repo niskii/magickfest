@@ -1,25 +1,25 @@
 import settings from "config/settings.json";
 globalThis.settings = settings;
 
+import "dotenv/config";
 import express from "express";
-import router, { configureRouter } from "./api";
+import { readFileSync } from "fs";
 import https from "https";
 import { Server } from "socket.io";
-import { isAuthorized } from "./auth";
-import { readFileSync } from "fs";
-import { Player } from "./player";
-import { Playlist } from "./playlist";
-import { PlayerStateManager } from "./player-state-manager";
-import { setupAuthentication, socketSetup } from "./socket";
+import { configureRouter } from "./api/service";
 import { readCommands } from "./commandline";
-
-import cors from "cors";
+import { setupMiddleware } from "./api/middlewares";
+import { Player } from "./player/player";
+import { PlayerStateManager } from "./player/player-state-manager";
+import { Playlist } from "./player/playlist";
+import { socketSetup as setupSocket } from "./transport/socket";
+import { UserManager } from "./user/user-manager";
 
 const commandLineOptions = readCommands();
 
 const httpsOptions = {
-  key: readFileSync("./security/cert.key"),
-  cert: readFileSync("./security/cert.pem"),
+  pfx: readFileSync("./security/newkey.pfx"),
+  passphrase: process.env.PfxSecret,
 };
 
 const playlist = new Playlist(commandLineOptions.playlistFile);
@@ -27,24 +27,26 @@ const player = new Player(playlist, commandLineOptions.isLooped);
 configureRouter(player);
 
 const app = express();
-app.use(cors({ origin: ["http://localhost:80", "https://localhost:443"] }));
-app.use(isAuthorized);
-app.use(router);
-
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.send("Hello!");
 });
 
 const server = https.createServer(httpsOptions, app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://localhost:5173",
+    credentials: true,
   },
   connectTimeout: 20000,
 });
 
+const userManager = new UserManager();
+
+setupMiddleware(app, io, userManager);
+setupSocket(io, player, userManager);
+
 server.listen(globalThis.settings.port, () => {
-  console.log("server running at http://localhost:8080");
+  console.log(`server running at https://localhost:${settings.port}`);
 });
 
 process.on("warning", (warning) => {
@@ -63,9 +65,6 @@ const playerStateManager = new PlayerStateManager(
 );
 
 playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
-
-setupAuthentication(io);
-socketSetup(io, player);
 
 setTimeout(
   () => {

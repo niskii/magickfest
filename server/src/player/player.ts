@@ -67,7 +67,6 @@ export class Player {
   }
 
   playAt(forwarded: number, startTime?: number) {
-    console.log(this.#playlist.getCurrentIndex(), this.#playlist.getLength());
     if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
       throw new Error("The playlist has ended");
     }
@@ -113,21 +112,15 @@ export class Player {
       // because getting the duration of the file
       // would require a dedicated metadata reader.
       const currentReader = this.getCurrentReader(Bitrate.High);
-      if (currentReader !== undefined) {
-        console.log(
-          currentReader.getCurrentTimeMillis() / 1000,
-          "-",
-          currentReader.getRemainingTimeSeconds().toFixed(1),
-        );
-        if (currentReader.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
-          this.#waitnextset = true;
-          setTimeout(() => {
-            this.#waitnextset = false;
-            if (!this.#loop) this.nextSet();
-            this.playAtStart();
-            console.log("new set!");
-          }, globalThis.settings.playerNewSetTimeout);
-        }
+      if (currentReader === undefined) return;
+      if (currentReader.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
+        this.#waitnextset = true;
+        setTimeout(() => {
+          this.#waitnextset = false;
+          if (!this.#loop) this.nextSet();
+          this.playAtStart();
+          console.log("new set!");
+        }, globalThis.settings.playerNewSetTimeout);
       }
     }, globalThis.settings.playerUpdateInterval);
   }

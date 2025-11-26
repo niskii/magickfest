@@ -43,8 +43,6 @@ export class Playlist {
 
     this.#id = createHash("MD5").update(playlist).digest("hex");
 
-    console.log("sets", this.#sets);
-
     if (this.#sets === undefined)
       throw Error("Could not parse the JSON string");
 
