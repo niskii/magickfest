@@ -20,6 +20,8 @@ const { width, height } = useElementSize(container)
 
 const seed1 = ref(0)
 const seed2 = ref(0)
+const scale1 = ref(10)
+const scale2 = ref(10)
 
 function setAnalyser(analyser: AnalyserNode) {
     visualiser.value.setAnalyzer(analyser, props.fftSize)
@@ -29,6 +31,8 @@ const { pause, resume } = useRafFn(() => {
     if (visualiser.value !== null) {
         seed1.value = Math.floor(Math.random() * 100)
         seed2.value = Math.floor(Math.random() * 100)
+        scale1.value = Math.sin(Date.now() / 1000) * 6 + 14
+        scale2.value = Math.sin(Date.now() / 1000) * 1.5 + 2
         visualiser.value.draw()
     }
 }, { fpsLimit, immediate: false })
@@ -84,13 +88,22 @@ onMounted(() => {
 
 <template>
 <div ref="container" id="container">
-    <canvas id="canvas" ref="canvas" style="filter: url(#f1);" :width="width * 2" :height="height * 2"></canvas>
+    <canvas id="canvas" ref="canvas" style="filter: url(#f1);" :width="width * 1" :height="height * 1"></canvas>
     <svg display="none">
         <defs>
             <filter id="f1" x="0" y="0">
+                <feMorphology operator="dilate" radius="0.6 2.4" x="0%" y="0%" width="100%" height="100%"
+                    in="SourceGraphic" result="morphology" />
+                <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="morphology"
+                    result="componentTransfer">
+                    <feFuncR type="identity" />
+                    <feFuncG type="identity" />
+                    <feFuncB type="identity" />
+                    <feFuncA type="table" tableValues="0 3.0" />
+                </feComponentTransfer>
                 <feTurbulence type="fractalNoise" baseFrequency="0.38 0.003" numOctaves="1" :seed=seed1
                     stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence" />
-                <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="14" xChannelSelector="R"
+                <feDisplacementMap in="componentTransfer" in2="turbulence" :scale=scale1 xChannelSelector="R"
                     yChannelSelector="B" x="0%" y="0%" width="100%" height="100%" result="displacementMap" />
                 <feTurbulence type="turbulence" baseFrequency="0.22 0.22" numOctaves="2" :seed=seed2
                     stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
@@ -101,7 +114,7 @@ onMounted(() => {
                     <feFuncG type="identity" />
                     <feFuncA type="discrete" tableValues="0 1" />
                 </feComponentTransfer>
-                <feDisplacementMap in="displacementMap" in2="componentTransfer1" scale="2" xChannelSelector="A"
+                <feDisplacementMap in="displacementMap" in2="componentTransfer1" :scale=scale2 xChannelSelector="A"
                     yChannelSelector="A" x="0%" y="0%" width="100%" height="100%" result="displacementMap1" />
             </filter>
         </defs>

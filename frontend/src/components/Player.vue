@@ -191,7 +191,7 @@ function overlayClick() {
           : null
       }}
     </h2>
-    <Visualiser ref="visualiser" :fftSize=13 :fpsLimit=16 :lineWidth=8 lineColor="#b75" backgroundColor="#0c0c11"
+    <Visualiser ref="visualiser" :fftSize=13 :fpsLimit=16 :lineWidth=1 lineColor="#b75" backgroundColor="#0c0c11"
       style="width: 30em; height: 12em;">
     </Visualiser>
     <!-- <h3 style="color: white;">temp shit</h3>
