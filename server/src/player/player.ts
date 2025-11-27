@@ -15,6 +15,12 @@ export class Player {
   //testing
   #loop = false;
 
+  /**
+   * Instantiate a new player with a playlist to play.
+   *
+   * @param playlist playlist to play
+   * @param loop do loop the set
+   */
   constructor(playlist: Playlist, loop: boolean) {
     this.#playlist = playlist;
     this.#readerCollection = new Map();
@@ -29,10 +35,20 @@ export class Player {
     }
   }
 
+  /**
+   * Returns the playlist of the player.
+   *
+   * @returns playlist of the player
+   */
   getPlaylist() {
     return this.#playlist;
   }
 
+  /**
+   * Returns the current state of the player.
+   *
+   * @returns an object containing the state
+   */
   getState() {
     return {
       id: this.#playlist.getHash(),
@@ -42,6 +58,13 @@ export class Player {
     };
   }
 
+  /**
+   * Sets the state of the player.
+   *
+   * @param setIndex an index of a set
+   * @param startTime the starting point
+   * @param forwarded the time the set is forwarded
+   */
   setState(
     setIndex: number | null,
     startTime: number | null,
@@ -61,11 +84,20 @@ export class Player {
     }
   }
 
+  /**
+   * Changes the state of the player to the next set
+   */
   nextSet() {
     this.#playlist.nextSet();
     this.events?.emit("newSet");
   }
 
+  /**
+   * Play the current set.
+   *
+   * @param forwarded unix time the set is forwarded
+   * @param startTime unix time the set started
+   */
   playAt(forwarded: number, startTime?: number) {
     if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
       throw new Error("The playlist has ended");
@@ -90,18 +122,33 @@ export class Player {
     this.#setupPlaybackTimer();
   }
 
+  /**
+   * Play the current set at the state of the player.
+   */
   playAtState() {
     this.playAt(this.#forwarded, this.#startTime);
   }
 
+  /**
+   * Play the current set with the forwarded time. Otherwise starting point is now.
+   */
   playAtForwarded() {
     this.playAt(this.#forwarded, Date.now());
   }
 
+  /**
+   * Play the current set from the beginning.
+   */
   playAtStart() {
     this.playAt(0, Date.now());
   }
 
+  /**
+   * Returns an opus reader of the given bitrate.
+   *
+   * @param bitrate the desired bitrate
+   * @returns an opus reader
+   */
   getCurrentReader(bitrate: Bitrate) {
     return this.#readerCollection.get(bitrate);
   }
