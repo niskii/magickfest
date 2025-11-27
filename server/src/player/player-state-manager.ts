@@ -14,7 +14,7 @@ export class PlayerStateManager {
   }
 
   setupAutoSave(isLoadOverriden: boolean) {
-    this.#player.events?.on("finished", () => {
+    this.#player.events?.on("newSet", () => {
       this.saveState();
     });
 

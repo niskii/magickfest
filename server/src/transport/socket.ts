@@ -38,6 +38,9 @@ export function socketSetup(
       player.events?.off("changedState", sendChangedStateAlert);
     });
 
+    /**
+     * Sends the current AudioPacket in the requested bitrate.
+     */
     socket.on("fetchSyncedChunk", (data: { bitrate: Bitrate }, callback) => {
       const result = player.getCurrentReader(data.bitrate)?.getCurrentChunk();
       if (result !== undefined) socket.emit("syncedChunk", result.data);
@@ -46,12 +49,15 @@ export function socketSetup(
       });
     });
 
+    /**
+     * Sends the next AudioPacket in the requested bitrate.
+     */
     socket.on(
       "fetchChunkFromPage",
-      (data: { bitrate: Bitrate; lastPage: number }, callback) => {
+      (data: { bitrate: Bitrate; pageStart: number }, callback) => {
         const result = player
           .getCurrentReader(data.bitrate)
-          ?.getNextChunk(data.lastPage);
+          ?.getNextChunk(data.pageStart);
         if (result !== undefined) socket.emit("chunkFromPage", result.data);
         callback({
           status: result?.status,
@@ -59,6 +65,9 @@ export function socketSetup(
       },
     );
 
+    /**
+     * Sends the set information and streams the cover image.
+     */
     socket.on("fetchSetInformation", () => {
       const imageStream = socketStream.createStream();
       const currentSet = player.getPlaylist().getCurrentSet();
