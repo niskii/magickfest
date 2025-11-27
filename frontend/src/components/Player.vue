@@ -60,13 +60,22 @@ onMounted(() => {
   function onConnectError(err: Error) {
     socket.disconnect();
     isConnected.value = false
-    if (err.message === 'unauthorized') {
-      overlayToggle.value = true;
-      // TODO: Show a modal about logging in.
-    } else {
-      setTimeout(() => {
-        connect();
-      }, 10000)
+    switch (err.message) {
+      case 'unauthorized': {
+        // TODO: Show a modal about logging in.
+        overlayToggle.value = true;
+        break;
+      }
+      case 'already_connected': {
+        // TODO: Show a modal for this.
+        console.log("You are connected already!")
+        break;
+      }
+      default: {
+        setTimeout(() => {
+          connect();
+        }, 10000)
+      }
     }
   }
 
