@@ -1,15 +1,62 @@
 export class OggPageHeader {
+  /**
+   * View of the byte buffer.
+   */
   #view;
+
+  /**
+   * Offset pointing to where the page starts in the buffer.
+   */
   offset;
+
+  /**
+   * Is Ogg id page.
+   */
   isIdPage;
+
+  /**
+   * Is Ogg comment page.
+   */
   isCommentPage;
+
+  /**
+   * Is Ogg audio page.
+   */
   isAudioPage;
+
+  /**
+   * Number of segments in the page.
+   */
   pageSegments;
+
+  /**
+   * Size in bytes of Ogg the header.
+   */
   headerSize;
+
+  /**
+   * Size in bytes of thte full page.
+   */
   pageSize;
+
+  /**
+   * Ogg version. Always 1.
+   */
   version;
+
+  /**
+   * Is the page a starting continuing or ending of a given type. I.e. comment pages.
+   */
   type;
+
+  /**
+   * Ogg serial number.
+   */
   serial;
+
+  /**
+   * Checksum of the page.
+   */
   checksum;
 
   constructor(view: DataView, offset: number) {

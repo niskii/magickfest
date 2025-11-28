@@ -35,14 +35,14 @@ export class HeaderObject {
   preskipGranule: number;
   channels: number;
   PCMLength: bigint;
-  audioPageSize: number;
+  audioPageDuration: number;
   firstAudioPageIndex: number;
 
   constructor() {
     this.preskipGranule = 0;
     this.channels = 0;
     this.PCMLength = 0n;
-    this.audioPageSize = 0;
+    this.audioPageDuration = 0;
     this.firstAudioPageIndex = 0;
   }
 }
@@ -185,22 +185,12 @@ export class OpusFileSplitter {
           tempGranulePosition = pageHeader.granulePosition;
         }
         if (pageNumber === this.#headerObject.firstAudioPageIndex + 1) {
-          this.#headerObject.audioPageSize = this.calculateDurationSeconds(
+          this.#headerObject.audioPageDuration = this.calculateDurationSeconds(
             tempGranulePosition,
             pageHeader.granulePosition,
           );
         }
       }
-
-      // const { isIdPage, isCommentPage, isAudioPage, isFirstPage, isLastPage, pageSequence, granulePosition} = pageHeader;
-      // console.log({
-      //               id: Number(isIdPage),
-      //               comment: Number(isCommentPage),
-      //               audio: Number(isAudioPage),
-      //               first: Number(isFirstPage),
-      //               last: Number(isLastPage),
-      //               page: pageSequence, pos: granulePosition
-      //             });
 
       // skip ahead to next page
       if (pageHeader.pageSize) {
