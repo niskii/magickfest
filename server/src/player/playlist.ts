@@ -123,6 +123,6 @@ export class Playlist {
    * @returns returns the next set index.
    */
   nextSet() {
-    return this.#currentSet++;
+    this.setCurrentSet(this.#currentSet + 1);
   }
 }

@@ -50,9 +50,10 @@ export class Player {
    */
   constructor(playlist: Playlist, loop: boolean) {
     this.#playlist = playlist;
-    this.#readerCollection = new Map();
     this.#startTime = 0;
     this.#forwarded = 0;
+    this.#readerCollection = new Map();
+    this.loadCurrentSet();
 
     this.#loop = loop;
 
@@ -97,11 +98,10 @@ export class Player {
     startTime: number | null,
     forwarded: number | null,
   ) {
-    if (setIndex !== null) {
-      if (this.#playlist.getCurrentIndex() != setIndex) {
-        this.events?.emit("newSet");
-      }
+    if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
       this.#playlist.setCurrentSet(setIndex);
+      this.loadCurrentSet();
+      this.events?.emit("newSet");
     }
     if (startTime !== null) {
       this.#startTime = startTime;
@@ -116,6 +116,7 @@ export class Player {
    */
   nextSet() {
     this.#playlist.nextSet();
+    this.loadCurrentSet();
     this.events?.emit("newSet");
   }
 
@@ -136,15 +137,7 @@ export class Player {
 
     this.#playbackTimer?.close();
 
-    this.#readerCollection.clear();
-
-    this.#playlist.forEachCurrentAudioFile((audioFile) => {
-      const reader = new OpusReader(audioFile.File);
-      this.#readerCollection.set(audioFile.Bitrate, reader);
-    });
-
     this.events?.emit("changedState");
-
     this.#setupPlaybackTimer();
   }
 
@@ -196,6 +189,14 @@ export class Player {
    */
   getCurrentPositionSeconds() {
     return this.getCurrentPositionMilliseconds() / 1000;
+  }
+
+  loadCurrentSet() {
+    this.#readerCollection.clear();
+    this.#playlist.forEachCurrentAudioFile((audioFile) => {
+      const reader = new OpusReader(audioFile.File);
+      this.#readerCollection.set(audioFile.Bitrate, reader);
+    });
   }
 
   /**
