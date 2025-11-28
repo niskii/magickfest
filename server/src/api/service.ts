@@ -18,9 +18,7 @@ export function configureRouter(player: Player) {
   router
     .route("/playposition")
     .get((req, res) => {
-      const position = player
-        .getCurrentReader(Bitrate.High)
-        ?.getCurrentTimeMillis();
+      const position = player.getCurrentPositionMilliseconds();
       if (position && req.query.formatted === "true") {
         res.json({
           hours: Math.floor((position / (1000 * 60 * 60)) % 24),

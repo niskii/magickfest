@@ -8,24 +8,49 @@ import {
 } from "../thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
 
 export class OpusReader {
+  /**
+   * Manages the opus pages.
+   */
   #fileSplitter: OpusFileSplitter;
+
+  /**
+   * Metadata of the file.
+   */
   #headerObject: HeaderObject;
-  #startTime: number;
+
+  /**
+   * Array of all the audio pages.
+   */
   #pages: Array<Page>;
+
+  /**
+   * Total number of audio pages
+   */
   #numberOfPages: number;
+
+  /**
+   * Calculated number of pages needed to satisfy a duration.
+   */
   #minPagesForChunk: number;
+
+  /**
+   * Duration of the file.
+   */
   #totalDurationSeconds: number;
+
+  /**
+   * Granule positions. Needed for binary searching.
+   */
   #positions: Array<number>;
 
   constructor(file: string) {
     this.#fileSplitter = new OpusFileSplitter(readFileSync(file).buffer);
     this.#headerObject = this.#fileSplitter.headerObject;
-    this.#startTime = Date.now();
     this.#pages = this.#fileSplitter.pages;
     this.#numberOfPages = this.#pages.length;
     this.#minPagesForChunk = this.calculateMinPages(
       globalThis.settings.chunkDuration,
-      this.#headerObject.audioPageSize,
+      this.#headerObject.audioPageDuration,
     );
     this.#totalDurationSeconds = this.#fileSplitter.calculateDurationSeconds(
       BigInt(this.#headerObject.preskipGranule),
@@ -35,65 +60,8 @@ export class OpusReader {
     this.#positions = this.#pages.flatMap((p) => Number(p.position));
   }
 
-  /**
-   * Resets the internal clock of the reader.
-   */
-  resetClock() {
-    this.#startTime = Date.now();
-  }
-
-  /**
-   * Get the internal starting point of the reader.
-   *
-   * @returns unix time point
-   */
-  getClock() {
-    return this.#startTime;
-  }
-
-  /**
-   * Set the internal clock of the reader.
-   *
-   * @param time unix time
-   */
-  setClock(time: number) {
-    this.#startTime = time;
-  }
-
-  /**
-   * Returns the current play position in milliseconds.
-   *
-   * @returns play position in milliseconds
-   */
-  getCurrentTimeMillis() {
-    return Date.now() - this.#startTime;
-  }
-
-  /**
-   * Returns the remaining time of the file given the position.
-   *
-   * @returns reamining time in seconds
-   */
-  getRemainingTimeSeconds() {
-    return this.#totalDurationSeconds - this.getCurrentTimeMillis() / 1000;
-  }
-
-  /**
-   * Returns the current play position in seconds.
-   *
-   * @returns play position in seconds
-   */
-  getPlayTimeSeconds() {
-    return (Date.now() - this.#startTime) / 1000;
-  }
-
-  /**
-   * Returns the page number of the current play position.
-   *
-   * @returns page number
-   */
-  getCurrentPage() {
-    return this.searchPosition(this.getPlayTimeSeconds() * 48000);
+  getTotalDuration() {
+    return this.#totalDurationSeconds;
   }
 
   /**
@@ -181,16 +149,16 @@ export class OpusReader {
    * @param end page number to end the slice
    * @returns AudioPacket containing audio buffer slice
    */
-  makeChunkFromRange(start: number, end: number) {
+  makeChunkFromRange(start: number, end: number, time: number) {
     const chunks = this.#fileSplitter.sliceByPage(start, end);
     if (chunks !== null) {
       const packet: AudioPacket = {
         Buffer: chunks,
         PageStart: start,
         PageEnd: end,
-        ChunkPlayPosition: this.#headerObject.audioPageSize * start,
+        ChunkPlayPosition: this.#headerObject.audioPageDuration * start,
         TotalDuration: this.#totalDurationSeconds,
-        ServerTime: this.getCurrentTimeMillis(),
+        ServerTime: time,
       };
       return packet;
     } else {
@@ -199,41 +167,30 @@ export class OpusReader {
   }
 
   /**
-   * Returns the AudioPacket at the current play position.
+   * Validates the requested play position and page number and creates an AudioPacket.
    *
-   * @returns an AudioPacket
+   * @param time play position
+   * @param pageStartOverride start of the range
+   * @returns an AudioPacket and a read code
    */
-  getCurrentChunk() {
-    const pageStart = this.getCurrentPage();
+  getChunkAtTime(time: number, pageStartOverride?: number) {
+    const currentPage = this.searchPosition(time * 48000);
+    const pageStart =
+      pageStartOverride !== undefined ? pageStartOverride : currentPage;
     const pageEnd = this.getPageRangeEnd(pageStart);
-    if (pageStart == pageEnd) return { data: null, status: ReadCode.EOF };
-    return {
-      data: this.makeChunkFromRange(pageStart, pageEnd),
-      status: ReadCode.CONTINUATION,
-    };
-  }
 
-  /**
-   * Returns an AudioPacket of default duration.
-   *
-   * @param pageStart starting point for the range
-   * @returns an AudioPacket
-   */
-  getNextChunk(pageStart: number) {
-    const currentPage = this.getCurrentPage();
-    const pageEnd = this.getPageRangeEnd(pageStart);
     if (pageStart == pageEnd) return { data: null, status: ReadCode.EOF };
 
     if (pageStart > this.#numberOfPages || pageEnd > this.#numberOfPages)
       return { data: null, status: ReadCode.EOF };
     if (
-      this.calculateRangeDuration(currentPage, pageStart) >
+      this.calculateRangeDuration(currentPage, pageStart) >=
       globalThis.settings.maxSecondsLoadAhead
     )
       return { data: null, status: ReadCode.INVALID };
 
     return {
-      data: this.makeChunkFromRange(pageStart, pageEnd),
+      data: this.makeChunkFromRange(pageStart, pageEnd, time),
       status: ReadCode.CONTINUATION,
     };
   }

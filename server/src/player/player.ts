@@ -4,12 +4,39 @@ import { Playlist } from "./playlist";
 import { Bitrate } from "@shared/types/audio-transfer";
 
 export class Player {
-  #readerCollection: Map<number, OpusReader>;
+  /**
+   * Collection of opus readers loaded with different bitrate opus files.
+   */
+  #readerCollection: Map<Bitrate, OpusReader>;
+
+  /**
+   * Timestamp for when the player started.
+   */
   #startTime: number;
+
+  /**
+   * Time in milliseconds the sound is forwarded.
+   */
   #forwarded: number;
+
+  /**
+   * Timer for internal progression checking.
+   */
   #playbackTimer: NodeJS.Timeout | null = null;
+
+  /**
+   * The playlist to play.
+   */
   #playlist;
+
+  /**
+   * Boolean to lock the timer payload.
+   */
   #waitnextset = false;
+
+  /**
+   * Events for state changes.
+   */
   events: EventEmitter | undefined;
 
   //testing
@@ -95,7 +122,7 @@ export class Player {
   /**
    * Play the current set.
    *
-   * @param forwarded unix time the set is forwarded
+   * @param forwarded milliseconds the set is forwarded
    * @param startTime unix time the set started
    */
   playAt(forwarded: number, startTime?: number) {
@@ -113,7 +140,6 @@ export class Player {
 
     this.#playlist.forEachCurrentAudioFile((audioFile) => {
       const reader = new OpusReader(audioFile.File);
-      reader.setClock(this.#startTime - forwarded);
       this.#readerCollection.set(audioFile.Bitrate, reader);
     });
 
@@ -144,6 +170,35 @@ export class Player {
   }
 
   /**
+   * Returns the remaining time of the file given the position.
+   *
+   * @returns reamining time in seconds
+   */
+  getRemainingTimeSeconds() {
+    const currentReader = this.getCurrentReader(Bitrate.High);
+    if (currentReader === undefined) return 0;
+    return currentReader.getTotalDuration() - this.getCurrentPositionSeconds();
+  }
+
+  /**
+   * Returns the current play position in milliseconds.
+   *
+   * @returns play position in milliseconds
+   */
+  getCurrentPositionMilliseconds() {
+    return Date.now() - this.#startTime + this.#forwarded;
+  }
+
+  /**
+   * Returns the current play position in seconds.
+   *
+   * @returns play position in seconds
+   */
+  getCurrentPositionSeconds() {
+    return this.getCurrentPositionMilliseconds() / 1000;
+  }
+
+  /**
    * Returns an opus reader of the given bitrate.
    *
    * @param bitrate the desired bitrate
@@ -153,14 +208,32 @@ export class Player {
     return this.#readerCollection.get(bitrate);
   }
 
+  /**
+   * Returns the current chunk in the given bitrate of the opus file being played.
+   *
+   * @param bitrate
+   * @returns an AudioPacket and a read code
+   */
+  getCurrentChunk(bitrate: Bitrate) {
+    const reader = this.getCurrentReader(bitrate);
+    if (reader) return reader.getChunkAtTime(this.getCurrentPositionSeconds());
+  }
+
+  /**
+   * Returns the chunk starting at the page number in the given bitrate of the opus file being played.
+   *
+   * @param bitrate
+   * @returns an AudioPacket and a read code
+   */
+  getNextChunk(pageStart: number, bitrate: Bitrate) {
+    const reader = this.getCurrentReader(bitrate);
+    if (reader)
+      return reader.getChunkAtTime(this.getCurrentPositionSeconds(), pageStart);
+  }
+
   #setupPlaybackTimer() {
     this.#playbackTimer = setInterval(() => {
-      // using the high quality reader as a baseline for tracking time
-      // because getting the duration of the file
-      // would require a dedicated metadata reader.
-      const currentReader = this.getCurrentReader(Bitrate.High);
-      if (currentReader === undefined) return;
-      if (currentReader.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
+      if (this.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
         this.#waitnextset = true;
         setTimeout(() => {
           this.#waitnextset = false;

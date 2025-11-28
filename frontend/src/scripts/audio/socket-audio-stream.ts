@@ -55,7 +55,7 @@ export class SocketAudioStream {
       this.#timeKeeper.setTotalDuration(data.TotalDuration);
       this.#timeKeeper.addDelay(
         data.ChunkPlayPosition -
-          data.ServerTime / 1000 -
+          data.ServerTime -
           this.#timeKeeper.getCurrentTime(),
       );
       this.handleChunk(data);
@@ -69,7 +69,7 @@ export class SocketAudioStream {
     console.log("trying to fetch!", this.#lastChunkPage);
     this.#socket.emit(
       "fetchChunkFromPage",
-      { bitrate: this.#bitrate, lastPage: this.#lastChunkPage },
+      { bitrate: this.#bitrate, pageStart: this.#lastChunkPage },
       (response: { status: ReadCode }) => {
         if (response.status == ReadCode.EOF) {
           this.onFlush();
@@ -82,11 +82,12 @@ export class SocketAudioStream {
     this.#socket.once("chunkFromPage", (chunk: AudioPacket) => {
       console.log(
         "Delay of:",
-        chunk.ServerTime / 1000 - this.#timeKeeper.getCurrentPlayPosition(),
+        chunk.ServerTime - this.#timeKeeper.getCurrentPlayPosition(),
+        this.#timeKeeper.getDownloadedAudioDuration(),
       );
       if (
         this.#timeKeeper.getCurrentPlayPosition() <
-        chunk.ServerTime / 1000 - config.MaxOutOfSync
+        chunk.ServerTime - config.MaxOutOfSync
       ) {
         this.#needsResync = true;
       }

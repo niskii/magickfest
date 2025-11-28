@@ -31,6 +31,9 @@ export function socketSetup(
     player.events?.on("newSet", sendNewSetAlert);
     player.events?.on("changedState", sendChangedStateAlert);
 
+    /**
+     * Clean up when a user disconnects.
+     */
     socket.on("disconnect", () => {
       userManager.removeUser(user!);
       console.log("a user disconnected");
@@ -42,7 +45,7 @@ export function socketSetup(
      * Sends the current AudioPacket in the requested bitrate.
      */
     socket.on("fetchSyncedChunk", (data: { bitrate: Bitrate }, callback) => {
-      const result = player.getCurrentReader(data.bitrate)?.getCurrentChunk();
+      const result = player.getCurrentChunk(data.bitrate);
       if (result !== undefined) socket.emit("syncedChunk", result.data);
       callback({
         status: result?.status,
@@ -55,9 +58,7 @@ export function socketSetup(
     socket.on(
       "fetchChunkFromPage",
       (data: { bitrate: Bitrate; pageStart: number }, callback) => {
-        const result = player
-          .getCurrentReader(data.bitrate)
-          ?.getNextChunk(data.pageStart);
+        const result = player.getNextChunk(data.pageStart, data.bitrate);
         if (result !== undefined) socket.emit("chunkFromPage", result.data);
         callback({
           status: result?.status,
