@@ -1,11 +1,12 @@
+import bodyParser from "body-parser";
 import connectSqlite3 from "connect-sqlite3";
 import cors from "cors";
 import { Express, NextFunction, Request, Response } from "express";
 import session, { Store } from "express-session";
 import { Server } from "socket.io";
+import { UserManager } from "src/user/user-manager";
 import authAPI, { isAuthorized } from "../api/auth";
 import serviceAPI from "../api/service";
-import { UserManager } from "src/user/user-manager";
 
 export function setupMiddleware(
   app: Express,
@@ -35,12 +36,13 @@ export function setupMiddleware(
     }) as Store,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 10,
-      sameSite: "lax",
+      sameSite: "none",
       secure: true,
       httpOnly: true,
     },
   });
 
+  app.use(bodyParser.json());
   app.use(sessionMiddleware);
   app.use("/api/auth", authAPI);
   app.use(isAuthorized);
@@ -52,6 +54,7 @@ export function setupMiddleware(
     const req = socket.request as Request;
     const token = req.headers["authentication"];
     const user = req.session.user;
+    console.log("joining", req.session);
     if (user) {
       if (!userManager.isConnected(user)) {
         next();

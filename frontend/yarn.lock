@@ -40,6 +40,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@discord/embedded-app-sdk@npm:^2.4.0":
+  version: 2.4.0
+  resolution: "@discord/embedded-app-sdk@npm:2.4.0"
+  dependencies:
+    "@types/lodash.transform": "npm:^4.6.6"
+    "@types/uuid": "npm:^10.0.0"
+    big-integer: "npm:^1.6.48"
+    decimal.js-light: "npm:^2.5.0"
+    eventemitter3: "npm:^5.0.0"
+    lodash.transform: "npm:^4.6.0"
+    uuid: "npm:^11.0.0"
+    zod: "npm:^3.9.8"
+  checksum: 10c0/de1d74e786a047c9f00c0db04db53d75b17cfec3a6360f0c55383eb6b3364140e7213f0a39ab529cfb04f7c39fbfd9633132f63f3d98c6ff556b75a102906440
+  languageName: node
+  linkType: hard
+
 "@esbuild/aix-ppc64@npm:0.25.12":
   version: 0.25.12
   resolution: "@esbuild/aix-ppc64@npm:0.25.12"
@@ -504,12 +520,35 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.transform@npm:^4.6.6":
+  version: 4.6.9
+  resolution: "@types/lodash.transform@npm:4.6.9"
+  dependencies:
+    "@types/lodash": "npm:*"
+  checksum: 10c0/857f4d9483dcfbafc1313aa0c59fcf60ba0fa949d516986160855e089cfe9667ced7ad03a3e984b76c148056ab84c91c074debbd287fbd224d32faef6f190ba2
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:*":
+  version: 4.17.21
+  resolution: "@types/lodash@npm:4.17.21"
+  checksum: 10c0/73cb006e047d8871e9d63f3a165543bf16c44a5b6fe3f9f6299e37cb8d67a7b1d55ac730959a81f9def510fd07232ff7e30e05413e5d5a12793baad84ebe36c3
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^24.6.0":
   version: 24.10.0
   resolution: "@types/node@npm:24.10.0"
   dependencies:
     undici-types: "npm:~7.16.0"
   checksum: 10c0/f82ed7194e16f5590ef7afdc20c6d09068c76d50278b485ede8f0c5749683536e3064ffa8def8db76915196afb3724b854aa5723c64d6571b890b14492943b46
+  languageName: node
+  linkType: hard
+
+"@types/uuid@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "@types/uuid@npm:10.0.0"
+  checksum: 10c0/9a1404bf287164481cb9b97f6bb638f78f955be57c40c6513b7655160beb29df6f84c915aaf4089a1559c216557dc4d2f79b48d978742d3ae10b937420ddac60
   languageName: node
   linkType: hard
 
@@ -830,6 +869,13 @@ __metadata:
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
+  languageName: node
+  linkType: hard
+
+"big-integer@npm:^1.6.48":
+  version: 1.6.52
+  resolution: "big-integer@npm:1.6.52"
+  checksum: 10c0/9604224b4c2ab3c43c075d92da15863077a9f59e5d4205f4e7e76acd0cd47e8d469ec5e5dba8d9b32aa233951893b29329ca56ac80c20ce094b4a647a66abae0
   languageName: node
   linkType: hard
 
@@ -1196,6 +1242,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"decimal.js-light@npm:^2.5.0":
+  version: 2.5.1
+  resolution: "decimal.js-light@npm:2.5.1"
+  checksum: 10c0/4fd33f535aac9e5bd832796831b65d9ec7914ad129c7437b3ab991b0c2eaaa5a57e654e6174c4a17f1b3895ea366f0c1ab4955cdcdf7cfdcf3ad5a58b456c020
+  languageName: node
+  linkType: hard
+
 "define-data-property@npm:^1.0.1, define-data-property@npm:^1.1.4":
   version: 1.1.4
   resolution: "define-data-property@npm:1.1.4"
@@ -1469,6 +1522,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eventemitter3@npm:^5.0.0":
+  version: 5.0.1
+  resolution: "eventemitter3@npm:5.0.1"
+  checksum: 10c0/4ba5c00c506e6c786b4d6262cfbce90ddc14c10d4667e5c83ae993c9de88aa856033994dd2b35b83e8dc1170e224e66a319fa80adc4c32adcd2379bbc75da814
+  languageName: node
+  linkType: hard
+
 "events@npm:^3.0.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
@@ -1539,6 +1599,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "frontend@workspace:."
   dependencies:
+    "@discord/embedded-app-sdk": "npm:^2.4.0"
     "@types/node": "npm:^24.6.0"
     "@vitejs/plugin-vue": "npm:^6.0.1"
     "@vue/tsconfig": "npm:^0.8.1"
@@ -1932,6 +1993,13 @@ __metadata:
   dependencies:
     p-locate: "npm:^5.0.0"
   checksum: 10c0/d3972ab70dfe58ce620e64265f90162d247e87159b6126b01314dd67be43d50e96a50b517bce2d9452a79409c7614054c277b5232377de50416564a77ac7aad3
+  languageName: node
+  linkType: hard
+
+"lodash.transform@npm:^4.6.0":
+  version: 4.6.0
+  resolution: "lodash.transform@npm:4.6.0"
+  checksum: 10c0/ad7f376b00dccff09f8597f19a171f2e074756178ae74887346876e10f6f0d83009460cc0793183cc5ee4e24a72ff86e68031c45b5aa2731c2f681a4dc93fe77
   languageName: node
   linkType: hard
 
@@ -3125,6 +3193,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuid@npm:^11.0.0":
+  version: 11.1.0
+  resolution: "uuid@npm:11.1.0"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 10c0/34aa51b9874ae398c2b799c88a127701408cd581ee89ec3baa53509dd8728cbb25826f2a038f9465f8b7be446f0fbf11558862965b18d21c993684297628d4d3
+  languageName: node
+  linkType: hard
+
 "vite-plugin-node-polyfills@npm:^0.24.0":
   version: 0.24.0
   resolution: "vite-plugin-node-polyfills@npm:0.24.0"
@@ -3344,5 +3421,12 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 10c0/dceb44c28578b31641e13695d200d34ec4ab3966a5729814d5445b194933c096b7ced71494ce53a0e8820685d1d010df8b2422e5bf2cdea7e469d97ffbea306f
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.9.8":
+  version: 3.25.76
+  resolution: "zod@npm:3.25.76"
+  checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
   languageName: node
   linkType: hard

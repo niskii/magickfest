@@ -20,6 +20,7 @@ function isUserAdmin(userRoles: string[]) {
 }
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
+  console.log(req.session.user);
   if (req.session.user) next();
   else next("Not Authorized");
 }
@@ -43,7 +44,7 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      },
+      }
     );
 
     return authResponse.data.access_token;
@@ -60,7 +61,7 @@ async function getGuildMember(accessToken: string): Promise<any> {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      },
+      }
     );
 
     return userResponse.data;
@@ -73,7 +74,7 @@ function sessionHandler(
   user: User,
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) {
   req.session.regenerate(function (err) {
     if (err) next(err);
@@ -102,20 +103,20 @@ router.get("/redirect", async (req, res, next) => {
 });
 
 router.post("/token", async (req, res) => {
-  const body = JSON.parse(await req.body);
+  const body = req.body;
   const accessToken = await authenticate(body.code, false);
-
-  res.send(accessToken);
+  res.json({ access_token: accessToken });
 });
 
-router.get("/fakeuser", (req, res, next) => {
-  const user: User = { Id: 0, Name: "user", IsAdmin: true, Token: "0" };
+router.post("/startsession", async (req, res, next) => {
+  const guildUserData = await getGuildMember(req.body.access_token);
+  const user = createUserFromGuildMemberObject(guildUserData);
   sessionHandler(user, req, res, next);
 });
 
 router.get("/login", (req, res, next) => {
   res.redirect(
-    "https://discord.com/oauth2/authorize?client_id=1441002323332829285&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read",
+    "https://discord.com/oauth2/authorize?client_id=1432066462524243988&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read"
   );
 });
 

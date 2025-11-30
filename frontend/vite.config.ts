@@ -9,11 +9,28 @@ import "dotenv/config";
 export default defineConfig({
   plugins: [vue(), nodePolyfills()],
   server: {
+    proxy: {
+      "/api": {
+        target: "https://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+      "/socket.io": {
+        target: "https://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+    },
     https: {
       pfx: readFileSync(
         path.resolve(__dirname, "../server/security/newkey.pfx"),
       ),
       passphrase: process.env.PfxSecret,
+    },
+    hmr: {
+      clientPort: 443,
     },
   },
   resolve: {
