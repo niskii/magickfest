@@ -44,7 +44,7 @@ export function setupMiddleware(
   });
 
   app.disable("x-powered-by");
-  app.use(helmet);
+  app.use(helmet());
   app.use(bodyParser.json());
   app.use(sessionMiddleware);
   app.use("/api/auth", authAPI);

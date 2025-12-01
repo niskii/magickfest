@@ -29,9 +29,6 @@ export default defineConfig({
       ),
       passphrase: process.env.PfxSecret,
     },
-    hmr: {
-      clientPort: 443,
-    },
   },
   resolve: {
     alias: {
