@@ -38,7 +38,7 @@ export class SocketAudioStream {
     this.onFetch(data.Buffer);
   }
 
-  async fetchCurrent() {
+  fetchCurrent() {
     this.#isFetching = true;
     this.#socket.emit(
       "fetchSyncedChunk",
@@ -51,8 +51,11 @@ export class SocketAudioStream {
     this.#socket.once("syncedChunk", async (data: AudioPacket) => {
       console.log("syncing!", this.#lastChunkPage);
       this.#needsResync = false;
+      // save the play position of the sync chunk.
       this.#timeKeeper.setStartPosition(data.ChunkPlayPosition);
+      // save the duration of the audio.
       this.#timeKeeper.setTotalDuration(data.TotalDuration);
+      // the calculated duration since client audio buffer ended.
       this.#timeKeeper.addDelay(
         data.ChunkPlayPosition -
           data.ServerTime -
@@ -66,7 +69,6 @@ export class SocketAudioStream {
     if (this.#isFetching) return;
     this.#isFetching = true;
 
-    console.log("trying to fetch!", this.#lastChunkPage);
     this.#socket.emit(
       "fetchChunkFromPage",
       { bitrate: this.#bitrate, pageStart: this.#lastChunkPage },
@@ -79,22 +81,26 @@ export class SocketAudioStream {
       },
     );
 
-    this.#socket.once("chunkFromPage", (chunk: AudioPacket) => {
+    this.#socket.once("chunkFromPage", (data: AudioPacket) => {
+      if (!data) return;
       console.log(
         "Delay of:",
-        chunk.ServerTime - this.#timeKeeper.getCurrentPlayPosition(),
+        data.ServerTime - this.#timeKeeper.getCurrentPlayPosition(),
         this.#timeKeeper.getDownloadedAudioDuration(),
       );
       if (
         this.#timeKeeper.getCurrentPlayPosition() <
-        chunk.ServerTime - config.MaxOutOfSync
+        data.ServerTime - config.MaxOutOfSync
       ) {
         this.#needsResync = true;
       }
-      this.handleChunk(chunk);
+      this.handleChunk(data);
     });
   }
 
+  /**
+   * Start interval and fetch from the audio server.
+   */
   start() {
     this.fetchCurrent();
     clearTimeout(this.#fetchTimer);
@@ -110,6 +116,9 @@ export class SocketAudioStream {
     }, config.FetchInterval);
   }
 
+  /**
+   * Reset the state of the instance.
+   */
   reset() {
     this.#needsResync = false;
     this.#isFetching = false;
