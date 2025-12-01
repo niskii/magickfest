@@ -3,6 +3,7 @@ import connectSqlite3 from "connect-sqlite3";
 import cors from "cors";
 import { Express, NextFunction, Request, Response } from "express";
 import session, { Store } from "express-session";
+import helmet from "helmet";
 import { Server } from "socket.io";
 import { UserManager } from "src/user/user-manager";
 import authAPI, { isAuthorized } from "../api/auth";
@@ -15,7 +16,7 @@ export function setupMiddleware(
 ) {
   app.use(
     cors({
-      origin: ["https://localhost:5173", "https://localhost:443"],
+      origin: globalThis.settings.origins,
       credentials: true,
       allowedHeaders: ["Access-Control-Allow-Origin"],
     }),
@@ -36,12 +37,14 @@ export function setupMiddleware(
     }) as Store,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 10,
-      sameSite: "none",
+      sameSite: "lax",
       secure: true,
       httpOnly: true,
     },
   });
 
+  app.disable("x-powered-by");
+  app.use(helmet);
   app.use(bodyParser.json());
   app.use(sessionMiddleware);
   app.use("/api/auth", authAPI);
@@ -52,7 +55,6 @@ export function setupMiddleware(
   io.engine.use(sessionMiddleware);
   io.use((socket, next) => {
     const req = socket.request as Request;
-    const token = req.headers["authentication"];
     const user = req.session.user;
     console.log("joining", req.session);
     if (user) {

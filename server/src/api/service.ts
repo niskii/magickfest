@@ -1,7 +1,6 @@
 import express from "express";
-import { Player } from "../player/player";
-import { Bitrate } from "@shared/types/audio-transfer";
 import { parseTime } from "../parsing/time-parser";
+import { Player } from "../player/player";
 
 const router = express.Router();
 

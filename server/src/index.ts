@@ -24,17 +24,14 @@ const httpsOptions = {
 
 const playlist = new Playlist(commandLineOptions.playlistFile);
 const player = new Player(playlist, commandLineOptions.isLooped);
-configureRouter(player);
 
+configureRouter(player);
 const app = express();
-app.get("/", (_, res) => {
-  res.send("Hello!");
-});
 
 const server = https.createServer(httpsOptions, app);
 const io = new Server(server, {
   cors: {
-    origin: "https://localhost:5173",
+    origin: globalThis.settings.origins,
     credentials: true,
   },
   connectTimeout: 20000,

@@ -11,7 +11,6 @@ function createUserFromGuildMemberObject(guildUserData: any): User {
     Id: guildUserData.user.id,
     Name: guildUserData.user.username,
     IsAdmin: isUserAdmin(guildUserData.roles),
-    Token: null,
   };
 }
 
@@ -44,7 +43,7 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      }
+      },
     );
 
     return authResponse.data.access_token;
@@ -61,7 +60,7 @@ async function getGuildMember(accessToken: string): Promise<any> {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     return userResponse.data;
@@ -74,7 +73,7 @@ function sessionHandler(
   user: User,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   req.session.regenerate(function (err) {
     if (err) next(err);
@@ -94,10 +93,7 @@ router.get("/redirect", async (req, res, next) => {
     const accessToken = await authenticate(code.toString(), true);
     const guildUserData = await getGuildMember(accessToken);
 
-    // Certified tmw user!
     const user = createUserFromGuildMemberObject(guildUserData);
-    console.log(user);
-
     sessionHandler(user, req, res, next);
   }
 });
@@ -116,7 +112,7 @@ router.post("/startsession", async (req, res, next) => {
 
 router.get("/login", (req, res, next) => {
   res.redirect(
-    "https://discord.com/oauth2/authorize?client_id=1432066462524243988&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read"
+    `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
   );
 });
 

@@ -10,6 +10,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
     "minimist": "^1.2.8",
     "socket.io": "^4.8.1",
     "socket.io-stream": "patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch"
