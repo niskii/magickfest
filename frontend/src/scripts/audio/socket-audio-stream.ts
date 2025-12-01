@@ -95,14 +95,12 @@ export class SocketAudioStream {
     });
   }
 
-  async start() {
+  start() {
     this.fetchCurrent();
-    this.#fetchTimer?.close();
+    clearTimeout(this.#fetchTimer);
     this.#fetchTimer = setInterval(async () => {
       if (this.#needsResync) {
-        this.#needsResync = false;
-        this.#socket.removeListener("chunkFromPage");
-        this.#socket.removeListener("syncedChunk");
+        this.reset();
         this.onFlush();
         this.fetchCurrent();
         return;
@@ -112,10 +110,12 @@ export class SocketAudioStream {
     }, config.FetchInterval);
   }
 
-  async reset() {
-    this.#lastChunkPage = 0;
-    this.#isFetching = false;
+  reset() {
     this.#needsResync = false;
+    this.#isFetching = false;
+    this.#lastChunkPage = 0;
+    this.#socket.removeListener("chunkFromPage");
+    this.#socket.removeListener("syncedChunk");
     clearTimeout(this.#fetchTimer);
   }
 }

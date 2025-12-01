@@ -6,7 +6,6 @@ import { SocketAudioStream } from "./socket-audio-stream";
 import { TimeKeeper } from "./time-keeper";
 
 export class AudioStreamPlayer {
-  #socket: Socket;
   #stream: SocketAudioStream;
 
   #sessionId: number; // used to prevent race conditions between cancel/starts
@@ -14,8 +13,6 @@ export class AudioStreamPlayer {
   #audioSrcNodes: Array<AudioBufferSourceNode>; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
   #gainNode: GainNode;
   #timeKeeper: TimeKeeper;
-  #totalTimeScheduled: number; // time scheduled of all AudioBuffers
-  #playStartedAt: number; // audioContext.currentTime of first sched
   #flushTimeoutId: NodeJS.Timeout;
   #bitrate: Bitrate;
   #volume: number;
@@ -27,7 +24,17 @@ export class AudioStreamPlayer {
     this.#bitrate = bitrate;
     this.#volume = volume;
 
-    this.#socket = socket;
+    this.#timeKeeper = new TimeKeeper();
+
+    const stream = new SocketAudioStream(
+      socket,
+      this.#timeKeeper,
+      this.#bitrate,
+    );
+    stream.onFetch = this.#decode.bind(this);
+    stream.onFlush = this.#flush.bind(this);
+    this.#stream = stream;
+
     this.reset();
   }
 
@@ -46,17 +53,13 @@ export class AudioStreamPlayer {
   }
 
   reset() {
-    this.#socket.removeListener("chunkFromPage");
-    this.#socket.removeListener("syncedChunk");
-
-    if (this.#stream) this.#stream.reset();
-    this.#stream = null;
+    this.#stream.reset();
+    this.#timeKeeper.reset();
+    decoder.clear();
 
     if (this.#sessionId) {
       performance.clearMarks(this.downloadMarkKey);
     }
-
-    decoder.clear();
 
     this.#sessionId = null;
     if (this.#audioCtx) {
@@ -65,27 +68,24 @@ export class AudioStreamPlayer {
     }
     this.#audioCtx = null;
     this.#audioSrcNodes = [];
-    this.#totalTimeScheduled = 0;
-    this.#playStartedAt = 0;
   }
 
   close() {
     this.#flush();
+
+    this.#stream.reset();
+    this.#stream = null;
 
     for (const node of this.#audioSrcNodes) {
       node.onended = null;
       node.disconnect(this.#audioCtx.destination);
       node.stop();
     }
-    if (this.#stream) {
-      this.#stream.reset();
-    }
+
     if (this.#audioCtx) {
       this.#audioCtx.suspend();
       this.#audioCtx.close();
     }
-
-    this.reset();
   }
 
   start() {
@@ -97,18 +97,8 @@ export class AudioStreamPlayer {
     this.#gainNode.gain.value = this.#volume;
     this.#audioCtx.suspend();
 
-    this.#timeKeeper = new TimeKeeper(this.#audioCtx);
-
-    const stream = new SocketAudioStream(
-      this.#socket,
-      this.#timeKeeper,
-      this.#bitrate,
-    );
-    stream.onFetch = this.#decode.bind(this);
-    stream.onFlush = this.#flush.bind(this);
-    this.#stream = stream;
-
-    stream.start();
+    this.#timeKeeper.setAudioContext(this.#audioCtx);
+    this.#stream.start();
   }
 
   pause() {
@@ -180,7 +170,8 @@ export class AudioStreamPlayer {
 
       if (
         this.#audioCtx.currentTime >
-        this.#playStartedAt + this.#totalTimeScheduled
+        this.#timeKeeper.getStartedAt() +
+          this.#timeKeeper.getTotalTimeScheduled()
       ) {
         this.pause();
       }
@@ -204,7 +195,7 @@ export class AudioStreamPlayer {
     let startDelay = 0;
     // initialize first play position.  initial clipping/choppiness sometimes occurs and intentional start latency needed
     // read more: https://github.com/WebAudio/web-audio-api/issues/296#issuecomment-257100626
-    if (!this.#playStartedAt) {
+    if (!this.#timeKeeper.getStartedAt()) {
       /* this clips in Firefox, plays */
       // const startDelay = audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
@@ -218,8 +209,7 @@ export class AudioStreamPlayer {
       /* this could be useful for firefox but outputLatency is about 250ms in FF. too long */
       // const startDelay = audioCtx.outputLatency || audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
-      this.#playStartedAt = this.#audioCtx.currentTime + startDelay;
-      this.#timeKeeper.setStartedAt(this.#playStartedAt);
+      this.#timeKeeper.setStartedAt(this.#audioCtx.currentTime + startDelay);
     }
 
     audioSrc.buffer = audioBuffer;
@@ -230,12 +220,11 @@ export class AudioStreamPlayer {
 
     const startAt = Math.max(
       this.#audioCtx.currentTime,
-      this.#playStartedAt + this.#totalTimeScheduled,
+      this.#timeKeeper.getStartedAt() +
+        this.#timeKeeper.getTotalTimeScheduled(),
     ); // play at current time if underflowing
 
     audioSrc.start(startAt);
-
-    this.#totalTimeScheduled += audioBuffer.duration;
-    this.#timeKeeper.setTotalTimeScheduled(this.#totalTimeScheduled);
+    this.#timeKeeper.addTotalTimeScheduled(audioBuffer.duration);
   }
 }
