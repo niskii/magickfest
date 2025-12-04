@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./
+      target: backend-dev
+    develop:
+      watch:
+        - path: ./backend/src
+          action: sync
+          target: /usr/local/app/src
+        - path: ./backend/package.json
+          action: rebuild
+
+  client:
+    build:
+      context: ./
+      target: frontend-dev
+    develop:
+      watch:
+        - path: ./frontend/src
+          action: sync
+          target: /usr/local/app/src
+        - path: ./frontend/package.json
+          action: rebuild
+    ports:
+      - 5173:5173
