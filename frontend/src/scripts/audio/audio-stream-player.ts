@@ -7,7 +7,6 @@ import { TimeKeeper } from "./time-keeper";
 
 export class AudioStreamPlayer {
   #stream: SocketAudioStream;
-
   #sessionId: number; // used to prevent race conditions between cancel/starts
   #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
   #audioSrcNodes: Array<AudioBufferSourceNode>; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
@@ -16,7 +15,6 @@ export class AudioStreamPlayer {
   #flushTimeoutId: NodeJS.Timeout;
   #bitrate: Bitrate;
   #volume: number;
-
   #analyzer: AnalyserNode;
 
   constructor(socket: Socket, bitrate: Bitrate, volume: number) {

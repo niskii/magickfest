@@ -20,7 +20,7 @@ const bitrate = ref(Bitrate.High);
 const overlayToggle = ref<boolean>(true);
 const volume = ref<number>(75);
 const muted = ref<boolean>(false);
-const analyser = useTemplateRef<visualiserType>("visualiser")
+const visualiserRef = useTemplateRef<visualiserType>("visualiser")
 
 onMounted(() => {
   function onConnect() {
@@ -47,8 +47,8 @@ onMounted(() => {
       ];
     }, config.UpdateInterval);
 
-    analyser.value.setAnalyser(player.getAnalyzer())
-    analyser.value.resume()
+    visualiserRef.value.setAnalyser(player.getAnalyzer())
+    visualiserRef.value.resume()
 
     isConnected.value = true;
   }
@@ -116,7 +116,7 @@ watch(isConnected, () => {
     if (isConnected.value) {
       audioStreamPlayer.value.reset();
       audioStreamPlayer.value.start();
-      analyser.value.setAnalyser(audioStreamPlayer.value.getAnalyzer())
+      visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer())
     }
   }
 
@@ -125,6 +125,7 @@ watch(isConnected, () => {
 
   return () => {
     socket.off("newSet", newSetEvent);
+    socket.off("changedState", changedStateEvent);
   };
 });
 
@@ -254,6 +255,6 @@ function overlayClick() {
         </div>
       </div>
     </div>
-  </div>
+    </div>
 </div>
 </template>
