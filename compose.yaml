@@ -3,13 +3,17 @@ services:
     build:
       context: ./
       target: backend-dev
+    volumes:
+      - ./server/public:/usr/local/app/public/:ro 
     develop:
       watch:
-        - path: ./backend/src
+        - path: ./server/src
           action: sync
           target: /usr/local/app/src
-        - path: ./backend/package.json
+        - path: ./server/package.json
           action: rebuild
+    ports:
+      - 8080:8080
 
   client:
     build:
@@ -17,9 +21,9 @@ services:
       target: frontend-dev
     develop:
       watch:
-        - path: ./frontend/src
+        - path: ./frontend/
           action: sync
-          target: /usr/local/app/src
+          target: /usr/local/app/
         - path: ./frontend/package.json
           action: rebuild
     ports:

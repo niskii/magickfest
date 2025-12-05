@@ -1,4 +1,4 @@
-FROM node:25 AS base
+FROM node:25-alpine AS base
 WORKDIR /usr/local/app
 COPY shared ./../shared
 RUN npm install -g corepack --force
@@ -14,7 +14,7 @@ COPY frontend/index.html frontend/tsconfig.json frontend/tsconfig.app.json front
 COPY frontend/src ./src
 
 FROM frontend-base AS frontend-dev
-CMD ["yarn", "vite", "--host", "0.0.0.0"]
+CMD ["yarn", "vite"]
 
 FROM frontend-base AS frontend-build
 RUN ["yarn", "build"]
