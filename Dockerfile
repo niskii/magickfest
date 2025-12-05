@@ -14,7 +14,7 @@ COPY frontend/index.html frontend/tsconfig.json frontend/tsconfig.app.json front
 COPY frontend/src ./src
 
 FROM frontend-base AS frontend-dev
-CMD ["yarn", "vite"]
+CMD ["yarn", "vite", "--host"]
 
 FROM frontend-base AS frontend-build
 RUN ["yarn", "build"]
