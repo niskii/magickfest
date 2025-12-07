@@ -11,7 +11,7 @@ interface AudioFile {
 interface Set {
   Title: string;
   Author: string;
-  CoverFile: string;
+  CoverFile?: string;
   AudioFiles: Array<AudioFile>;
 }
 

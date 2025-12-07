@@ -29,7 +29,6 @@ export class SetInfoFetcher {
       socketStream(this.#socket).once(
         "setInformation",
         (stream: Duplex, info: SocketSetInfo) => {
-          console.log(info);
           this.setInfo.title = info.Title;
           this.setInfo.author = info.Author;
 
@@ -60,6 +59,12 @@ export class SetInfoFetcher {
           });
         },
       );
-    });
+
+      this.#socket.once("setInformation", (info: SocketSetInfo) => {
+        this.setInfo.title = info.Title;
+        this.setInfo.author = info.Author;
+        resolve(this.setInfo);
+      });
+    }).finally(() => this.#socket.removeListener("setInformation"));
   }
 }

@@ -1,3 +1,3 @@
-# Hello i can change this readme.md file
+# Setup
 
-# Ok
+Set the environment variables

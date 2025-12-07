@@ -4,6 +4,7 @@
   "maxSecondsLoadAhead": 30,
   "playerUpdateInterval": 1000,
   "playerNewSetTimeout": 5000,
+  "sesstionStorageLocation": "temp/sessions.sqlite",
   "port": 8080,
   "origins": ["https://localhost:5173"]
 }

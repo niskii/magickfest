@@ -2,7 +2,43 @@
 
 more to be writen here
 
+configuration file [./config/settings.json](config/settings.json) to set cors origin and port
+
+## Start options:
+
+```txt
+Save and load progress of the playlist
+--usestate
+
+Loop the playing set
+--loop
+
+Which set to start
+--setindex #
+
+How much time to skip ahead in the set. Parses the input of the format H?H:MM:SS, M?M:SS or plain number.
+--forward time
+
+Unix timestamp for when the player should start.
+--scheduledstart unix time
+
+The json playlist file path
+--playlist path
+```
+
 ## Playlists
+
+A playlist has the following format:
+
+```json
+{
+  "Sets": [
+    "sets/my first set yay/set.json",
+    "sets/slimy beat party/set.json",
+    "sets/my first set part 2/set.json"
+  ]
+}
+```
 
 To make the relativity of the files work, the playlist file, and the sets it
 references, must be in the following structure:

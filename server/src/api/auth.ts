@@ -69,24 +69,25 @@ async function getGuildMember(accessToken: string): Promise<any> {
   }
 }
 
-function sessionHandler(
-  user: User,
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  req.session.regenerate(function (err) {
-    if (err) next(err);
+function saveUserSession(user: User, req: Request) {
+  return new Promise<void>((resolve, reject) => {
+    req.session.regenerate(function (err) {
+      if (err) reject(err);
 
-    req.session.user = user;
-    req.session.save(function (err) {
-      if (err) return next(`could not save session ${err}`);
-      res.sendStatus(200);
+      /*TODO: Handle the embedded and web domain here.
+      Samesite might be strict and non partitioned for the web domain.
+      */
+      // req.session.cookie.domain = req.hostname.toString()
+      req.session.user = user;
+      req.session.save(function (err) {
+        if (err) reject(`could not save session ${err}`);
+        resolve();
+      });
     });
   });
 }
 
-router.get("/redirect", async (req, res, next) => {
+router.get("/redirect", async (req, res) => {
   const { code } = req.query;
 
   if (code) {
@@ -94,7 +95,8 @@ router.get("/redirect", async (req, res, next) => {
     const guildUserData = await getGuildMember(accessToken);
 
     const user = createUserFromGuildMemberObject(guildUserData);
-    sessionHandler(user, req, res, next);
+    await saveUserSession(user, req);
+    res.sendStatus(200);
   }
 });
 
@@ -104,10 +106,17 @@ router.post("/token", async (req, res) => {
   res.json({ access_token: accessToken });
 });
 
-router.post("/startsession", async (req, res, next) => {
+router.post("/startsession", async (req, res) => {
   const guildUserData = await getGuildMember(req.body.access_token);
   const user = createUserFromGuildMemberObject(guildUserData);
-  sessionHandler(user, req, res, next);
+  await saveUserSession(user, req);
+  res.sendStatus(200);
+});
+
+router.get("/fakeuser", async (req, res) => {
+  const user: User = { Name: "1", Id: 1, IsAdmin: true };
+  await saveUserSession(user, req);
+  res.sendStatus(200);
 });
 
 router.get("/login", (req, res, next) => {

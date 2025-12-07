@@ -1,5 +1,7 @@
 # Usage
 
+**Requires ffmpeg and mediainfo cli**
+
 Open a terminal in the directory of the set folders. Run the script like this:
 
 ```

@@ -1,7 +1,7 @@
 import { Bitrate } from "@shared/types/audio-transfer";
 import { SocketSetInfo } from "@shared/types/set";
 import { Request } from "express";
-import { createReadStream } from "fs";
+import fs from "fs";
 import path from "path";
 import { Server } from "socket.io";
 import socketStream from "socket.io-stream";
@@ -12,7 +12,7 @@ import { UserManager } from "../user/user-manager";
 export function socketSetup(
   io: Server,
   player: Player,
-  userManager: UserManager,
+  userManager: UserManager
 ) {
   io.on("connection", (socket) => {
     const req = socket.request as Request;
@@ -63,26 +63,30 @@ export function socketSetup(
         callback({
           status: result?.status,
         });
-      },
+      }
     );
 
     /**
      * Sends the set information and streams the cover image.
      */
     socket.on("fetchSetInformation", () => {
-      const imageStream = socketStream.createStream();
       const currentSet = player.getPlaylist().getCurrentSet();
       const imageFile = currentSet.CoverFile;
-      const imageMimeType = imageMimeTypes.get(path.extname(imageFile));
 
       const setInfo: SocketSetInfo = {
         Title: currentSet.Title,
         Author: currentSet.Author,
-        ImageMimeType: imageMimeType,
       };
 
-      socketStream(socket).emit("setInformation", imageStream, setInfo);
-      createReadStream(imageFile).pipe(imageStream);
+      if (imageFile && fs.existsSync(imageFile)) {
+        const imageStream = socketStream.createStream();
+        const imageMimeType = imageMimeTypes.get(path.extname(imageFile));
+        setInfo.ImageMimeType = imageMimeType;
+        socketStream(socket).emit("setInformation", imageStream, setInfo);
+        fs.createReadStream(imageFile).pipe(imageStream);
+      } else {
+        socket.emit("setInformation", setInfo);
+      }
     });
   });
 }

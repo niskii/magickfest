@@ -25,7 +25,7 @@ export default defineConfig({
     },
     https: {
       pfx: readFileSync(
-        path.resolve(__dirname, "../server/security/newkey.pfx"),
+        path.resolve(__dirname, process.env.PfxPath?.toString()!),
       ),
       passphrase: process.env.PfxSecret,
     },

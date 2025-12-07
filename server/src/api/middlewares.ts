@@ -1,9 +1,11 @@
+import settings from "config/settings.json";
 import bodyParser from "body-parser";
-import connectSqlite3 from "connect-sqlite3";
+import connect from "connect-session-sequelize";
+import sequelize, { Sequelize } from "sequelize";
 import cors from "cors";
 import { Express, NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
-import session, { Store } from "express-session";
+import session from "express-session";
 import helmet from "helmet";
 import { Server } from "socket.io";
 import { UserManager } from "src/user/user-manager";
@@ -12,30 +14,55 @@ import serviceAPI from "../api/service";
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 15,
+  limit: 20,
   legacyHeaders: false,
 });
 
-const SQLiteStore = connectSqlite3(session);
+const SequelizeStore = connect(session.Store);
+const db = new Sequelize({
+  dialect: "sqlite",
+  storage: settings.sesstionStorageLocation,
+  logging: false,
+});
+
+db.define("Session", {
+  sid: {
+    type: sequelize.STRING,
+    primaryKey: true,
+  },
+  user: sequelize.JSON,
+  expires: sequelize.DATE,
+  data: sequelize.TEXT,
+});
 
 const sessionMiddleware = session({
   secret: process.env.SessionSecret!,
   resave: false,
-  name: "s.id",
-
   saveUninitialized: false,
-  store: new SQLiteStore({
-    table: "sessions",
-    db: "sessions.db",
-    dir: "./temp",
-  }) as Store,
+  name: "sid",
+
+  store: new SequelizeStore({
+    extendDefaultFields: function (defaults, session) {
+      return {
+        user: session.user ? session.user : null,
+        data: defaults.data,
+        expires: defaults.expires,
+      };
+    },
+    table: "Session",
+    db: db,
+    checkExpirationInterval: 15 * 60 * 1000,
+    expiration: 1000 * 60 * 60 * 24 * 10,
+  }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 10,
-    sameSite: "lax",
+    sameSite: "none",
     secure: true,
     httpOnly: true,
   },
 });
+
+db.sync();
 
 export function setupMiddleware(
   app: Express,
@@ -59,6 +86,7 @@ export function setupMiddleware(
   app.use("/api/service", serviceAPI);
   app.use(error);
 
+  io.engine.use(helmet());
   io.engine.use(sessionMiddleware);
   io.use((socket, next) => {
     const req = socket.request as Request;

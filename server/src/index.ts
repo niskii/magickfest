@@ -18,7 +18,7 @@ import { UserManager } from "./user/user-manager";
 const commandLineOptions = readCommands();
 
 const httpsOptions = {
-  pfx: readFileSync("./security/newkey.pfx"),
+  pfx: readFileSync(process.env.PfxPath!),
   passphrase: process.env.PfxSecret,
 };
 
@@ -43,7 +43,9 @@ setupMiddleware(app, io, userManager);
 setupSocket(io, player, userManager);
 
 server.listen(globalThis.settings.port, () => {
-  console.log(`server running at https://localhost:${settings.port}`);
+  console.log(
+    `server running at https://localhost:${globalThis.settings.port}`,
+  );
 });
 
 process.on("warning", (warning) => {
