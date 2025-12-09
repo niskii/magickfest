@@ -74,10 +74,15 @@ function saveUserSession(user: User, req: Request) {
     req.session.regenerate(function (err) {
       if (err) reject(err);
 
-      /*TODO: Handle the embedded and web domain here.
-      Samesite might be strict and non partitioned for the web domain.
-      */
-      // req.session.cookie.domain = req.hostname.toString()
+      // Discord embed cookie options
+      // as referenced https://discord.com/developers/docs/activities/development-guides/networking
+      const origin = req.get("origin");
+      if (origin && new URL(origin).host == envs.DiscordURL.host) {
+        req.session.cookie.sameSite = "none";
+        // @ts-ignore
+        req.session.cookie.partitioned = true;
+      }
+
       req.session.user = user;
       req.session.save(function (err) {
         if (err) reject(`could not save session ${err}`);

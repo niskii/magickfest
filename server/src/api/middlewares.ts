@@ -13,8 +13,8 @@ import authAPI, { isAuthorized } from "../api/auth";
 import serviceAPI from "../api/service";
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 20,
+  windowMs: settings.rateWindowMs,
+  limit: settings.rateLimit,
   legacyHeaders: false,
 });
 
@@ -51,12 +51,13 @@ const sessionMiddleware = session({
     },
     table: "Session",
     db: db,
-    checkExpirationInterval: 15 * 60 * 1000,
-    expiration: 1000 * 60 * 60 * 24 * 10,
+    checkExpirationInterval: settings.expireCheckMs,
+    expiration: settings.sessionMaxAge,
   }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 10,
-    sameSite: "none",
+    maxAge: settings.sessionMaxAge,
+    partitioned: false,
+    sameSite: "lax",
     secure: true,
     httpOnly: true,
   },

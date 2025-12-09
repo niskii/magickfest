@@ -15,5 +15,6 @@ export const getDiscordEnvironment = () => {
     DiscordClientSecret: env.DiscordClientSecret,
     DiscordAppToken: env.DiscordAppToken,
     DiscordGuildID: env.DiscordGuildID,
+    DiscordURL: new URL(`https://${env.DiscordClientID}.discordsays.com`),
   };
 };
