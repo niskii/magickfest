@@ -34,7 +34,7 @@ export function configureRouter(player: Player) {
     .post((req, res) => {
       const parsedTime = parseTime(req.query.time);
       if (parsedTime === null) {
-        throw new Error("could not part input.");
+        throw new Error("Could not parse input!");
       }
       player.setState(null, null, parsedTime * 1000);
       player.playAtForwarded();
@@ -59,7 +59,7 @@ export function configureRouter(player: Player) {
         player.playAtStart();
         res.sendStatus(200);
       } else {
-        throw new Error("Invalid input");
+        throw new Error("Invalid input!");
       }
     });
 

@@ -15,7 +15,7 @@ function createUserFromGuildMemberObject(guildUserData: any): User {
 }
 
 function isUserAdmin(userRoles: string[]) {
-  return userRoles.includes("892525015147380767");
+  return userRoles.includes(envs.DiscordAdminRole);
 }
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
@@ -32,8 +32,7 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
     code: code.toString(),
   });
 
-  if (redirect)
-    formData.set("redirect_uri", "https://localhost:8080/api/auth/redirect");
+  if (redirect) formData.set("redirect_uri", envs.DiscordRedirectUrl);
 
   try {
     const authResponse = await axios.post(
@@ -101,7 +100,7 @@ router.get("/redirect", async (req, res) => {
 
     const user = createUserFromGuildMemberObject(guildUserData);
     await saveUserSession(user, req);
-    res.sendStatus(200);
+    res.redirect(process.env.ClientRedirectUrl!);
   }
 });
 
@@ -114,12 +113,6 @@ router.post("/token", async (req, res) => {
 router.post("/startsession", async (req, res) => {
   const guildUserData = await getGuildMember(req.body.access_token);
   const user = createUserFromGuildMemberObject(guildUserData);
-  await saveUserSession(user, req);
-  res.sendStatus(200);
-});
-
-router.get("/fakeuser", async (req, res) => {
-  const user: User = { Name: "1", Id: 1, IsAdmin: true };
   await saveUserSession(user, req);
   res.sendStatus(200);
 });
