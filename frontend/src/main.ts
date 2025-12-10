@@ -35,7 +35,7 @@ try {
       body: JSON.stringify({
         code,
       }),
-    });
+    }).then();
 
     const { access_token } = await response.json();
 
@@ -50,13 +50,14 @@ try {
 
     await fetch("/api/auth/startsession", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         access_token,
       }),
-    });
+    })
   }
 } catch (err) {
   console.log("Discord is not detected!");

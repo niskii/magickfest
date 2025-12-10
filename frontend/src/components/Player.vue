@@ -8,7 +8,7 @@ import { socket } from "../scripts/socket/socket";
 import Overlay from "./Overlay.vue";
 
 import Visualiser from "./Visualiser.vue";
-type visualiserType = InstanceType<typeof Visualiser>
+type visualiserType = InstanceType<typeof Visualiser>;
 
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
@@ -20,241 +20,246 @@ const bitrate = ref(Bitrate.High);
 const overlayToggle = ref<boolean>(true);
 const volume = ref<number>(75);
 const muted = ref<boolean>(false);
-const visualiserRef = useTemplateRef<visualiserType>("visualiser")
+const visualiserRef = useTemplateRef<visualiserType>("visualiser");
+const visualiserOn = ref<boolean>(true);
 
 onMounted(() => {
-  function onConnect() {
-    isConnected.value = true;
+    function onConnect() {
+        isConnected.value = true;
 
-    fetchInfo();
+        fetchInfo();
 
-    const player = new AudioStreamPlayer(
-      socket,
-      bitrate.value,
-      volume.value / 100,
-    );
+        const player = new AudioStreamPlayer(
+            socket,
+            bitrate.value,
+            volume.value / 100,
+        );
 
-    player.reset();
-    player.start();
-    audioStreamPlayer.value = player;
+        player.reset();
+        player.start();
+        audioStreamPlayer.value = player;
 
-    clearInterval(stateInterval.value)
-    stateInterval.value = setInterval(() => {
-      playState.value = [
-        player.getCurrentPlayPosition(),
-        player.getTotalDuration(),
-        player.getDownloadedAudioTime(),
-      ];
-    }, config.UpdateInterval);
+        clearInterval(stateInterval.value)
+        stateInterval.value = setInterval(() => {
+            playState.value = [
+                player.getCurrentPlayPosition(),
+                player.getTotalDuration(),
+                player.getDownloadedAudioTime(),
+            ];
+        }, config.UpdateInterval);
 
-    visualiserRef.value.setAnalyser(player.getAnalyzer())
-    visualiserRef.value.resume()
+        visualiserRef.value.setAnalyser(player.getAnalyzer())
+        visualiserRef.value.resume()
 
-    isConnected.value = true;
-  }
-
-  function onDisconnect() {
-    isConnected.value = false;
-  }
-
-  function onConnectError(err: Error) {
-    socket.disconnect();
-    isConnected.value = false
-    switch (err.message) {
-      case 'unauthorized': {
-        // TODO: Show a modal about logging in.
-        overlayToggle.value = true;
-        break;
-      }
-      case 'already_connected': {
-        // TODO: Show a modal for this.
-        console.log("You are connected already!")
-        break;
-      }
-      default: {
-        setTimeout(() => {
-          connect();
-        }, 10000)
-      }
+        isConnected.value = true;
     }
-  }
 
-  socket.on("connect", onConnect);
-  socket.on("connect_error", onConnectError)
-  socket.on("disconnect", onDisconnect);
+    function onDisconnect() {
+        isConnected.value = false;
+    }
 
-  onUnmounted(() => {
-    socket.off("connect", onConnect);
-    socket.off("connect_error", onConnectError);
-    socket.off("disconnect", onDisconnect);
-    disconnect();
-  });
+    function onConnectError(err: Error) {
+        socket.disconnect();
+        isConnected.value = false
+        switch (err.message) {
+            case 'unauthorized': {
+                // TODO: Show a modal about logging in.
+                overlayToggle.value = true;
+                break;
+            }
+            case 'already_connected': {
+                // TODO: Show a modal for this.
+                console.log("You are connected already!")
+                break;
+            }
+            default: {
+                setTimeout(() => {
+                    connect();
+                }, 10000)
+            }
+        }
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("connect_error", onConnectError)
+    socket.on("disconnect", onDisconnect);
+
+    onUnmounted(() => {
+        socket.off("connect", onConnect);
+        socket.off("connect_error", onConnectError);
+        socket.off("disconnect", onDisconnect);
+        disconnect();
+    });
 });
 
 watch(bitrate, () => {
-  if (audioStreamPlayer.value !== null) {
-    audioStreamPlayer.value.setBitrate(Number(bitrate.value));
-  }
+    if (audioStreamPlayer.value !== null) {
+        audioStreamPlayer.value.setBitrate(Number(bitrate.value));
+    }
 });
 
 watch([volume, muted], () => {
-  if (audioStreamPlayer.value !== null) {
-    audioStreamPlayer.value.setVolume(
-      muted.value ? 0.0 : Number(volume.value / 100),
-    );
-  }
+    if (audioStreamPlayer.value !== null) {
+        audioStreamPlayer.value.setVolume(
+            muted.value ? 0.0 : Number(volume.value / 100),
+        );
+    }
 });
 
 watch(isConnected, () => {
-  function newSetEvent() {
-    if (isConnected.value) {
-      fetchInfo();
+    function newSetEvent() {
+        if (isConnected.value) {
+            fetchInfo();
+        }
     }
-  }
 
-  function changedStateEvent() {
-    if (isConnected.value) {
-      audioStreamPlayer.value.reset();
-      audioStreamPlayer.value.start();
-      visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer())
+    function changedStateEvent() {
+        if (isConnected.value) {
+            audioStreamPlayer.value.reset();
+            audioStreamPlayer.value.start();
+            visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer())
+        }
     }
-  }
 
-  socket.on("newSet", newSetEvent);
-  socket.on("changedState", changedStateEvent);
+    socket.on("newSet", newSetEvent);
+    socket.on("changedState", changedStateEvent);
 
-  return () => {
-    socket.off("newSet", newSetEvent);
-    socket.off("changedState", changedStateEvent);
-  };
+    return () => {
+        socket.off("newSet", newSetEvent);
+        socket.off("changedState", changedStateEvent);
+    };
 });
 
 async function connect() {
-  if (!isConnected.value) {
-    console.log("Joining audio!");
-    socket.connect();
-  }
+    if (!isConnected.value) {
+        console.log("Joining audio!");
+        socket.connect();
+    }
 }
 
 function fetchInfo() {
-  setInformation.fetchInformation().then((info) => {
-    coverImage.value = info.coverURL;
-  });
+    setInformation.fetchInformation().then((info) => {
+        coverImage.value = info.coverURL;
+    });
 }
 
 async function disconnect() {
-  if (isConnected.value) {
-    clearInterval(stateInterval.value);
-    stateInterval.value = null;
+    if (isConnected.value) {
+        clearInterval(stateInterval.value);
+        stateInterval.value = null;
 
-    audioStreamPlayer.value.close();
-    audioStreamPlayer.value = null;
+        audioStreamPlayer.value.close();
+        audioStreamPlayer.value = null;
 
-    socket.removeAllListeners();
-    socket.disconnect();
+        socket.removeAllListeners();
+        socket.disconnect();
 
-    isConnected.value = false;
-  }
+        isConnected.value = false;
+    }
 }
 
 const timeConverter = (time: number) => {
-  time = Math.round(time);
-  return (
-    Math.round(time / 60 / 60)
-      .toString()
-      .padStart(2, "0") +
-    ":" +
-    (Math.floor(time / 60) % 60).toString().padStart(2, "0") +
-    ":" +
-    (Math.floor(time) % 60).toString().padStart(2, "0")
-  );
+    time = Math.round(time);
+    return (
+        Math.round(time / 60 / 60)
+            .toString()
+            .padStart(2, "0") +
+        ":" +
+        (Math.floor(time / 60) % 60).toString().padStart(2, "0") +
+        ":" +
+        (Math.floor(time) % 60).toString().padStart(2, "0")
+    );
+    time = Math.round(time);
+    return (
+        Math.floor(time / 60 / 60)
+            .toString()
+            .padStart(2, "0") +
+        ":" +
+        (Math.floor(time / 60) % 60).toString().padStart(2, "0") +
+        ":" +
+        (Math.floor(time) % 60).toString().padStart(2, "0")
+    );
 };
 
 const switchQuality = (e: Event) => {
-  const el = e.target as HTMLDivElement;
-  bitrate.value = parseInt(el.innerHTML.replace("kbps", ""));
+    const el = e.target as HTMLDivElement;
+    bitrate.value = parseInt(el.innerHTML.replace("kbps", ""));
 };
 
 function overlayClick() {
-  connect();
-  overlayToggle.value = false;
+    connect();
+    overlayToggle.value = false;
 }
 </script>
 
 <template>
-<div id="main">
-  <Overlay msg="in order to listen, press 'connect'" :func="overlayClick" btn-content="connect"
-    :visible="overlayToggle"></Overlay>
-  <img :src="coverImage ? coverImage : '/src/assets/nostream.png'" alt="cover artwork for set" />
-  <div>
-    <h1>
-      {{
-        setInformation.setInfo.title
-          ? setInformation.setInfo.title
-          : "no set avilable"
-      }}
-    </h1>
-    <h2>
-      {{
-        setInformation.setInfo.author
-          ? "by " + setInformation.setInfo.author
-          : null
-      }}
-    </h2>
-    <Visualiser ref="visualiser" :fftSize=13 :fpsLimit=16 :lineWidth=1 lineColor="#b75" backgroundColor="#0c0c11"
-      style="width: 30em; height: 12em;">
-    </Visualiser>
-    <!-- <h3 style="color: white;">temp shit</h3>
-            <button @click="connect">connect</button>
-            <button @click="disconnect">disconnect</button>
-            <button @click="fetchInfo">work</button> -->
-  </div>
-</div>
-<div style="display: flex; justify-content: center; padding: 1em 0;">
-</div>
-<div id="bottomBar">
-  <select class="mobileOnly" v-model="bitrate">
-    <option value="128">128kbps</option>
-    <option value="96">96kbps</option>
-    <option value="64">64kbps</option>
-  </select>
-  <div style="width: 20%" class="fullOnly">
-    <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
-      style="height: 5vh; cursor: pointer" @click="
-        () => {
-          muted = !muted;
-        }
-      " />
-    <div id="volumeSlider">
-      <input v-model="volume" type="range" min="0" max="100" />
-      <div :style="{ width: volume + '%' }"></div>
-    </div>
-  </div>
-  <div style="width: 60%; flex-direction: column" class="alwaysVisible">
-    {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
-    <div id="progressbar">
-      <div id="buffered" :style="{
-        width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
-      }"></div>
-      <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
-    </div>
-  </div>
-  <div style="width: 20%; font-size: 1.65vmax" class="fullOnly">
-    quality:
-    <div id="dropdownBtn">
-      <text id="dropdownBtnText">{{ bitrate }}kbps &nbsp;▴</text>
-      <div id="dropdown">
-        <div :class="bitrate == 64 ? 'dropdownSelected' : null" @click="switchQuality">
-          64kbps
+    <div id="main">
+        <Overlay msg="in order to listen, press 'connect'" :func="overlayClick" btn-content="connect"
+            :visible="overlayToggle"></Overlay>
+        <img :src="coverImage ? coverImage : '/src/assets/nostream.png'" alt="cover artwork for set" />
+        <div>
+            <h1>
+                {{
+                    setInformation.setInfo.title
+                        ? setInformation.setInfo.title
+                        : "no set avilable"
+                }}
+            </h1>
+            <h2>
+                {{
+                    setInformation.setInfo.author
+                        ? "by " + setInformation.setInfo.author
+                        : null
+                }}
+            </h2>
+            <Visualiser :visible="visualiserOn" ref="visualiser" class="visualiser" :fftSize=12 :fpsLimit=70
+                :lineWidth=1 lineColor="#b75" backgroundColor="#0c0c11">
+            </Visualiser>
         </div>
-        <div :class="bitrate == 96 ? 'dropdownSelected' : null" @click="switchQuality">
-          96kbps
-        </div>
-        <div :class="bitrate == 128 ? 'dropdownSelected' : null" @click="switchQuality">
-          128kbps
-        </div>
-      </div>
     </div>
+    <div id="bottomBar">
+        <select class="mobileOnly" v-model="bitrate">
+            <option value="128">128kbps</option>
+            <option value="96">96kbps</option>
+            <option value="64">64kbps</option>
+        </select>
+        <div style="width: 20%" class="fullOnly">
+            <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
+                style="height: 5vh; cursor: pointer" @click="
+                    () => {
+                        muted = !muted;
+                    }
+                " />
+            <div id="volumeSlider">
+                <input v-model="volume" type="range" min="0" max="100" />
+                <div :style="{ width: volume + '%' }"></div>
+            </div>
+        </div>
+        <div style="width: 60%; flex-direction: column" class="alwaysVisible">
+            {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
+            <div id="progressbar">
+                <div id="buffered" :style="{
+                    width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
+                }"></div>
+                <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
+            </div>
+        </div>
+        <div style="width: 20%; font-size: 1.6vmax" class="fullOnly">
+            quality:
+            <div id="dropdownBtn">
+                <text id="dropdownBtnText">{{ bitrate }}kbps &nbsp;▴</text>
+                <div id="dropdown">
+                    <div :class="bitrate == 64 ? 'dropdownSelected' : null" @click="switchQuality">
+                        64kbps
+                    </div>
+                    <div :class="bitrate == 96 ? 'dropdownSelected' : null" @click="switchQuality">
+                        96kbps
+                    </div>
+                    <div :class="bitrate == 128 ? 'dropdownSelected' : null" @click="switchQuality">
+                        128kbps
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 </template>

@@ -80,44 +80,45 @@ onMounted(() => {
 }
 
 #canvas {
-    box-sizing: border-box;
+    box-sizing: content-box;
     width: 100%;
     height: 100%;
 }
 </style>
 
 <template>
-<div ref="container" id="container">
-    <canvas id="canvas" ref="canvas" style="filter: url(#f1);" :width="width * 1" :height="height * 1"></canvas>
-    <svg display="none">
-        <defs>
-            <filter id="f1" x="0" y="0">
-                <feMorphology operator="dilate" radius="0.6 2.4" x="0%" y="0%" width="100%" height="100%"
-                    in="SourceGraphic" result="morphology" />
-                <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="morphology"
-                    result="componentTransfer">
-                    <feFuncR type="identity" />
-                    <feFuncG type="identity" />
-                    <feFuncB type="identity" />
-                    <feFuncA type="table" tableValues="0 3.0" />
-                </feComponentTransfer>
-                <feTurbulence type="fractalNoise" baseFrequency="0.38 0.003" numOctaves="1" :seed=seed1
-                    stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence" />
-                <feDisplacementMap in="componentTransfer" in2="turbulence" :scale=scale1 xChannelSelector="R"
-                    yChannelSelector="B" x="0%" y="0%" width="100%" height="100%" result="displacementMap" />
-                <feTurbulence type="turbulence" baseFrequency="0.22 0.22" numOctaves="2" :seed=seed2
-                    stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
-                <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="turbulence1"
-                    result="componentTransfer1">
-                    <feFuncR type="identity" />
-                    <feFuncB type="identity" />
-                    <feFuncG type="identity" />
-                    <feFuncA type="discrete" tableValues="0 1" />
-                </feComponentTransfer>
-                <feDisplacementMap in="displacementMap" in2="componentTransfer1" :scale=scale2 xChannelSelector="A"
-                    yChannelSelector="A" x="0%" y="0%" width="100%" height="100%" result="displacementMap1" />
-            </filter>
-        </defs>
-    </svg>
-</div>
+    <div ref="container" id="container">
+        <div id="visualiserBg"></div>
+        <canvas id="canvas" ref="canvas" style="filter: url(#f1);" :width="width * 1" :height="height * 1"></canvas>
+        <svg display="none">
+            <defs>
+                <filter id="f1" x="0" y="0">
+                    <feMorphology operator="dilate" radius="0.6 2.4" x="0%" y="0%" width="100%" height="100%"
+                        in="SourceGraphic" result="morphology" />
+                    <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="morphology"
+                        result="componentTransfer">
+                        <feFuncR type="identity" />
+                        <feFuncG type="identity" />
+                        <feFuncB type="identity" />
+                        <feFuncA type="table" tableValues="0 3.0" />
+                    </feComponentTransfer>
+                    <feTurbulence type="fractalNoise" baseFrequency="0.38 0.003" numOctaves="1" :seed=seed1
+                        stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence" />
+                    <feDisplacementMap in="componentTransfer" in2="turbulence" :scale=scale1 xChannelSelector="R"
+                        yChannelSelector="B" x="0%" y="0%" width="100%" height="100%" result="displacementMap" />
+                    <feTurbulence type="turbulence" baseFrequency="0.22 0.22" numOctaves="2" :seed=seed2
+                        stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
+                    <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="turbulence1"
+                        result="componentTransfer1">
+                        <feFuncR type="identity" />
+                        <feFuncB type="identity" />
+                        <feFuncG type="identity" />
+                        <feFuncA type="discrete" tableValues="0 1" />
+                    </feComponentTransfer>
+                    <feDisplacementMap in="displacementMap" in2="componentTransfer1" :scale=scale2 xChannelSelector="A"
+                        yChannelSelector="A" x="0%" y="0%" width="100%" height="100%" result="displacementMap1" />
+                </filter>
+            </defs>
+        </svg>
+    </div>
 </template>
