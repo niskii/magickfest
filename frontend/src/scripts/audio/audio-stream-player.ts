@@ -102,6 +102,7 @@ export class AudioStreamPlayer {
   pause() {
     this.#audioCtx.suspend();
   }
+
   resume() {
     this.#audioCtx.resume();
   }
@@ -150,17 +151,12 @@ export class AudioStreamPlayer {
     return `download-start-${this.#sessionId}`;
   }
 
-  #schedulePlayback({
-    channelData,
-    length,
-    numberOfChannels,
-    sampleRate,
-  }: ChanneledAudioBuffer) {
+  #schedulePlayback(buffer: ChanneledAudioBuffer) {
     const audioSrc = this.#audioCtx.createBufferSource(),
       audioBuffer = this.#audioCtx.createBuffer(
-        numberOfChannels,
-        length,
-        sampleRate,
+        buffer.numberOfChannels,
+        buffer.length,
+        buffer.sampleRate,
       );
 
     audioSrc.onended = () => {
@@ -179,13 +175,13 @@ export class AudioStreamPlayer {
     this.#audioSrcNodes.push(audioSrc);
 
     // Use performant copyToChannel() if browser supports it
-    for (let c = 0; c < numberOfChannels; c++) {
+    for (let c = 0; c < buffer.numberOfChannels; c++) {
       if (audioBuffer.copyToChannel) {
-        audioBuffer.copyToChannel(channelData[c], c);
+        audioBuffer.copyToChannel(buffer.channelData[c], c);
       } else {
         const toChannel = audioBuffer.getChannelData(c);
-        for (let i = 0; i < channelData[c].byteLength; i++) {
-          toChannel[i] = channelData[c][i];
+        for (let i = 0; i < buffer.channelData[c].byteLength; i++) {
+          toChannel[i] = buffer.channelData[c][i];
         }
       }
     }

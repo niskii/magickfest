@@ -12,7 +12,7 @@ import { UserManager } from "../user/user-manager";
 export function socketSetup(
   io: Server,
   player: Player,
-  userManager: UserManager
+  userManager: UserManager,
 ) {
   io.on("connection", (socket) => {
     const req = socket.request as Request;
@@ -35,8 +35,8 @@ export function socketSetup(
      * Clean up when a user disconnects.
      */
     socket.on("disconnect", () => {
-      userManager.removeUser(user!);
       console.log("a user disconnected");
+      userManager.removeUser(user!);
       player.events?.off("newSet", sendNewSetAlert);
       player.events?.off("changedState", sendChangedStateAlert);
     });
@@ -63,7 +63,7 @@ export function socketSetup(
         callback({
           status: result?.status,
         });
-      }
+      },
     );
 
     /**
