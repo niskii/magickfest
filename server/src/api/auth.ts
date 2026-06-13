@@ -130,9 +130,4 @@ router.get("/login", (req, res, next) => {
   );
 });
 
-router.get("/fakeuser", (req, res, next) => {
-    const user: User = {Name: "1", IsAdmin: true};
-    sessionHandler(user, req, res, next);
-})
-
 export default router;

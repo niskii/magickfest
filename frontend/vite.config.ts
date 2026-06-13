@@ -11,13 +11,13 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://backend:8080",
+        target: "https://localhost:8080",
         changeOrigin: true,
         secure: false,
         ws: true,
       },
       "/socket.io": {
-        target: "https://backend:8080",
+        target: "https://localhost:8080",
         changeOrigin: true,
         secure: false,
         ws: true,

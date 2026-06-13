@@ -6,6 +6,7 @@ import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
 import { socket } from "../scripts/socket/socket";
 import Overlay from "./Overlay.vue";
+import ListDropdown from './ListDropdown.vue';
 
 import Visualiser from "./Visualiser.vue";
 type visualiserType = InstanceType<typeof Visualiser>;
@@ -21,7 +22,8 @@ const overlayToggle = ref<boolean>(true);
 const volume = ref<number>(75);
 const muted = ref<boolean>(false);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
-const visualiserOn = ref<boolean>(true);
+const visualiserOn = ref<boolean>(false);
+const bitratesShown = ref<boolean>(false);
 
 onMounted(() => {
     function onConnect() {
@@ -161,16 +163,6 @@ async function disconnect() {
 const timeConverter = (time: number) => {
     time = Math.round(time);
     return (
-        Math.round(time / 60 / 60)
-            .toString()
-            .padStart(2, "0") +
-        ":" +
-        (Math.floor(time / 60) % 60).toString().padStart(2, "0") +
-        ":" +
-        (Math.floor(time) % 60).toString().padStart(2, "0")
-    );
-    time = Math.round(time);
-    return (
         Math.floor(time / 60 / 60)
             .toString()
             .padStart(2, "0") +
@@ -212,8 +204,8 @@ function overlayClick() {
                         : null
                 }}
             </h2>
-            <Visualiser :visible="visualiserOn" ref="visualiser" class="visualiser" :fftSize=12 :fpsLimit=70
-                :lineWidth=1 lineColor="#b75" backgroundColor="#0c0c11">
+            <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize=12 :fpsLimit=70 :lineWidth=1
+                lineColor="#b75" backgroundColor="#0c0c11">
             </Visualiser>
         </div>
     </div>
@@ -245,21 +237,27 @@ function overlayClick() {
             </div>
         </div>
         <div style="width: 20%; font-size: 1.6vmax" class="fullOnly">
-            quality:
-            <div id="dropdownBtn">
-                <text id="dropdownBtnText">{{ bitrate }}kbps &nbsp;▴</text>
-                <div id="dropdown">
-                    <div :class="bitrate == 64 ? 'dropdownSelected' : null" @click="switchQuality">
-                        64kbps
-                    </div>
-                    <div :class="bitrate == 96 ? 'dropdownSelected' : null" @click="switchQuality">
-                        96kbps
-                    </div>
-                    <div :class="bitrate == 128 ? 'dropdownSelected' : null" @click="switchQuality">
-                        128kbps
-                    </div>
-                </div>
+            <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
+                style="height: 6vh; cursor: pointer" @click="
+                    () => {
+                        visualiserOn = !visualiserOn;
+                    }
+                " />
+            <div style="margin-left: 2vw; cursor: pointer; position: relative;">
+                <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
+                    style="height: 6vh; " @click="() => { bitratesShown = !bitratesShown }">
+                <img src="/src/assets/dropdown_arrow.png" alt=""
+                    :style="{ height: '2vh', marginBottom: '1.5vh', marginLeft: '0.25vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }"
+                    @click="() => { bitratesShown = !bitratesShown }" />
+                <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
+                    :funcs="[switchQuality, switchQuality, switchQuality]"
+                    :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')"
+                    :visible="bitratesShown">
+                </ListDropdown>
             </div>
+
+            <img src="/src/assets/settings_icon.png" alt="settings"
+                style="height: 6vh; margin-left: 2vw; cursor: pointer">
         </div>
     </div>
 </template>
