@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 
 discord-example-app
+server/.editorconfig

@@ -31,8 +31,8 @@ const { pause, resume } = useRafFn(() => {
     if (visualiser.value !== null) {
         seed1.value = Math.floor(Math.random() * 100)
         seed2.value = Math.floor(Math.random() * 100)
-        scale1.value = Math.sin(Date.now() / 1000) * 6 + 14
-        scale2.value = Math.sin(Date.now() / 1000) * 1.5 + 2
+        scale1.value = Math.sin(Date.now() / 10000) * 10 + 14
+        scale2.value = Math.sin(Date.now() / 10000) * 3 + 2
         visualiser.value.draw()
     }
 }, { fpsLimit, immediate: false })
@@ -80,7 +80,7 @@ onMounted(() => {
 }
 
 #canvas {
-    box-sizing: content-box;
+    /* box-sizing: content-box; */
     width: 100%;
     height: 100%;
 }
@@ -93,8 +93,8 @@ onMounted(() => {
         <svg display="none">
             <defs>
                 <filter id="f1" x="0" y="0">
-                    <feMorphology operator="dilate" radius="0.6 2.4" x="0%" y="0%" width="100%" height="100%"
-                        in="SourceGraphic" result="morphology" />
+                    <!-- <feMorphology operator="dilate" radius="0.6 2.4" x="0%" y="0%" width="100%" height="100%"
+                        in="SourceGraphic" result="morphology" /> -->
                     <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="morphology"
                         result="componentTransfer">
                         <feFuncR type="identity" />
@@ -102,12 +102,12 @@ onMounted(() => {
                         <feFuncB type="identity" />
                         <feFuncA type="table" tableValues="0 3.0" />
                     </feComponentTransfer>
-                    <feTurbulence type="fractalNoise" baseFrequency="0.38 0.003" numOctaves="1" :seed=seed1
+                    <feTurbulence type="fractalNoise" baseFrequency="100 1000" numOctaves="1" :seed=seed1
                         stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence" />
                     <feDisplacementMap in="componentTransfer" in2="turbulence" :scale=scale1 xChannelSelector="R"
                         yChannelSelector="B" x="0%" y="0%" width="100%" height="100%" result="displacementMap" />
-                    <feTurbulence type="turbulence" baseFrequency="0.22 0.22" numOctaves="2" :seed=seed2
-                        stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
+                    <feTurbulence type="turbulence" baseFrequency="1 3" numOctaves="2" :seed=seed2 stitchTiles="stitch"
+                        x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
                     <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="turbulence1"
                         result="componentTransfer1">
                         <feFuncR type="identity" />

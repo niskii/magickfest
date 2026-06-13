@@ -1,7 +1,8 @@
 {
     "Sets": [
-        "sets/set 1/set.json",
-        "sets/set 2/set.json",
-        "sets/set 3/set.json"
+        "sets/inferno_a/set.json",
+		"sets/inferno_b/set.json",
+		"sets/inferno_c/set.json",
+		"sets/inferno_d/set.json"
     ]
 }

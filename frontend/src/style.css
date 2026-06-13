@@ -137,29 +137,54 @@ h2 {
     position: absolute;
     flex-direction: column;
     z-index: 1;
-    width: 100%;
     margin: 0;
+    margin-bottom: 2vh;
     padding: 0;
     right: 0vw;
     bottom: 105%;
     text-align: center;
 }
 
-.dropdown div {
-    width: 100%;
-    outline: 2px solid #5a5a61;
-    background-color: #38383d;
-    margin: 0;
-    padding: 0.5vh 0;
+.line {
+    position: absolute;
+    width: 3px;
+    height: 80%;
+    right: 0;
+    background-color: #d9d8e2;
+    bottom: 2px;
+    z-index: 20;
 }
 
-.dropdown div:hover {
-    background-color: #5a5a61;
+.spaceFiller {
+    height: 5px;
+}
+
+.dropdown div:not(.line):not(.horizontalLine) {
+    position: relative;
+    margin: 0;
+    margin-right: 20px;
+    padding: 0.5vh 0;
+    text-align: right;
+}
+
+.horizontalLine {
+    position: absolute;
+    right: -20px;
+    bottom: 38%;
+    background-color: #d9d8e2;
+    height: 3px;
+    width: 13px;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .dropdownSelected {
-    background-color: #202022 !important;
     color: #5a5a61 !important;
+    cursor: not-allowed;
+}
+
+.dropdownSelected>.horizontalLine {
+    background-color: #5a5a61 !important;
     cursor: not-allowed;
 }
 
@@ -186,7 +211,7 @@ h2 {
     position: relative;
     margin-top: 10vh;
     width: 30vw;
-    height: 10vh;
+    height: 30vh;
     overflow: hidden;
 }
 
@@ -198,6 +223,15 @@ h2 {
     height: 100%;
     background: linear-gradient(to right, #0c0c11 0%, #0c0c11 3%, rgba(12, 12, 17, 0) 15%, rgba(12, 12, 17, 0) 85%, #0c0c11 97%, #0c0c11 100%);
     z-index: 1;
+}
+
+.overlay h2 {
+    color: lightgray;
+}
+
+.overlay input {
+    width: 4vw;
+    font-size: 1em;
 }
 
 @media screen and (max-height: 400px) {

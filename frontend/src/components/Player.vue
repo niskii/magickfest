@@ -22,8 +22,14 @@ const overlayToggle = ref<boolean>(true);
 const volume = ref<number>(75);
 const muted = ref<boolean>(false);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
-const visualiserOn = ref<boolean>(false);
+const visualiserOn = ref<boolean>(true);
 const bitratesShown = ref<boolean>(false);
+const settingsShown = ref<boolean>(false);
+
+const visualizerFFTSize = ref<number>(12);
+const visualizerFPSLimit = ref<number>(60);
+const visualizerColor = ref<String>("#bb7755");
+const visualizerWidth = ref<number>(1);
 
 onMounted(() => {
     function onConnect() {
@@ -188,6 +194,15 @@ function overlayClick() {
     <div id="main">
         <Overlay msg="in order to listen, press 'connect'" :func="overlayClick" btn-content="connect"
             :visible="overlayToggle"></Overlay>
+        <div class="overlay" v-show="settingsShown">
+            <h1>settings</h1>
+            <h2>visualizer FFT size: </h2><input type="number" v-model="visualizerFFTSize">
+            <h2>visualizer FPS limit: </h2><input type="number" v-model="visualizerFPSLimit">
+            <h2>visualizer color: </h2><input type="color" v-model="visualizerColor">
+            <h2>visualizer line width: </h2><input type="number" v-model="visualizerWidth">
+            <br>
+            <button @click="() => { settingsShown = false }">close</button>
+        </div>
         <img :src="coverImage ? coverImage : '/src/assets/nostream.png'" alt="cover artwork for set" />
         <div>
             <h1>
@@ -204,8 +219,9 @@ function overlayClick() {
                         : null
                 }}
             </h2>
-            <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize=12 :fpsLimit=70 :lineWidth=1
-                lineColor="#b75" backgroundColor="#0c0c11">
+            <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize="visualizerFFTSize"
+                :fpsLimit="visualizerFPSLimit" :lineWidth="visualizerWidth" :lineColor="visualizerColor"
+                backgroundColor="#0c0c11">
             </Visualiser>
         </div>
     </div>
@@ -257,7 +273,8 @@ function overlayClick() {
             </div>
 
             <img src="/src/assets/settings_icon.png" alt="settings"
-                style="height: 6vh; margin-left: 2vw; cursor: pointer">
+                style="margin-left: 2vw; height: 6vh; cursor: pointer"
+                @click="() => { settingsShown = !settingsShown }">
         </div>
     </div>
 </template>
