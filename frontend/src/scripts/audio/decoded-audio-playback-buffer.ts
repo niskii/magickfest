@@ -10,43 +10,36 @@ import type { DecodedAudioBuffer } from "./AudioTypes";
  */
 export class DecodedAudioPlaybackBuffer {
   // use a 128K buffer
-  static maxFlushSize = 1024 * 128;
+  readonly maxFlushSize = 1024 * 128;
 
   // exponentially grow over these many flushes
   // too small causes skips. 25 skips at 72kbps download, 64-kbit file
-  static maxGrows = 50;
+  readonly maxGrows = 50;
 
   // samples for for first flush. grow from here. 20ms @ 48,000 hz
-  static firstFlushLength = 0.02 * 48000;
+  readonly firstFlushLength = 0.02 * 48000;
 
   // expoonential grow coefficient from firstFlushLength samples to maxFlushSize bytes
   // Floating point is 4 bytes per sample
-  static growFactor = Math.pow(
-    DecodedAudioPlaybackBuffer.maxFlushSize /
-      4 /
-      DecodedAudioPlaybackBuffer.firstFlushLength,
-    1 / (DecodedAudioPlaybackBuffer.maxGrows - 1),
+  readonly growFactor = Math.pow(
+    this.maxFlushSize / 4 / this.firstFlushLength,
+    1 / (this.maxGrows - 1),
   );
 
-  static flushLength = (flushCount: number) => {
-    const flushes = Math.min(
-      flushCount,
-      DecodedAudioPlaybackBuffer.maxGrows - 1,
-    );
-    const multiplier = Math.pow(DecodedAudioPlaybackBuffer.growFactor, flushes);
-    const length = Math.round(
-      DecodedAudioPlaybackBuffer.firstFlushLength * multiplier,
-    );
+  flushLength(flushCount: number) {
+    const flushes = Math.min(flushCount, this.maxGrows - 1);
+    const multiplier = Math.pow(this.growFactor, flushes);
+    const length = Math.round(this.firstFlushLength * multiplier);
     return length;
-  };
+  }
 
   // left/right channels of buffers we're filling
-  #bufferL = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
-  #bufferR = new Float32Array(DecodedAudioPlaybackBuffer.maxFlushSize);
+  #bufferL = new Float32Array(this.maxFlushSize);
+  #bufferR = new Float32Array(this.maxFlushSize);
 
   #bufferPos: number; // last filled position in buffer
-  #onFlush: (buffer: DecodedAudioBuffer) => void; // user-provided function
   #flushCount: number; // number of times we've already flushed
+  #onFlush: (buffer: DecodedAudioBuffer) => void; // user-provided function
 
   constructor(onFlush: (buffer: DecodedAudioBuffer) => void) {
     if (typeof onFlush !== "function")
@@ -68,7 +61,7 @@ export class DecodedAudioPlaybackBuffer {
       bufferPos = this.#bufferPos;
 
     while (srcStart < srcLen) {
-      bufferLen = DecodedAudioPlaybackBuffer.flushLength(this.#flushCount);
+      bufferLen = this.flushLength(this.#flushCount);
       const len = Math.min(bufferLen - bufferPos, srcLen - srcStart);
       const end = srcStart + len;
       this.#bufferL.set(buffer.left.slice(srcStart, end), bufferPos);

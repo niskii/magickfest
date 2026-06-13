@@ -85,8 +85,10 @@ export class SocketAudioStream {
       if (!data) return;
       console.log(
         "Delay of:",
-        data.ServerTime - this.#timeKeeper.getCurrentPlayPosition(),
-        this.#timeKeeper.getDownloadedAudioDuration(),
+        (data.ServerTime - this.#timeKeeper.getCurrentPlayPosition()).toFixed(
+          2,
+        ),
+        this.#timeKeeper.getDownloadedAudioDuration().toFixed(2),
       );
       if (
         this.#timeKeeper.getCurrentPlayPosition() <
