@@ -4,7 +4,7 @@ import { TimeKeeper } from "./time-keeper";
 import { ReadCode } from "@shared/types/read-codes";
 import config from "../../config/client.json";
 
-export class SocketAudioStream {
+export class AudioStreamSocket {
   #socket: Socket;
   #timeKeeper: TimeKeeper;
   #fetchTimer: NodeJS.Timeout;
@@ -34,6 +34,7 @@ export class SocketAudioStream {
 
   handleChunk(data: AudioPacket) {
     this.#isFetching = false;
+    if (this.#lastChunkPage == data.PageEnd) return;
     this.#lastChunkPage = data.PageEnd;
     this.onFetch(data.Buffer);
   }
