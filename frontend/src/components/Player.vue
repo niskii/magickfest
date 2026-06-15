@@ -10,30 +10,42 @@ import ListDropdown from './ListDropdown.vue';
 import Visualiser from "./Visualiser.vue";
 type visualiserType = InstanceType<typeof Visualiser>;
 
+// other
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
 const isConnected = ref(socket.connected);
 const coverImage = ref(null);
 const setInformation = new SetInfoFetcher(socket);
-const bitrate = ref(Bitrate.High);
 const overlayToggle = ref<boolean>(true);
-const volume = ref<number>(75);
-const muted = ref<boolean>(false);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
 const visualiserOn = ref<boolean>(true);
 const bitratesShown = ref<boolean>(false);
 const settingsShown = ref<boolean>(false);
 
+// SETTINGS VARS (should autosave)
 const visualizerFFTSize = ref<number>(12);
 const visualizerFPSLimit = ref<number>(60);
 const visualizerColor = ref<String>("#bb7755");
 const visualizerWidth = ref<number>(1);
+const bitrate = ref(Bitrate.High);
+const volume = ref<number>(75);
+const muted = ref<boolean>(false);
 
+// GUI
 const isEmbedded = ref<boolean>(true);
 const authToggle = ref<boolean>(false);
+const alreadyConnected = ref<boolean>(false);
 
 onMounted(() => {
+    (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
+    (localStorage.getItem('visualizerFPSLimit')) ? visualizerFPSLimit.value = parseInt(localStorage.getItem('visualizerFPSLimit')) : null;
+    (localStorage.getItem('visualizerWidth')) ? visualizerWidth.value = parseInt(localStorage.getItem('visualizerWidth')) : null;
+    (localStorage.getItem('visualizerColor')) ? visualizerColor.value = localStorage.getItem('visualizerColor') : null;
+    (localStorage.getItem('bitrate')) ? bitrate.value = parseInt(localStorage.getItem('bitrate')) : null;
+    (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
+    (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
+
     function onConnect() {
         isConnected.value = true;
 
@@ -73,13 +85,11 @@ onMounted(() => {
         isConnected.value = false
         switch (err.message) {
             case 'unauthorized': {
-                // TODO: Show a modal about logging in.
                 authToggle.value = true;
                 break;
             }
             case 'already_connected': {
-                // TODO: Show a modal for this.
-                console.log("You are connected already!")
+                alreadyConnected.value = true;
                 break;
             }
             default: {
@@ -105,18 +115,30 @@ onMounted(() => {
 });
 
 watch(bitrate, () => {
+    localStorage.setItem('bitrate', bitrate.value);
+
     if (audioStreamPlayer.value !== null) {
         audioStreamPlayer.value.setBitrate(Number(bitrate.value));
     }
 });
 
 watch([volume, muted], () => {
+    localStorage.setItem('volume', volume.value);
+    localStorage.setItem('muted', muted.value);
+
     if (audioStreamPlayer.value !== null) {
         audioStreamPlayer.value.setVolume(
             muted.value ? 0.0 : Number(volume.value / 100),
         );
     }
 });
+
+watch([visualizerColor, visualizerFFTSize, visualizerFPSLimit, visualizerWidth], () => {
+    localStorage.setItem('visualizerFFTSize', visualizerFFTSize.value);
+    localStorage.setItem('visualizerFPSLimit', visualizerFPSLimit.value);
+    localStorage.setItem('visualizerWidth', visualizerWidth.value);
+    localStorage.setItem('visualizerColor', visualizerColor.value);
+})
 
 watch(isConnected, () => {
     function newSetEvent() {
@@ -197,19 +219,24 @@ function overlayClick() {
 <template>
     <div id="main">
         <div class="overlay" v-show="overlayToggle">
-            <h1>connect/reconnect to stream</h1>
-            <button @click="overlayClick">connect</button>
+            <img src="/src/assets/magickfestlogo.gif" style="width: 700px; margin-top: -30vh;">
+            <img src="/src/assets/connect_icon.png"
+                style="width: 200px; margin-top: -30vh; height: auto; cursor: pointer;" class="hoverBtn"
+                @click="overlayClick" />
         </div>
         <div class="overlay" v-show="authToggle">
             <h1>couldn't find existing session - authenticate through discord</h1>
             <a href="https://localhost:8080/api/auth/login">authenticate here</a>
         </div>
+        <div class="overlay" v-show="alreadyConnected">
+            <h1>you're already connected elsewhere</h1>
+        </div>
         <div class="overlay" v-show="settingsShown">
             <h1>settings</h1>
-            <h2>visualizer FFT size: </h2><input type="number" v-model="visualizerFFTSize">
-            <h2>visualizer FPS limit: </h2><input type="number" v-model="visualizerFPSLimit">
+            <h2>visualizer FFT size: </h2><input type="number" min="0" v-model="visualizerFFTSize">
+            <h2>visualizer FPS limit: </h2><input type="number" min="1" v-model="visualizerFPSLimit">
             <h2>visualizer color: </h2><input type="color" v-model="visualizerColor">
-            <h2>visualizer line width: </h2><input type="number" v-model="visualizerWidth">
+            <h2>visualizer line width: </h2><input type="number" min="1" max="10" v-model="visualizerWidth">
             <br>
             <button @click="() => { settingsShown = false }">close</button>
         </div>
