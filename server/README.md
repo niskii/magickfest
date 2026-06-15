@@ -4,6 +4,22 @@ more to be writen here
 
 configuration file [./config/settings.json](config/settings.json) to set cors origin and port
 
+## Environment Variables
+
+```txt
+DiscordGuildID= Discord server ID
+DiscordClientID= ID of discord application
+DiscordClientSecret= Secret of discord application
+DiscordAppToken= Token of discord application
+DiscordAdminRole= ID of the role that should give admin perms for restricted api endpoints
+DiscordRedirectUrl= Endpoint where discord redirects after oauth.
+ClientRedirectUrl= URL for the client of this application / service.
+
+PfxPath= Path to pfx key
+PfxSecret= Password of the pfx key
+SessionSecret= Secret of the sessions
+```
+
 ## Start options:
 
 ```txt
