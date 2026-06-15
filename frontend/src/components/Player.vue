@@ -5,7 +5,6 @@ import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
 import { socket } from "../scripts/socket/socket";
-import Overlay from "./Overlay.vue";
 import ListDropdown from './ListDropdown.vue';
 
 import Visualiser from "./Visualiser.vue";
@@ -30,6 +29,9 @@ const visualizerFFTSize = ref<number>(12);
 const visualizerFPSLimit = ref<number>(60);
 const visualizerColor = ref<String>("#bb7755");
 const visualizerWidth = ref<number>(1);
+
+const isEmbedded = ref<boolean>(true);
+const authToggle = ref<boolean>(false);
 
 onMounted(() => {
     function onConnect() {
@@ -72,7 +74,7 @@ onMounted(() => {
         switch (err.message) {
             case 'unauthorized': {
                 // TODO: Show a modal about logging in.
-                overlayToggle.value = true;
+                authToggle.value = true;
                 break;
             }
             case 'already_connected': {
@@ -87,6 +89,8 @@ onMounted(() => {
             }
         }
     }
+
+    isEmbedded.value = window.self !== window.top;
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError)
@@ -192,8 +196,14 @@ function overlayClick() {
 
 <template>
     <div id="main">
-        <Overlay msg="in order to listen, press 'connect'" :func="overlayClick" btn-content="connect"
-            :visible="overlayToggle"></Overlay>
+        <div class="overlay" v-show="overlayToggle">
+            <h1>connect/reconnect to stream</h1>
+            <button @click="overlayClick">connect</button>
+        </div>
+        <div class="overlay" v-show="authToggle">
+            <h1>couldn't find existing session - authenticate through discord</h1>
+            <a href="https://localhost:8080/api/auth/login">authenticate here</a>
+        </div>
         <div class="overlay" v-show="settingsShown">
             <h1>settings</h1>
             <h2>visualizer FFT size: </h2><input type="number" v-model="visualizerFFTSize">
