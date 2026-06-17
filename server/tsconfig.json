@@ -28,6 +28,6 @@
     "outDir": "./dist"
     // "rootDir": "./src"
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "src/bot/deleteCommands.js.js", "src/bot/deleteCommand.js", "tools/deleteCommands.js", "srtools/registerCommands.js,
   "exclude": ["dist"]
 }

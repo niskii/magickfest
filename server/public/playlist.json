@@ -1,8 +1,10 @@
 {
     "Sets": [
-        "sets/inferno_a/set.json",
-		"sets/inferno_b/set.json",
-		"sets/inferno_c/set.json",
-		"sets/inferno_d/set.json"
+        "sets/1/set.json",
+		"sets/2/set.json",
+		"sets/3/set.json",
+		"sets/4/set.json",
+		"sets/5/set.json",
+		"sets/6/set.json"
     ]
 }

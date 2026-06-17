@@ -2,6 +2,7 @@ import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
 import { Bitrate } from "@shared/types/audio-transfer";
+import { sendMessage } from "src/bot/actions";
 
 export class Player {
   /**
@@ -191,12 +192,13 @@ export class Player {
     return this.getCurrentPositionMilliseconds() / 1000;
   }
 
-  loadCurrentSet() {
+  async loadCurrentSet() {
     this.#readerCollection.clear();
     this.#playlist.forEachCurrentAudioFile((audioFile) => {
       const reader = new OpusReader(audioFile.File);
       this.#readerCollection.set(audioFile.Bitrate, reader);
     });
+    await sendMessage(`np: ${this.#playlist.getCurrentSet().Author} - ${this.#playlist.getCurrentSet().Title}`);
   }
 
   /**
@@ -240,7 +242,6 @@ export class Player {
           this.#waitnextset = false;
           if (!this.#loop) this.nextSet();
           this.playAtStart();
-          console.log("new set!");
         }, globalThis.settings.playerNewSetTimeout);
       }
     }, globalThis.settings.playerUpdateInterval);

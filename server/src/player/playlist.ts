@@ -76,6 +76,15 @@ export class Playlist {
   }
 
   /**
+   * Returns all sets.
+   * 
+   * @returns array of sets
+   */
+  getSets() {
+    return this.#sets;
+  }
+
+  /**
    * Set the index of the playlist of the set to play
    *
    * @param setIndex index of a valid set
