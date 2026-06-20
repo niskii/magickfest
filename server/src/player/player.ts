@@ -198,7 +198,6 @@ export class Player {
       const reader = new OpusReader(audioFile.File);
       this.#readerCollection.set(audioFile.Bitrate, reader);
     });
-    await sendMessage(`np: ${this.#playlist.getCurrentSet().Author} - ${this.#playlist.getCurrentSet().Title}`);
   }
 
   /**

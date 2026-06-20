@@ -225,7 +225,7 @@ function overlayClick() {
                 @click="overlayClick" />
         </div>
         <div class="overlay" v-show="authToggle">
-            <h1>couldn't find existing session - authenticate through discord</h1>
+            <h1>browser mode - authenticate through discord</h1>
             <a href="https://localhost:8080/api/auth/login">authenticate here</a>
         </div>
         <div class="overlay" v-show="alreadyConnected">
@@ -240,7 +240,7 @@ function overlayClick() {
             <br>
             <button @click="() => { settingsShown = false }">close</button>
         </div>
-        <img :src="coverImage ? coverImage : '/src/assets/nostream.png'" alt="cover artwork for set" />
+        <img :src="coverImage ? coverImage : '/src/assets/noartwork.png'" alt="cover artwork for set" />
         <div>
             <h1>
                 {{
