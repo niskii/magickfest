@@ -2,7 +2,7 @@ import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
 import { Bitrate } from "@shared/types/audio-transfer";
-import { sendMessage } from "src/bot/actions";
+import { PlayerState } from "../types/player-state";
 
 export class Player {
   /**
@@ -40,6 +40,11 @@ export class Player {
    */
   events: EventEmitter | undefined;
 
+  /**
+   * state of the player
+   */
+  #state: PlayerState;
+
   //testing
   #loop = false;
 
@@ -54,6 +59,7 @@ export class Player {
     this.#startTime = 0;
     this.#forwarded = 0;
     this.#readerCollection = new Map();
+    this.#state = PlayerState.Stopped;
     this.loadCurrentSet();
 
     this.#loop = loop;
@@ -84,6 +90,7 @@ export class Player {
       setIndex: this.#playlist.getCurrentIndex(),
       startTime: this.#startTime,
       forwarded: this.#forwarded,
+      state: this.#state,
     };
   }
 
@@ -129,6 +136,7 @@ export class Player {
    */
   playAt(forwarded: number, startTime?: number) {
     if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
+      this.#state = PlayerState.Stopped;
       throw new Error("The playlist has ended");
     }
 
@@ -136,6 +144,7 @@ export class Player {
     if (startTime !== undefined) this.#startTime = startTime;
     else this.#startTime = Date.now();
 
+    this.#state = PlayerState.Running;
     this.#playbackTimer?.close();
 
     this.events?.emit("changedState");
