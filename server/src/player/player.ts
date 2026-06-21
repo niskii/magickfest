@@ -5,253 +5,270 @@ import { Bitrate } from "@shared/types/audio-transfer";
 import { PlayerState } from "../types/player-state";
 
 export class Player {
-  /**
-   * Collection of opus readers loaded with different bitrate opus files.
-   */
-  #readerCollection: Map<Bitrate, OpusReader>;
+    /**
+     * Collection of opus readers loaded with different bitrate opus files.
+     */
+    #readerCollection: Map<Bitrate, OpusReader>;
 
-  /**
-   * Timestamp for when the player started.
-   */
-  #startTime: number;
+    /**
+     * Timestamp for when the player started.
+     */
+    #startTime: number;
 
-  /**
-   * Time in milliseconds the sound is forwarded.
-   */
-  #forwarded: number;
+    /**
+     * Time in milliseconds the sound is forwarded.
+     */
+    #forwarded: number;
 
-  /**
-   * Timer for internal progression checking.
-   */
-  #playbackTimer: NodeJS.Timeout | null = null;
+    /**
+     * Timer for internal progression checking.
+     */
+    #playbackTimer: NodeJS.Timeout | null = null;
 
-  /**
-   * The playlist to play.
-   */
-  #playlist;
+    /**
+     * The playlist to play.
+     */
+    #playlist;
 
-  /**
-   * Boolean to lock the timer payload.
-   */
-  #waitnextset = false;
+    /**
+     * Helper variable for newSet event
+     */
+    #latestSet = -1;
 
-  /**
-   * Events for state changes.
-   */
-  events: EventEmitter | undefined;
+    /**
+     * Boolean to lock the timer payload.
+     */
+    #waitnextset = false;
 
-  /**
-   * state of the player
-   */
-  #state: PlayerState;
+    /**
+     * Events for state changes.
+     */
+    events: EventEmitter | undefined;
 
-  //testing
-  #loop = false;
+    /**
+     * state of the player
+     */
+    #state: PlayerState;
 
-  /**
-   * Instantiate a new player with a playlist to play.
-   *
-   * @param playlist playlist to play
-   * @param loop do loop the set
-   */
-  constructor(playlist: Playlist, loop: boolean) {
-    this.#playlist = playlist;
-    this.#startTime = 0;
-    this.#forwarded = 0;
-    this.#readerCollection = new Map();
-    this.#state = PlayerState.Stopped;
-    this.loadCurrentSet();
+    //testing
+    #loop = false;
 
-    this.#loop = loop;
+    /**
+     * Instantiate a new player with a playlist to play.
+     *
+     * @param playlist playlist to play
+     * @param loop do loop the set
+     */
+    constructor(playlist: Playlist, loop: boolean) {
+        this.#playlist = playlist;
+        this.#startTime = 0;
+        this.#forwarded = 0;
+        this.#readerCollection = new Map();
+        this.#state = PlayerState.Stopped;
+        this.loadCurrentSet();
 
-    this.events = new EventEmitter();
-    if (this.events === undefined) {
-      throw new Error("Could not create EventEmitter!");
-    }
-  }
+        this.#loop = loop;
 
-  /**
-   * Returns the playlist of the player.
-   *
-   * @returns playlist of the player
-   */
-  getPlaylist() {
-    return this.#playlist;
-  }
-
-  /**
-   * Returns the current state of the player.
-   *
-   * @returns an object containing the state
-   */
-  getState() {
-    return {
-      id: this.#playlist.getHash(),
-      setIndex: this.#playlist.getCurrentIndex(),
-      startTime: this.#startTime,
-      forwarded: this.#forwarded,
-      state: this.#state,
-    };
-  }
-
-  /**
-   * Sets the state of the player.
-   *
-   * @param setIndex an index of a set
-   * @param startTime the starting point
-   * @param forwarded the time the set is forwarded
-   */
-  setState(
-    setIndex: number | null,
-    startTime: number | null,
-    forwarded: number | null,
-  ) {
-    if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
-      this.#playlist.setCurrentSet(setIndex);
-      this.loadCurrentSet();
-      this.events?.emit("newSet");
-    }
-    if (startTime !== null) {
-      this.#startTime = startTime;
-    }
-    if (forwarded !== null) {
-      this.#forwarded = forwarded;
-    }
-  }
-
-  /**
-   * Changes the state of the player to the next set
-   */
-  nextSet() {
-    this.#playlist.nextSet();
-    this.loadCurrentSet();
-    this.events?.emit("newSet");
-  }
-
-  /**
-   * Play the current set.
-   *
-   * @param forwarded milliseconds the set is forwarded
-   * @param startTime unix time the set started
-   */
-  playAt(forwarded: number, startTime?: number) {
-    if (this.#playlist.getCurrentIndex() >= this.#playlist.getLength()) {
-      this.#state = PlayerState.Stopped;
-      throw new Error("The playlist has ended");
+        this.events = new EventEmitter();
+        if (this.events === undefined) {
+            throw new Error("Could not create EventEmitter!");
+        }
     }
 
-    this.#forwarded = forwarded;
-    if (startTime !== undefined) this.#startTime = startTime;
-    else this.#startTime = Date.now();
+    /**
+     * Returns the playlist of the player.
+     *
+     * @returns playlist of the player
+     */
+    getPlaylist() {
+        return this.#playlist;
+    }
 
-    this.#state = PlayerState.Running;
-    this.#playbackTimer?.close();
+    /**
+     * Returns the current state of the player.
+     *
+     * @returns an object containing the state
+     */
+    getState() {
+        return {
+            id: this.#playlist.getHash(),
+            setIndex: this.#playlist.getCurrentIndex(),
+            startTime: this.#startTime,
+            forwarded: this.#forwarded,
+            state: this.#state,
+        };
+    }
 
-    this.events?.emit("changedState");
-    this.#setupPlaybackTimer();
-  }
+    /**
+     * Sets the state of the player.
+     *
+     * @param setIndex an index of a set
+     * @param startTime the starting point
+     * @param forwarded the time the set is forwarded
+     */
+    setState(
+        setIndex: number | null,
+        startTime: number | null,
+        forwarded: number | null,
+    ) {
+        if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
+            this.#playlist.setCurrentSet(setIndex);
+            this.loadCurrentSet();
+            this.events?.emit("newSet");
+        }
+        if (startTime !== null) {
+            this.#startTime = startTime;
+        }
+        if (forwarded !== null) {
+            this.#forwarded = forwarded;
+        }
+    }
 
-  /**
-   * Play the current set at the state of the player.
-   */
-  playAtState() {
-    this.playAt(this.#forwarded, this.#startTime);
-  }
+    /**
+     * Changes the state of the player to the next set
+     */
+    nextSet() {
+        this.#playlist.nextSet();
+        this.loadCurrentSet();
+        this.events?.emit("newSet");
+    }
 
-  /**
-   * Play the current set with the forwarded time. Otherwise starting point is now.
-   */
-  playAtForwarded() {
-    this.playAt(this.#forwarded, Date.now());
-  }
+    /**
+     * Play the current set.
+     *
+     * @param forwarded milliseconds the set is forwarded
+     * @param startTime unix time the set started
+     */
+    playAt(forwarded: number, startTime?: number) {
+        const currentSet = this.#playlist.getCurrentIndex();
+        if (currentSet >= this.#playlist.getLength()) {
+            this.#state = PlayerState.Stopped;
+            throw new Error("The playlist has ended");
+        }
 
-  /**
-   * Play the current set from the beginning.
-   */
-  playAtStart() {
-    this.playAt(0, Date.now());
-  }
+        this.#forwarded = forwarded;
+        if (startTime !== undefined) this.#startTime = startTime;
+        else this.#startTime = Date.now();
 
-  /**
-   * Returns the remaining time of the file given the position.
-   *
-   * @returns reamining time in seconds
-   */
-  getRemainingTimeSeconds() {
-    const currentReader = this.getCurrentReader(Bitrate.High);
-    if (currentReader === undefined) return 0;
-    return currentReader.getTotalDuration() - this.getCurrentPositionSeconds();
-  }
+        this.#state = PlayerState.Running;
+        this.#playbackTimer?.close();
 
-  /**
-   * Returns the current play position in milliseconds.
-   *
-   * @returns play position in milliseconds
-   */
-  getCurrentPositionMilliseconds() {
-    return Date.now() - this.#startTime + this.#forwarded;
-  }
+        if (this.#latestSet != currentSet) {
+            this.#latestSet = currentSet;
+            this.events?.emit("newSet");
+        }
 
-  /**
-   * Returns the current play position in seconds.
-   *
-   * @returns play position in seconds
-   */
-  getCurrentPositionSeconds() {
-    return this.getCurrentPositionMilliseconds() / 1000;
-  }
+        this.events?.emit("changedState");
+        this.#setupPlaybackTimer();
+    }
 
-  async loadCurrentSet() {
-    this.#readerCollection.clear();
-    this.#playlist.forEachCurrentAudioFile((audioFile) => {
-      const reader = new OpusReader(audioFile.File);
-      this.#readerCollection.set(audioFile.Bitrate, reader);
-    });
-  }
+    /**
+     * Play the current set at the state of the player.
+     */
+    playAtState() {
+        this.playAt(this.#forwarded, this.#startTime);
+    }
 
-  /**
-   * Returns an opus reader of the given bitrate.
-   *
-   * @param bitrate the desired bitrate
-   * @returns an opus reader
-   */
-  getCurrentReader(bitrate: Bitrate) {
-    return this.#readerCollection.get(bitrate);
-  }
+    /**
+     * Play the current set with the forwarded time. Otherwise starting point is now.
+     */
+    playAtForwarded() {
+        this.playAt(this.#forwarded, Date.now());
+    }
 
-  /**
-   * Returns the current chunk in the given bitrate of the opus file being played.
-   *
-   * @param bitrate
-   * @returns an AudioPacket and a read code
-   */
-  getCurrentChunk(bitrate: Bitrate) {
-    const reader = this.getCurrentReader(bitrate);
-    if (reader) return reader.getChunkAtTime(this.getCurrentPositionSeconds());
-  }
+    /**
+     * Play the current set from the beginning.
+     */
+    playAtStart() {
+        this.playAt(0, Date.now());
+    }
 
-  /**
-   * Returns the chunk starting at the page number in the given bitrate of the opus file being played.
-   *
-   * @param bitrate
-   * @returns an AudioPacket and a read code
-   */
-  getNextChunk(pageStart: number, bitrate: Bitrate) {
-    const reader = this.getCurrentReader(bitrate);
-    if (reader)
-      return reader.getChunkAtTime(this.getCurrentPositionSeconds(), pageStart);
-  }
+    /**
+     * Returns the remaining time of the file given the position.
+     *
+     * @returns reamining time in seconds
+     */
+    getRemainingTimeSeconds() {
+        const currentReader = this.getCurrentReader(Bitrate.High);
+        if (currentReader === undefined) return 0;
+        return (
+            currentReader.getTotalDuration() - this.getCurrentPositionSeconds()
+        );
+    }
 
-  #setupPlaybackTimer() {
-    this.#playbackTimer = setInterval(() => {
-      if (this.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
-        this.#waitnextset = true;
-        setTimeout(() => {
-          this.#waitnextset = false;
-          if (!this.#loop) this.nextSet();
-          this.playAtStart();
-        }, globalThis.settings.playerNewSetTimeout);
-      }
-    }, globalThis.settings.playerUpdateInterval);
-  }
+    /**
+     * Returns the current play position in milliseconds.
+     *
+     * @returns play position in milliseconds
+     */
+    getCurrentPositionMilliseconds() {
+        return Date.now() - this.#startTime + this.#forwarded;
+    }
+
+    /**
+     * Returns the current play position in seconds.
+     *
+     * @returns play position in seconds
+     */
+    getCurrentPositionSeconds() {
+        return this.getCurrentPositionMilliseconds() / 1000;
+    }
+
+    async loadCurrentSet() {
+        this.#readerCollection.clear();
+        this.#playlist.forEachCurrentAudioFile((audioFile) => {
+            const reader = new OpusReader(audioFile.File);
+            this.#readerCollection.set(audioFile.Bitrate, reader);
+        });
+    }
+
+    /**
+     * Returns an opus reader of the given bitrate.
+     *
+     * @param bitrate the desired bitrate
+     * @returns an opus reader
+     */
+    getCurrentReader(bitrate: Bitrate) {
+        return this.#readerCollection.get(bitrate);
+    }
+
+    /**
+     * Returns the current chunk in the given bitrate of the opus file being played.
+     *
+     * @param bitrate
+     * @returns an AudioPacket and a read code
+     */
+    getCurrentChunk(bitrate: Bitrate) {
+        const reader = this.getCurrentReader(bitrate);
+        if (reader)
+            return reader.getChunkAtTime(this.getCurrentPositionSeconds());
+    }
+
+    /**
+     * Returns the chunk starting at the page number in the given bitrate of the opus file being played.
+     *
+     * @param bitrate
+     * @returns an AudioPacket and a read code
+     */
+    getNextChunk(pageStart: number, bitrate: Bitrate) {
+        const reader = this.getCurrentReader(bitrate);
+        if (reader)
+            return reader.getChunkAtTime(
+                this.getCurrentPositionSeconds(),
+                pageStart,
+            );
+    }
+
+    #setupPlaybackTimer() {
+        this.#playbackTimer = setInterval(() => {
+            if (this.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
+                this.#waitnextset = true;
+                setTimeout(() => {
+                    this.#waitnextset = false;
+                    if (!this.#loop) this.nextSet();
+                    this.playAtStart();
+                }, globalThis.settings.playerNewSetTimeout);
+            }
+        }, globalThis.settings.playerUpdateInterval);
+    }
 }
