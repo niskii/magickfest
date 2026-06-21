@@ -141,3 +141,4 @@ vite.config.ts.timestamp-*
 
 discord-example-app
 server/.editorconfig
+server/public/playlist.json

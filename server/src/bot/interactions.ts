@@ -3,8 +3,10 @@ import { Playlist } from "../player/playlist";
 import { PlayerStateManager } from "../player/player-state-manager";
 import { client } from "./setup";
 import { sendMessage } from "./actions";
-import { Interaction, GuildMember } from "discord.js";
+import { Interaction, GuildMember, MessageFlags, AttachmentBuilder } from "discord.js";
 import { PlayerState } from "../types/player-state";
+import * as path from "path";
+import { openAsBlob, existsSync } from "fs";
 
 async function isAdmin(interaction: Interaction) {
     const member = interaction.member as GuildMember;
@@ -13,7 +15,7 @@ async function isAdmin(interaction: Interaction) {
     if (!hasRole) {
         await interaction.reply({
             content: `you are not authorized to run this command`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         })
     }
 
@@ -25,15 +27,13 @@ async function isPlayerRunning(player: Player, interaction: Interaction, verbose
 
     if (verboseOnTrue && isRunning) {
         await interaction.reply({
-            content: 'magickfest is already running!',
-            ephemeral: false
+            content: 'magickfest is already running!'
         });
     }
 
     if (!verboseOnTrue && !isRunning) {
         await interaction.reply({
-            content: 'magickfest isn\'t running yet!',
-            ephemeral: false
+            content: 'magickfest isn\'t running yet!'
         });
     }
 
@@ -46,15 +46,14 @@ function fancySchmancyTimeConverter(time: number) {
 }
 
 function fancySchmancyBarConverter(time: number, fullTime: number) {
-    const frac = time / fullTime;
     let finalMsg = '';
-    let timestampPoint = frac < (fullTime / 15);
+    let timestampPoint = time < (fullTime / 15);
     let hasAppended = false;
 
     for (let i = 2; i < 17; i++) {
         if (timestampPoint && !hasAppended) { finalMsg += 'o'; hasAppended = true; };
         finalMsg += '⏤';
-        timestampPoint = frac < ((fullTime / 15) * i)
+        timestampPoint = time < ((fullTime / 15) * i);
     }
 
     if (timestampPoint && !hasAppended) finalMsg += 'o';
@@ -75,9 +74,17 @@ export function configureInteractions(player: Player, playlist: Playlist, player
         try {
             if (commandName == "np") {
                 if (await isPlayerRunning(player, interaction)) {
+                    const coverPath = path.join(__dirname, '../..', player.getPlaylist().getCurrentSet().CoverFile!);
+                    let attachment;
+
+                    if (existsSync(coverPath)) {
+                        attachment = new AttachmentBuilder(coverPath, {
+                            name: 'cover.png'
+                        });
+                    }
+
                     await interaction.reply({
                         content: '',
-                        ephemeral: false,
                         embeds: [
                             {
                                 "title": "MAGICKFEST 2026",
@@ -85,10 +92,11 @@ export function configureInteractions(player: Player, playlist: Playlist, player
                                 "color": 2326507,
                                 "fields": [],
                                 "thumbnail": {
-                                    "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/Frog_on_palm_frond.jpg"
+                                    url: 'attachment://cover.png'
                                 }
                             }
-                        ]
+                        ],
+                        files: [attachment]
                     });
                 };
             }
@@ -104,8 +112,7 @@ export function configureInteractions(player: Player, playlist: Playlist, player
                     })
 
                     await interaction.reply({
-                        content: `# setlist\n${finalString}`,
-                        ephemeral: false
+                        content: `# setlist\n${finalString}`
                     })
                 };
             }
@@ -121,8 +128,7 @@ export function configureInteractions(player: Player, playlist: Playlist, player
                         }
 
                         await interaction.reply({
-                            content: `starting magickfest!`,
-                            ephemeral: false
+                            content: `starting magickfest!`
                         })
                     }
                 }
@@ -133,7 +139,7 @@ export function configureInteractions(player: Player, playlist: Playlist, player
             if (interaction.isRepliable()) {
                 await interaction.reply({
                     content: "borked",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
         }
