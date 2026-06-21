@@ -43,7 +43,9 @@ export class Playlist {
             );
 
             // Handle the relative paths.
-            set.CoverFile = location + set.CoverFile;
+            set.CoverFile = set.CoverFile
+                ? location + set.CoverFile
+                : undefined;
             set.AudioFiles.map((af) => {
                 af.File = path.join(location, af.File);
             });
