@@ -3,20 +3,18 @@ import { Bitrate } from '@shared/types/audio-transfer';
 import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
-import { SetInfoFetcher } from "../scripts/socket/set-info-fetcher";
 import { socket } from "../scripts/socket/socket";
 import ListDropdown from './ListDropdown.vue';
 
 import Visualiser from "./Visualiser.vue";
+import { alreadyConnected, authToggle, isConnected, playerState, setInformation, setupSocket, shutdownSocket } from '../scripts/socket/manager';
 type visualiserType = InstanceType<typeof Visualiser>;
 
 // other
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
-const isConnected = ref(socket.connected);
-const coverImage = ref(null);
-const setInformation = new SetInfoFetcher(socket);
+
 const overlayToggle = ref<boolean>(true);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
 const visualiserOn = ref<boolean>(true);
@@ -34,8 +32,6 @@ const muted = ref<boolean>(false);
 
 // GUI
 const isEmbedded = ref<boolean>(true);
-const authToggle = ref<boolean>(false);
-const alreadyConnected = ref<boolean>(false);
 
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
@@ -46,65 +42,29 @@ onMounted(() => {
     (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
     (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
 
-    function onConnect() {
-        isConnected.value = true;
+    const player = new AudioStreamPlayer(
+        socket,
+        bitrate.value,
+        volume.value / 100,
+    );
 
-        fetchInfo();
+    audioStreamPlayer.value = player;
 
-        const player = new AudioStreamPlayer(
-            socket,
-            bitrate.value,
-            volume.value / 100,
-        );
-
-        audioStreamPlayer.value = player;
-
-        clearInterval(stateInterval.value)
-        stateInterval.value = setInterval(() => {
-            playState.value = [
-                player.getCurrentPlayPosition(),
-                player.getTotalDuration(),
-                player.getDownloadedAudioTime(),
-            ];
-        }, config.UpdateInterval);
-
-        socket.emit("getPlayerState");
-    }
-
-    function onDisconnect() {
-        isConnected.value = false;
-    }
-
-    function onConnectError(err: Error) {
-        socket.disconnect();
-        isConnected.value = false
-        switch (err.message) {
-            case 'unauthorized': {
-                authToggle.value = true;
-                break;
-            }
-            case 'already_connected': {
-                alreadyConnected.value = true;
-                break;
-            }
-            default: {
-                setTimeout(() => {
-                    connect();
-                }, 10000)
-            }
-        }
-    }
+    clearInterval(stateInterval.value)
+    stateInterval.value = setInterval(() => {
+        playState.value = [
+            player.getCurrentPlayPosition(),
+            player.getTotalDuration(),
+            player.getDownloadedAudioTime(),
+        ];
+    }, config.UpdateInterval);
 
     isEmbedded.value = window.self !== window.top;
 
-    socket.on("connect", onConnect);
-    socket.on("connect_error", onConnectError)
-    socket.on("disconnect", onDisconnect);
+    setupSocket();
 
     onUnmounted(() => {
-        socket.off("connect", onConnect);
-        socket.off("connect_error", onConnectError);
-        socket.off("disconnect", onDisconnect);
+        shutdownSocket()
         disconnect();
     });
 });
@@ -135,47 +95,25 @@ watch([visualizerColor, visualizerFFTSize, visualizerFPSLimit, visualizerWidth],
     localStorage.setItem('visualizerColor', visualizerColor.value.toString());
 })
 
-watch(isConnected, () => {
-    function newSetEvent() {
-        if (isConnected.value) {
-            fetchInfo();
+watch(playerState, () => {
+    if (isConnected.value) {
+        if (playerState.value.state == 0) {
+            audioStreamPlayer.value.reset();
+            visualiserRef.value.pause();
+        } else {
+            audioStreamPlayer.value.reset();
+            audioStreamPlayer.value.start();
+            visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
+            visualiserRef.value.resume();
         }
     }
-
-    function currentPlayerState(state: any) {
-        if (isConnected.value) {
-            if (state.state == 0) {
-                audioStreamPlayer.value.reset();
-                visualiserRef.value.pause();
-            } else {
-                audioStreamPlayer.value.reset();
-                audioStreamPlayer.value.start();
-                visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer())
-                visualiserRef.value.resume();
-            }
-        }
-    }
-
-    socket.on("newSet", newSetEvent);
-    socket.on("currentPlayerState", currentPlayerState);
-
-    return () => {
-        socket.off("newSet", newSetEvent);
-        socket.off("currentPlayerState", currentPlayerState);
-    };
-});
+})
 
 async function connect() {
     if (!isConnected.value) {
         console.log("Joining audio!");
         socket.connect();
     }
-}
-
-function fetchInfo() {
-    setInformation.fetchInformation().then((info) => {
-        coverImage.value = info.coverURL;
-    });
 }
 
 async function disconnect() {
@@ -240,7 +178,8 @@ function overlayClick() {
         <br>
         <button @click="() => { settingsShown = false }">close</button>
     </div>
-    <img :src="coverImage ? coverImage : '/src/assets/noartwork.png'" alt="cover artwork for set" />
+    <img :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
+        alt="cover artwork for set" />
     <div>
         <h1>
             {{

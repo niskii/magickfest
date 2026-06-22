@@ -43,7 +43,7 @@ export class AudioStreamPlayer {
 
   setVolume(volume: number) {
     this.#volume = volume;
-    this.#gainNode.gain.value = volume;
+    if (this.#audioCtx !== null) this.#gainNode.gain.value = volume;
   }
 
   getAnalyzer() {
@@ -74,15 +74,14 @@ export class AudioStreamPlayer {
     this.#stream.reset();
     this.#stream = null;
 
-    for (const node of this.#audioSrcNodes) {
-      node.onended = null;
-      node.disconnect(this.#audioCtx.destination);
-      node.stop();
+    if (this.#audioCtx) {
+      this.#audioCtx.close();
     }
 
-    if (this.#audioCtx) {
-      this.#audioCtx.suspend();
-      this.#audioCtx.close();
+    for (const node of this.#audioSrcNodes) {
+      node.disconnect;
+      node.onended = null;
+      node.stop();
     }
   }
 
