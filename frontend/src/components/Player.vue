@@ -95,6 +95,14 @@ watch([visualizerColor, visualizerFFTSize, visualizerFPSLimit, visualizerWidth],
     localStorage.setItem('visualizerColor', visualizerColor.value.toString());
 })
 
+watch(visualiserOn, () => {
+    if (visualiserOn.value) {
+        visualiserRef.value.resume()
+    } else {
+        visualiserRef.value.pause()
+    }
+})
+
 watch(playerState, () => {
     if (isConnected.value) {
         if (playerState.value.state == 0) {
@@ -158,7 +166,7 @@ function overlayClick() {
 <template>
 <div id="main">
     <div class="overlay" v-show="overlayToggle">
-        <img src="/src/assets/magickfestlogo.gif" style="width: 700px; margin-top: -30vh;">
+        <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px; margin-top: -30vh;">
         <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: -30vh; height: auto; cursor: pointer;"
             class="hoverBtn" @click="overlayClick" />
     </div>
