@@ -130,7 +130,6 @@ export class Player {
     nextSet() {
         this.#playlist.nextSet();
         this.loadCurrentSet();
-        this.events?.emit("newSet");
     }
 
     /**

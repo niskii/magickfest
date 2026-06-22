@@ -63,7 +63,7 @@ function fancySchmancyBarConverter(time: number, fullTime: number) {
 
 export function configureInteractions(player: Player, playlist: Playlist, playerStateManager: PlayerStateManager) {
     player.events?.on("newSet", async () => {
-        await sendMessage(`np: ${playlist.getCurrentSet().Author} - ${playlist.getCurrentSet().Title}`);
+        await sendMessage(`# now playing: ${playlist.getCurrentSet().Author} - ${playlist.getCurrentSet().Title}`);
     })
 
     client.on("interactionCreate", async (interaction: Interaction) => {
