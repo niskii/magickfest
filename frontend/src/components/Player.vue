@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Bitrate } from '@shared/types/audio-transfer';
-import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { socket } from "../scripts/socket/socket";
@@ -33,6 +33,10 @@ const muted = ref<boolean>(false);
 // GUI
 const isEmbedded = ref<boolean>(true);
 
+const isMobile = computed(() => {
+    return screen.width <= 760;
+});
+
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
     (localStorage.getItem('visualizerFPSLimit')) ? visualizerFPSLimit.value = parseInt(localStorage.getItem('visualizerFPSLimit')) : null;
@@ -47,6 +51,8 @@ onMounted(() => {
         bitrate.value,
         volume.value / 100,
     );
+
+    visualiserOn.value = !isMobile.value
 
     audioStreamPlayer.value = player;
 
