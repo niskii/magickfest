@@ -248,18 +248,18 @@ function overlayClick() {
             <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
         </div>
     </div>
-    <div style="min-width: 210px; width: 16em; padding: 0 2em; font-size: 1.6vmax" class="fullOnly">
+    <div style="gap: 1em; padding: 0 2em; font-size: 1.6vmax" class="fullOnly">
         <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
             style="height: 6vh; cursor: pointer" @click="
                 () => {
                     visualiserOn = !visualiserOn;
                 }
             " />
-        <div style="cursor: pointer; position: relative;">
+        <div style="cursor: pointer; position: relative; display: flex; align-items: center;">
             <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
                 style="height: 6vh; " @click="() => { bitratesShown = !bitratesShown }">
             <img src="/src/assets/dropdown_arrow.png" alt=""
-                :style="{ height: '2vh', marginBottom: '1.5vh', marginLeft: '0.25vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }"
+                :style="{ height: '2vh', transform: (bitratesShown) ? 'rotate(180deg)' : '' }"
                 @click="() => { bitratesShown = !bitratesShown }" />
             <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                 :funcs="[switchQuality, switchQuality, switchQuality]"
