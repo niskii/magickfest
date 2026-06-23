@@ -55,7 +55,7 @@ h2 {
 }
 
 #bottomBar > div {
-  justify-content: center;
+  justify-content: space-between;
   display: flex;
   align-items: center;
   color: #ebeaff;
@@ -87,8 +87,8 @@ h2 {
 }
 
 #volumeSlider {
-  width: 50%;
-  height: 1vh;
+  width: 100%;
+  height: 0.5em;
   background-color: #676770;
   margin-left: 1vw;
   position: relative;
@@ -105,14 +105,14 @@ h2 {
   border: none;
   height: 100%;
   width: 100%;
-  border-radius: 5px;
+  border-radius: 0.2em;
   z-index: 2;
 }
 
 #volumeSlider input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 10px;
-  height: 10px;
+  width: 1.5em;
+  height: 1.5em;
   cursor: pointer;
   transition: box-shadow 0.5s;
   background: #c8c7d8;
@@ -317,11 +317,6 @@ h2 {
     margin-top: -10vh;
     margin-bottom: 10vh;
     text-align: center;
-  }
-
-  #main > div > div {
-    margin-top: 6vh;
-    margin-bottom: -6vh;
   }
 
   .alwaysVisible {

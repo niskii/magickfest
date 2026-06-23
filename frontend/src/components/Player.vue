@@ -8,6 +8,8 @@ import ListDropdown from './ListDropdown.vue';
 
 import Visualiser from "./Visualiser.vue";
 import { alreadyConnected, authToggle, isConnected, playerState, setInformation, setupSocket, shutdownSocket } from '../scripts/socket/manager';
+import NumberInput from './NumberInput.vue';
+import ColorInput from './ColorInput.vue';
 type visualiserType = InstanceType<typeof Visualiser>;
 
 // other
@@ -185,10 +187,14 @@ function overlayClick() {
     </div>
     <div class="overlay" v-show="settingsShown">
         <h1>settings</h1>
-        <h2>visualizer FFT size: </h2><input type="number" min="0" v-model="visualizerFFTSize">
-        <h2>visualizer FPS limit: </h2><input type="number" min="1" v-model="visualizerFPSLimit">
-        <h2>visualizer color: </h2><input type="color" v-model="visualizerColor">
-        <h2>visualizer line width: </h2><input type="number" min="1" max="10" v-model="visualizerWidth">
+        <h2>visualizer FFT size: </h2>
+        <NumberInput v-model="visualizerFFTSize" min="5" max="15"></NumberInput>
+        <h2>visualizer FPS limit: </h2>
+        <NumberInput v-model="visualizerFPSLimit" min="1" max="60"></NumberInput>
+        <h2>visualizer color: </h2>
+        <ColorInput v-model="visualizerColor"></ColorInput>
+        <h2>visualizer line width: </h2>
+        <NumberInput v-model="visualizerWidth" min="1" max="10"></NumberInput>
         <br>
         <button @click="() => { settingsShown = false }">close</button>
     </div>
@@ -221,7 +227,7 @@ function overlayClick() {
         <option value="96">96kbps</option>
         <option value="64">64kbps</option>
     </select>
-    <div style="width: 20%" class="fullOnly">
+    <div style="min-width: 140px; width: 20em; padding: 0 2em" class="fullOnly">
         <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
             style="height: 5vh; cursor: pointer" @click="
                 () => {
@@ -233,7 +239,7 @@ function overlayClick() {
             <div :style="{ width: volume + '%' }"></div>
         </div>
     </div>
-    <div style="width: 60%; flex-direction: column" class="alwaysVisible">
+    <div style="width: 100%; flex-direction: column" class="alwaysVisible">
         {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
         <div id="progressbar">
             <div id="buffered" :style="{
@@ -242,14 +248,14 @@ function overlayClick() {
             <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
         </div>
     </div>
-    <div style="width: 20%; font-size: 1.6vmax" class="fullOnly">
+    <div style="min-width: 210px; width: 16em; padding: 0 2em; font-size: 1.6vmax" class="fullOnly">
         <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
             style="height: 6vh; cursor: pointer" @click="
                 () => {
                     visualiserOn = !visualiserOn;
                 }
             " />
-        <div style="margin-left: 2vw; cursor: pointer; position: relative;">
+        <div style="cursor: pointer; position: relative;">
             <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
                 style="height: 6vh; " @click="() => { bitratesShown = !bitratesShown }">
             <img src="/src/assets/dropdown_arrow.png" alt=""
@@ -262,7 +268,7 @@ function overlayClick() {
             </ListDropdown>
         </div>
 
-        <img src="/src/assets/settings_icon.png" alt="settings" style="margin-left: 2vw; height: 6vh; cursor: pointer"
+        <img src="/src/assets/settings_icon.png" alt="settings" style="height: 6vh; cursor: pointer"
             @click="() => { settingsShown = !settingsShown }">
     </div>
 </div>
