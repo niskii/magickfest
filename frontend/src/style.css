@@ -281,17 +281,27 @@ h3 {
     }
 
     #main {
-        justify-content: space-evenly;
+        justify-content: space-between;
+        height: 80vh;
+        padding: 0;
     }
 
     #bottomBar {
         justify-content: center !important;
-        height: 20%;
+        height: 20vh;
+    }
+
+    #setInfo {
+        width: 50vw;
+        margin: 0;
+        flex-grow: 1;
+        max-height: 80vh;
     }
 
     #cover {
-        height: 72vh;
-        margin-left: -4vw;
+        margin: 2vw;
+        height: calc(80vh - 4vw);
+        object-position: left;
     }
 
     body {
@@ -390,5 +400,23 @@ h3 {
 
     h3.visualiser {
         padding-top: 3vh;
+    }
+}
+
+@media screen and (max-height: 250px) {
+
+    h1,
+    h2 {
+        float: left;
+        width: 40%;
+    }
+
+    h2 {
+        position: absolute;
+        top: 40vh;
+    }
+
+    .visualiser {
+        width: 50%;
     }
 }

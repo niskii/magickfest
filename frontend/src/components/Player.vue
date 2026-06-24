@@ -5,11 +5,14 @@ import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { socket } from "../scripts/socket/socket";
 import ListDropdown from './ListDropdown.vue';
+import Button from './Button.vue';
+import RadioInput from './RadioInput.vue';
 
 import Visualiser from "./Visualiser.vue";
 import { alreadyConnected, authToggle, isConnected, playerState, setInformation, setupSocket, shutdownSocket } from '../scripts/socket/manager';
 import NumberInput from './NumberInput.vue';
 import ColorInput from './ColorInput.vue';
+
 type visualiserType = InstanceType<typeof Visualiser>;
 
 // other
@@ -37,7 +40,7 @@ const muted = ref<boolean>(false);
 // const isEmbedded = ref<boolean>(true);
 
 const isMobile = computed(() => {
-    return screen.width <= 760;
+    return (screen.width <= 760 && screen.height > 400);
 });
 
 onMounted(() => {
@@ -49,6 +52,8 @@ onMounted(() => {
     (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
     (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
     (localStorage.getItem('visualiserOn')) ? visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : !isMobile.value;
+
+    (isMobile) ? volume.value = 100 : null;
 
     const player = new AudioStreamPlayer(
         socket,
@@ -199,14 +204,15 @@ function overlayClick() {
             <h2>visualizer color: </h2>
             <ColorInput v-model="visualizerColor"></ColorInput>
             <br>
-            <button @click="() => { settingsShown = false }">close</button>
+            <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { settingsShown = false }" />
         </div>
         <div class="overlay" v-show="mobileBitratesShown">
             <h1>select bitrate</h1>
-            <input type="radio">128kbps
-            <input type="radio">96kbps
-            <input type="radio">64kbps
-            <button @click="() => { mobileBitratesShown = false }">close</button>
+            <RadioInput :elements="['128kbps', '96kbps', '64kbps']"
+                :funcs="[switchQuality, switchQuality, switchQuality]"
+                :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')">
+            </RadioInput>
+            <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
         </div>
         <img id="cover"
             :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
@@ -260,11 +266,6 @@ function overlayClick() {
             v-show="isMobile">
             <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
                 style="height: 6vh; " @click="() => { mobileBitratesShown = !mobileBitratesShown }">
-            <!-- <select v-model="bitrate">
-                <option value="128">128kbps</option>
-                <option value="96">96kbps</option>
-                <option value="64">64kbps</option>
-            </select> -->
             <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
                 style="height: 6vh; cursor: pointer" @click="() => { visualiserOn = !visualiserOn; }" />
             <img src="/src/assets/settings_icon.png" alt="settings" style="height: 6vh; cursor: pointer"
