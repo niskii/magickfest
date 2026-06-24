@@ -3,18 +3,19 @@
 const props = defineProps<{
     min?: string
     max?: string
+    step?: string
 }>()
 
 const model = defineModel<number>();
 
 function decrease() {
     if (!props.min || model.value > Number(props.min))
-        model.value--
+        model.value -= parseFloat(props.step)
 }
 
 function increase() {
     if (!props.max || model.value < Number(props.max))
-        model.value++
+        model.value += parseFloat(props.step)
 }
 
 </script>
@@ -53,9 +54,9 @@ input[type=number] {
 </style>
 
 <template>
-<div>
-    <button class="button" @click="decrease">-</button>
-    <input type="number" v-model="model" :min="props.min" :max="props.max">
-    <button class="button" @click="increase">+</button>
-</div>
+    <div>
+        <button class="button" @click="decrease">-</button>
+        <input type="number" v-model="model" :min="props.min" :max="props.max" :step="props.step">
+        <button class="button" @click="increase">+</button>
+    </div>
 </template>
