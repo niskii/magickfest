@@ -143,6 +143,32 @@ h3 {
     z-index: 1;
 }
 
+#settings-panel {
+    gap: 1em; 
+    padding: 0 2em; 
+    font-size: 1.6vmax;
+}
+
+#visualiser-button {
+    order: 1;
+    height: 6vh; 
+    cursor: pointer
+}
+
+#quality-button {
+    order: 2;
+    cursor: pointer; 
+    position: relative; 
+    display: flex; 
+    align-items: center;
+}
+
+#settings-button {
+    order: 3;
+    height: 6vh; 
+    cursor: pointer
+}
+
 .dropdown {
     position: absolute;
     flex-direction: column;
@@ -350,6 +376,27 @@ h3 {
         height: 2vh !important;
         width: 95%;
         margin-top: 1.5vh;
+    }
+
+    #settings-panel {
+        width: 70%; 
+        margin-top: 3.5vh; 
+        flex-direction: row !important; 
+        justify-content: space-around;
+        padding: 0;
+        gap: 0;
+    }
+
+    #visualiser-button {
+        order: 2;
+    }
+
+    #quality-button {
+        order: 1;
+    }
+
+    #settings-button {
+        order: 3;
     }
 
     h1 {

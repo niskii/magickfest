@@ -39,9 +39,9 @@ const muted = ref<boolean>(false);
 // GUI
 // const isEmbedded = ref<boolean>(true);
 
-const isMobile = computed(() => {
+function isMobile () {
     return (screen.width <= 760 && screen.height > 400);
-});
+};
 
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
@@ -51,9 +51,9 @@ onMounted(() => {
     (localStorage.getItem('bitrate')) ? bitrate.value = parseInt(localStorage.getItem('bitrate')) : null;
     (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
     (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
-    (localStorage.getItem('visualiserOn')) ? visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : !isMobile.value;
+    (localStorage.getItem('visualiserOn')) ? visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : !isMobile();
 
-    (isMobile) ? volume.value = 100 : null;
+    (isMobile()) ? volume.value = 100 : null;
 
     const player = new AudioStreamPlayer(
         socket,
@@ -236,9 +236,10 @@ function overlayClick() {
                 :fpsLimit="visualizerFPSLimit" :lineWidth="visualizerWidth" :lineColor="visualizerColor"
                 backgroundColor="#0c0c11">
             </Visualiser>
-            <h3 v-show="!visualiserOn && isMobile" class="visualiser">[visualizer is off]</h3>
+            <h3 v-show="!visualiserOn && isMobile()" class="visualiser">[visualizer is off]</h3>
         </div>
     </div>
+    
     <div id="bottomBar">
         <div style="min-width: 140px; width: 20em; padding: 0 2em" class="fullOnly">
             <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
@@ -261,37 +262,33 @@ function overlayClick() {
                 <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
             </div>
         </div>
-        <div class="mobileOnly"
-            style="width: 70%; margin-top: 3.5vh; flex-direction: row !important; justify-content: space-around;"
-            v-show="isMobile">
-            <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
-                style="height: 6vh; " @click="() => { mobileBitratesShown = !mobileBitratesShown }">
-            <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
-                style="height: 6vh; cursor: pointer" @click="() => { visualiserOn = !visualiserOn; }" />
-            <img src="/src/assets/settings_icon.png" alt="settings" style="height: 6vh; cursor: pointer"
-                @click="() => { settingsShown = !settingsShown }">
-        </div>
-        <div style="gap: 1em; padding: 0 2em; font-size: 1.6vmax" class="fullOnly">
-            <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
-                style="height: 6vh; cursor: pointer" @click="
+
+        <div id="settings-panel">
+            <img id="visualiser-button" :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
+                @click="
                     () => {
                         visualiserOn = !visualiserOn;
                     }
                 " />
-            <div style="cursor: pointer; position: relative; display: flex; align-items: center;">
+            <div id="quality-button" 
+                @click="() => { 
+                    if (isMobile()) {
+                        mobileBitratesShown = !mobileBitratesShown
+                    } else {
+                        bitratesShown = !bitratesShown
+                    }
+                }">
                 <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
-                    style="height: 6vh; " @click="() => { bitratesShown = !bitratesShown }">
+                    style="height: 6vh;">
                 <img src="/src/assets/dropdown_arrow.png" alt=""
-                    :style="{ height: '2vh', transform: (bitratesShown) ? 'rotate(180deg)' : '' }"
-                    @click="() => { bitratesShown = !bitratesShown }" />
+                    :style="{ height: '2vh', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                     :funcs="[switchQuality, switchQuality, switchQuality]"
                     :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')"
                     :visible="bitratesShown">
                 </ListDropdown>
             </div>
-
-            <img src="/src/assets/settings_icon.png" alt="settings" style="height: 6vh; cursor: pointer"
+            <img id="settings-button" src="/src/assets/settings_icon.png" alt="settings"
                 @click="() => { settingsShown = !settingsShown }">
         </div>
     </div>
