@@ -174,8 +174,8 @@ function overlayClick() {
 <template>
 <div id="main">
     <div class="overlay" v-show="overlayToggle">
-        <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px; margin-top: -30vh;">
-        <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: -30vh; height: auto; cursor: pointer;"
+        <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
+        <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
             class="hoverBtn" @click="overlayClick" />
     </div>
     <div class="overlay" v-show="authToggle">
@@ -198,8 +198,8 @@ function overlayClick() {
         <br>
         <button @click="() => { settingsShown = false }">close</button>
     </div>
-    <img :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
-        alt="cover artwork for set" />
+        <img id="cover" :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
+            alt="cover artwork for set" />
     <div>
         <h1>
             {{
