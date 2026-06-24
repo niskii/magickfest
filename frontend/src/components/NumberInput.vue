@@ -10,12 +10,12 @@ const model = defineModel<number>();
 
 function decrease() {
     if (!props.min || model.value > Number(props.min))
-        model.value -= parseFloat(props.step)
+        model.value -= parseFloat(props.step) || 1
 }
 
 function increase() {
     if (!props.max || model.value < Number(props.max))
-        model.value += parseFloat(props.step)
+        model.value += parseFloat(props.step) || 1
 }
 
 </script>
