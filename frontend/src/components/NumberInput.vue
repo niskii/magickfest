@@ -54,7 +54,7 @@ input[type=number] {
 </style>
 
 <template>
-    <div>
+    <div class="numberInput">
         <button class="button" @click="decrease">-</button>
         <input type="number" v-model="model" :min="props.min" :max="props.max" :step="props.step">
         <button class="button" @click="increase">+</button>

@@ -22,6 +22,7 @@ const visualiserRef = useTemplateRef<visualiserType>("visualiser");
 const visualiserOn = ref<boolean>(true);
 const bitratesShown = ref<boolean>(false);
 const settingsShown = ref<boolean>(false);
+const mobileBitratesShown = ref<boolean>(false);
 
 // SETTINGS VARS (should autosave)
 const visualizerFFTSize = ref<number>(12);
@@ -33,7 +34,7 @@ const volume = ref<number>(75);
 const muted = ref<boolean>(false);
 
 // GUI
-const isEmbedded = ref<boolean>(true);
+// const isEmbedded = ref<boolean>(true);
 
 const isMobile = computed(() => {
     return screen.width <= 760;
@@ -47,14 +48,13 @@ onMounted(() => {
     (localStorage.getItem('bitrate')) ? bitrate.value = parseInt(localStorage.getItem('bitrate')) : null;
     (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
     (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
+    (localStorage.getItem('visualiserOn')) ? visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : !isMobile.value;
 
     const player = new AudioStreamPlayer(
         socket,
         bitrate.value,
         volume.value / 100,
     );
-
-    visualiserOn.value = !isMobile.value
 
     audioStreamPlayer.value = player;
 
@@ -67,7 +67,7 @@ onMounted(() => {
         ];
     }, config.UpdateInterval);
 
-    isEmbedded.value = window.self !== window.top;
+    // isEmbedded.value = window.self !== window.top;
 
     setupSocket();
 
@@ -104,6 +104,8 @@ watch([visualizerColor, visualizerFFTSize, visualizerFPSLimit, visualizerWidth],
 })
 
 watch(visualiserOn, () => {
+    localStorage.setItem('visualiserOn', visualiserOn.value.toString());
+
     if (visualiserOn.value) {
         visualiserRef.value.resume()
     } else {
@@ -192,17 +194,24 @@ function overlayClick() {
             <NumberInput v-model="visualizerFFTSize" min="5" max="15"></NumberInput>
             <h2>visualizer FPS limit: </h2>
             <NumberInput v-model="visualizerFPSLimit" min="1" max="60"></NumberInput>
-            <h2>visualizer color: </h2>
-            <ColorInput v-model="visualizerColor"></ColorInput>
             <h2>visualizer line width: </h2>
             <NumberInput v-model="visualizerWidth" min="1" max="10" step="0.5"></NumberInput>
+            <h2>visualizer color: </h2>
+            <ColorInput v-model="visualizerColor"></ColorInput>
             <br>
             <button @click="() => { settingsShown = false }">close</button>
+        </div>
+        <div class="overlay" v-show="mobileBitratesShown">
+            <h1>select bitrate</h1>
+            <input type="radio">128kbps
+            <input type="radio">96kbps
+            <input type="radio">64kbps
+            <button @click="() => { mobileBitratesShown = false }">close</button>
         </div>
         <img id="cover"
             :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
             alt="cover artwork for set" />
-        <div>
+        <div id="setInfo">
             <h1>
                 {{
                     setInformation.setInfo.title
@@ -221,14 +230,10 @@ function overlayClick() {
                 :fpsLimit="visualizerFPSLimit" :lineWidth="visualizerWidth" :lineColor="visualizerColor"
                 backgroundColor="#0c0c11">
             </Visualiser>
+            <h3 v-show="!visualiserOn && isMobile" class="visualiser">[visualizer is off]</h3>
         </div>
     </div>
     <div id="bottomBar">
-        <select class="mobileOnly" v-model="bitrate">
-            <option value="128">128kbps</option>
-            <option value="96">96kbps</option>
-            <option value="64">64kbps</option>
-        </select>
         <div style="min-width: 140px; width: 20em; padding: 0 2em" class="fullOnly">
             <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
                 style="height: 5vh; cursor: pointer" @click="
@@ -249,6 +254,21 @@ function overlayClick() {
                 }"></div>
                 <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
             </div>
+        </div>
+        <div class="mobileOnly"
+            style="width: 70%; margin-top: 3.5vh; flex-direction: row !important; justify-content: space-around;"
+            v-show="isMobile">
+            <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
+                style="height: 6vh; " @click="() => { mobileBitratesShown = !mobileBitratesShown }">
+            <!-- <select v-model="bitrate">
+                <option value="128">128kbps</option>
+                <option value="96">96kbps</option>
+                <option value="64">64kbps</option>
+            </select> -->
+            <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
+                style="height: 6vh; cursor: pointer" @click="() => { visualiserOn = !visualiserOn; }" />
+            <img src="/src/assets/settings_icon.png" alt="settings" style="height: 6vh; cursor: pointer"
+                @click="() => { settingsShown = !settingsShown }">
         </div>
         <div style="gap: 1em; padding: 0 2em; font-size: 1.6vmax" class="fullOnly">
             <img :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
