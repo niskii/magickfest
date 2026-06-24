@@ -94,7 +94,7 @@ onMounted(() => {
         <canvas id="canvas" ref="canvas" style="filter: url(#f1);" :width="width * dpr" :height="height * dpr"></canvas>
         <svg display="none">
             <defs>
-                <filter id="f1" x="0" y="0">
+                <filter id="f1" x="0" y="0" primitiveUnits="objectBoundingBox">
                     <!-- <feMorphology operator="dilate" radius="0.6 2.4" x="0%" y="0%" width="100%" height="100%"
                         in="SourceGraphic" result="morphology" /> -->
                     <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="SourceGraphic"
