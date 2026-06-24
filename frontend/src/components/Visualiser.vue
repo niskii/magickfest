@@ -108,8 +108,6 @@ onMounted(() => {
                         stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence" />
                     <feDisplacementMap in="componentTransfer" in2="turbulence" :scale=scale1 xChannelSelector="R"
                         yChannelSelector="B" x="0%" y="0%" width="100%" height="100%" result="displacementMap" />
-                    <feTurbulence type="turbulence" baseFrequency="3.5 3.6" numOctaves="2" :seed=seed2
-                        stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
                     <feTurbulence type="turbulence" baseFrequency="0.5 0.6" numOctaves="2" :seed=seed2
                         stitchTiles="stitch" x="0%" y="0%" width="100%" height="100%" result="turbulence1" />
                     <feComponentTransfer x="0%" y="0%" width="100%" height="100%" in="turbulence1"

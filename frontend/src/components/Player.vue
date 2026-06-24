@@ -42,7 +42,7 @@ const isMobile = computed(() => {
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
     (localStorage.getItem('visualizerFPSLimit')) ? visualizerFPSLimit.value = parseInt(localStorage.getItem('visualizerFPSLimit')) : null;
-    (localStorage.getItem('visualizerWidth')) ? visualizerWidth.value = parseInt(localStorage.getItem('visualizerWidth')) : null;
+    (localStorage.getItem('visualizerWidth')) ? visualizerWidth.value = parseFloat(localStorage.getItem('visualizerWidth')) : null;
     (localStorage.getItem('visualizerColor')) ? visualizerColor.value = localStorage.getItem('visualizerColor') : null;
     (localStorage.getItem('bitrate')) ? bitrate.value = parseInt(localStorage.getItem('bitrate')) : null;
     (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
