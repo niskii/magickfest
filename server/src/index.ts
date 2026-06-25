@@ -6,7 +6,6 @@ import express from "express";
 import { readFileSync } from "fs";
 import https from "https";
 import { Server } from "socket.io";
-import { configureRouter } from "./api/service";
 import { readCommands } from "./commandline";
 import { setupMiddleware } from "./api/middlewares";
 import { Player } from "./player/player";
@@ -19,49 +18,48 @@ import { configureInteractions } from "./bot/interactions";
 const commandLineOptions = readCommands();
 
 const httpsOptions = {
-  pfx: readFileSync(process.env.PfxPath!),
-  passphrase: process.env.PfxSecret,
+    pfx: readFileSync(process.env.PfxPath!),
+    passphrase: process.env.PfxSecret,
 };
 
 const playlist = new Playlist(commandLineOptions.playlistFile);
 const player = new Player(playlist, commandLineOptions.isLooped);
 
-configureRouter(player);
 const app = express();
 
 const server = https.createServer(httpsOptions, app);
 const io = new Server(server, {
-  cors: {
-    origin: globalThis.settings.origins,
-    credentials: true,
-  },
-  connectTimeout: 20000,
+    cors: {
+        origin: globalThis.settings.origins,
+        credentials: true,
+    },
+    connectTimeout: 20000,
 });
 
 const userManager = new UserManager();
 
-setupMiddleware(app, io, userManager);
+setupMiddleware(app, io, userManager, player);
 setupSocket(io, player, userManager);
 
 server.listen(globalThis.settings.port, () => {
-  console.log(
-    `server running at https://localhost:${globalThis.settings.port}`,
-  );
+    console.log(
+        `server running at https://localhost:${globalThis.settings.port}`,
+    );
 });
 
 process.on("warning", (warning) => {
-  console.log(warning.stack);
+    console.log(warning.stack);
 });
 
 player.setState(
-  commandLineOptions.setIndex,
-  null,
-  commandLineOptions.forwarded,
+    commandLineOptions.setIndex,
+    null,
+    commandLineOptions.forwarded,
 );
 
 const playerStateManager = new PlayerStateManager(
-  player,
-  commandLineOptions.useSavedState,
+    player,
+    commandLineOptions.useSavedState,
 );
 
 playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
@@ -71,11 +69,11 @@ configureInteractions(player, playlist, playerStateManager);
 
 // setTimeout(
 //     () => {
-//             if (playerStateManager.hasLoaded) {
-//                 player.playAtState();
-//             } else {
-//                 player.playAtForwarded();
-//                 playerStateManager.saveState();
+//         if (playerStateManager.hasLoaded) {
+//             player.playAtState();
+//         } else {
+//             player.playAtForwarded();
+//             playerStateManager.saveState();
 //         }
 //     },
 //     Math.max(1, commandLineOptions.scheduledStart - Date.now()),

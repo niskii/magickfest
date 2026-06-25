@@ -1,11 +1,13 @@
 import express from "express";
 import { parseTime } from "../parsing/time-parser";
 import { Player } from "../player/player";
+import path from "path";
 
-const router = express.Router();
+export const serviceAPI = express.Router();
+export const publicAPI = express.Router();
 
 export function configureRouter(player: Player) {
-  router.route("/*splat").post((req, res, next) => {
+  serviceAPI.route("/*splat").post((req, res, next) => {
     if (req.session.user?.IsAdmin) {
       console.log("Admin request:", req.session.user);
       next();
@@ -14,7 +16,7 @@ export function configureRouter(player: Player) {
     }
   });
 
-  router
+  serviceAPI
     .route("/playposition")
     .get((req, res) => {
       const position = player.getCurrentPositionMilliseconds();
@@ -41,7 +43,7 @@ export function configureRouter(player: Player) {
       res.sendStatus(200);
     });
 
-  router
+  serviceAPI
     .route("/set")
     .get((_, res) => {
       const currentSet = player.getPlaylist().getCurrentSet();
@@ -63,11 +65,18 @@ export function configureRouter(player: Player) {
       }
     });
 
-  router.route("/playnext").post((_, res) => {
+  serviceAPI.route("/playnext").post((_, res) => {
     player.nextSet();
     player.playAtStart();
     res.sendStatus(200);
   });
-}
 
-export default router;
+  publicAPI.route("/cover").get((_, res) => {
+        const currentSet = player.getPlaylist().getCurrentSet();
+        const cover = currentSet.CoverFile;
+        if (cover !== undefined) {
+            const coverPath = path.resolve(cover);
+            res.sendFile(coverPath);
+        } else res.sendStatus(404);
+    });
+}

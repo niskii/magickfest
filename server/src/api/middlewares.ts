@@ -10,7 +10,8 @@ import helmet from "helmet";
 import { Server } from "socket.io";
 import { UserManager } from "src/user/user-manager";
 import authAPI, { isAuthorized } from "../api/auth";
-import serviceAPI from "../api/service";
+import { serviceAPI, publicAPI, configureRouter } from "../api/service";
+import { Player } from "../player/player";
 
 const limiter = rateLimit({
   windowMs: settings.rateWindowMs,
@@ -69,7 +70,11 @@ export function setupMiddleware(
   app: Express,
   io: Server,
   userManager: UserManager,
+  player: Player
 ) {
+
+  configureRouter(player)
+
   app.use(limiter);
   app.disable("x-powered-by");
   app.use(
@@ -83,6 +88,7 @@ export function setupMiddleware(
   app.use(bodyParser.json());
   app.use(sessionMiddleware);
   app.use("/api/auth", authAPI);
+  app.use("/api/public", publicAPI);
   app.use(isAuthorized);
   app.use("/api/service", serviceAPI);
   app.use(error);
