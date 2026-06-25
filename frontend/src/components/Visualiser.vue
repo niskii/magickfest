@@ -33,7 +33,6 @@ const { pause, resume } = useRafFn(() => {
         seed1.value = Math.floor(Math.random() * 100)
         seed2.value = Math.floor(Math.random() * 100)
         scale1.value = Math.sin(Date.now() / 3000) * 0.006 + 0.012
-        scale2.value = Math.sin(Date.now() / 1000) * 0.002 + 0.0
         visualiser.value.draw()
     }
 }, { fpsLimit, immediate: false })
@@ -117,7 +116,7 @@ onMounted(() => {
                         <feFuncG type="identity" />
                         <feFuncA type="discrete" tableValues="0 1 0" />
                     </feComponentTransfer>
-                    <feDisplacementMap in="displacementMap" in2="componentTransfer1" :scale=scale2 xChannelSelector="A"
+                    <feDisplacementMap in="displacementMap" in2="componentTransfer1" :scale=0.0014 xChannelSelector="A"
                         yChannelSelector="A" x="0%" y="0%" width="100%" height="100%" result="displacementMap1" />
                 </filter>
             </defs>
