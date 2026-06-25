@@ -266,7 +266,7 @@ function overlayClick() {
     </div>
 
     <div id="bottomBar">
-        <div style="min-width: 140px; width: 20em; padding: 0 2em" class="fullOnly">
+        <div style="min-width: 140px; width: 25%; padding: 0 2em" class="fullOnly">
             <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
                 style="height: 5vh; cursor: pointer" @click="
                     () => {
