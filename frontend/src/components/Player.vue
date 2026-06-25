@@ -273,9 +273,15 @@ function overlayClick() {
                 " />
             <div id="quality-button">
                 <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
-                    style="height: 6vh;">
+                    style="height: 6vh;" @click="() => {
+                        if (isMobile()) {
+                            mobileBitratesShown = !mobileBitratesShown;
+                        } else {
+                            bitratesShown = !bitratesShown;
+                        }
+                    }">
                 <img class="fullOnly" src="/src/assets/dropdown_arrow.png" alt=""
-                    :style="{ height: '2vh', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
+                    :style="{ height: '2vh', marginLeft: '0.3vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                     :funcs="[switchQuality, switchQuality, switchQuality]"
                     :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')"

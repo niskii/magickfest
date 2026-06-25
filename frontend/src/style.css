@@ -145,8 +145,8 @@ h3 {
 
 #settings-panel {
     display: flex;
-    gap: 1em;
-    padding: 0 2em;
+    gap: 1.75vw;
+    padding: 0 2.5vw;
     font-size: 1.6vmax;
 }
 
@@ -456,7 +456,7 @@ h3 {
     }
 }
 
-@media screen and (max-height: 250px) {
+@media screen and (min-aspect-ratio: 7/3) {
 
     h1,
     h2 {
