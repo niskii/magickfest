@@ -16,6 +16,7 @@ export class AudioStreamPlayer {
   #bitrate: Bitrate;
   #volume: number;
   #analyzer: AnalyserNode;
+  #paused: boolean
 
   constructor(socket: Socket, bitrate: Bitrate, volume: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
@@ -99,10 +100,12 @@ export class AudioStreamPlayer {
   }
 
   pause() {
+    this.#paused = true;
     this.#audioCtx.suspend();
   }
 
   resume() {
+    this.#paused = false;
     this.#audioCtx.resume();
   }
 
@@ -140,8 +143,9 @@ export class AudioStreamPlayer {
         console.log("race condition detected for closed session");
         return;
       }
-
-      this.resume();
+      if (!this.#paused) {
+        this.#audioCtx.resume();
+      }
       this.#schedulePlayback(event.decoded);
     }
   }
@@ -166,7 +170,7 @@ export class AudioStreamPlayer {
         this.#timeKeeper.getStartedAt() +
           this.#timeKeeper.getTotalTimeScheduled()
       ) {
-        this.pause();
+        this.#audioCtx.suspend();
       }
     };
 

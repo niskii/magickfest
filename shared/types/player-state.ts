@@ -4,7 +4,7 @@ export enum PlaybackState {
     Paused,
 }
 
-export interface PlayerState {
+export type PlayerState = {
     id: string,
     setIndex: number,
     startTime: number,

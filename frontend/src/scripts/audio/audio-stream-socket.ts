@@ -34,6 +34,7 @@ export class AudioStreamSocket {
 
   handleChunk(data: AudioPacket) {
     this.#isFetching = false;
+    if (data == null) return
     if (this.#lastChunkPage == data.PageEnd) return;
     this.#lastChunkPage = data.PageEnd;
     this.onFetch(data.Buffer);
@@ -51,6 +52,7 @@ export class AudioStreamSocket {
 
     this.#socket.once("syncedChunk", async (data: AudioPacket) => {
       console.log("syncing!", this.#lastChunkPage);
+      if (!data) return;
       this.#needsResync = false;
       // save the play position of the sync chunk.
       this.#timeKeeper.setStartPosition(data.ChunkPlayPosition);

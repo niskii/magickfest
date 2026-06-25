@@ -1,11 +1,12 @@
 import { SetInfoFetcher } from "./set-info-fetcher";
 import { socket } from "./socket";
+import { type PlayerState } from '@shared/types/player-state';
 
 import { ref } from "vue";
 
 export const isConnected = ref(socket.connected);
 export const setInformation = new SetInfoFetcher(socket);
-export const playerState = ref<any>({});
+export const playerState = ref<PlayerState>(null);
 export const authToggle = ref<boolean>(false);
 export const alreadyConnected = ref<boolean>(false);
 
@@ -21,7 +22,7 @@ function onConnect() {
 function onDisconnect() {
   socket.off("newSet", newSetEvent);
   socket.off("currentPlayerState", currentPlayerState);
-  playerState.value = {};
+  playerState.value = null;
   authToggle.value = false;
   alreadyConnected.value = false;
   isConnected.value = false;
@@ -63,7 +64,7 @@ function fetchInfo() {
   setInformation.fetchInformation();
 }
 
-function currentPlayerState(state: any) {
+function currentPlayerState(state: PlayerState) {
   playerState.value = state;
 }
 

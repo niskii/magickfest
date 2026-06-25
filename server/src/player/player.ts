@@ -2,7 +2,7 @@ import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
 import { Bitrate } from "@shared/types/audio-transfer";
-import { PlaybackState, PlayerState } from "../types/player-state";
+import { PlaybackState, PlayerState } from "@shared/types/player-state";
 
 export class Player {
     /**
@@ -192,6 +192,7 @@ export class Player {
             this.#state = PlaybackState.Paused
             this.events?.emit("changedState");
             this.#pointOfPause = Date.now()
+            this.#playbackTimer?.close();
         }
     }
 
@@ -201,6 +202,7 @@ export class Player {
             this.#startTime = Date.now()
             this.#state = PlaybackState.Running
             this.events?.emit("changedState");
+            this.#setupPlaybackTimer();
         }
     }
 
@@ -223,7 +225,10 @@ export class Player {
      * @returns play position in milliseconds
      */
     getCurrentPositionMilliseconds() {
-        return Date.now() - this.#startTime + this.#forwarded;
+        if (this.#state == PlaybackState.Paused && this.#pointOfPause) {
+            return this.#forwarded + (this.#pointOfPause - this.#startTime)
+        } else
+            return Date.now() - this.#startTime + this.#forwarded;
     }
 
     /**

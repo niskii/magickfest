@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Bitrate } from '@shared/types/audio-transfer';
-import { computed, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
+import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { socket } from "../scripts/socket/socket";
@@ -21,6 +21,7 @@ const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
 const isPaused = ref(false)
 const setIndex = ref(0)
+const startPaused = ref(true)
 
 const overlayToggle = ref<boolean>(true);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
@@ -120,12 +121,15 @@ watch(visualiserOn, () => {
     }
 })
 
+function playerStart() {
+    audioStreamPlayer.value.reset();
+    audioStreamPlayer.value.start();
+    visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
+    visualiserRef.value.resume();
+}
+
 watch(playerState, () => {
     if (isConnected.value) {
-
-        console.log("setIndex", setIndex.value)
-        console.log("condition", setIndex.value == playerState.value.setIndex)
-        console.log("state", playerState.value.state)
         switch (playerState.value.state) {
             case 0:
                 audioStreamPlayer.value.reset();
@@ -135,17 +139,16 @@ watch(playerState, () => {
                 if (isPaused.value && setIndex.value == playerState.value.setIndex) {
                     audioStreamPlayer.value.resume();
                 } else {
-                    audioStreamPlayer.value.reset();
-                    audioStreamPlayer.value.start();
-                    visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
-                    visualiserRef.value.resume();
+                    playerStart()
                     setIndex.value = playerState.value.setIndex
                 }
                 isPaused.value = false
-                
                 break;
 
             case 2:
+                if (startPaused.value) {
+                    playerStart();
+                }
                 audioStreamPlayer.value.pause();
                 isPaused.value = true
                 break;
@@ -154,6 +157,8 @@ watch(playerState, () => {
             default:
                 break;
         }
+
+        startPaused.value = false
     }
 })
 
