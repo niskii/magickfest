@@ -144,9 +144,10 @@ h3 {
 }
 
 #settings-panel {
-    gap: 1.75vw;
-    padding: 0 2.5vw;
-    justify-content: space-between;
+    display: flex;
+    gap: 1em;
+    padding: 0 2em;
+    font-size: 1.6vmax;
 }
 
 #visualiser-button {
@@ -305,6 +306,10 @@ h3 {
 
     #progressbar {
         height: 6vh !important;
+    }
+
+    #settings-panel {
+        display: none !important;
     }
 
     #main {
