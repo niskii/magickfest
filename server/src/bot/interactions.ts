@@ -4,7 +4,7 @@ import { PlayerStateManager } from "../player/player-state-manager";
 import { client } from "./setup";
 import { sendMessage } from "./actions";
 import { Interaction, GuildMember, MessageFlags, AttachmentBuilder } from "discord.js";
-import { PlayerState } from "../types/player-state";
+import { PlaybackState } from "../types/player-state";
 import * as path from "path";
 import { openAsBlob, existsSync } from "fs";
 
@@ -23,7 +23,7 @@ async function isAdmin(interaction: Interaction) {
 }
 
 async function isPlayerRunning(player: Player, interaction: Interaction, verboseOnTrue: boolean = false) {
-    const isRunning = player.getState().state == PlayerState.Running;
+    const isRunning = player.getState().state == PlaybackState.Running;
 
     if (verboseOnTrue && isRunning) {
         await interaction.reply({

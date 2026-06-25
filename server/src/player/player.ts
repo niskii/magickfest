@@ -2,7 +2,7 @@ import EventEmitter from "node:events";
 import { OpusReader } from "./opus-reader";
 import { Playlist } from "./playlist";
 import { Bitrate } from "@shared/types/audio-transfer";
-import { PlayerState } from "../types/player-state";
+import { PlaybackState, PlayerState } from "../types/player-state";
 
 export class Player {
     /**
@@ -38,7 +38,7 @@ export class Player {
     /**
      * Boolean to lock the timer payload.
      */
-    #waitnextset = false;
+    #waitNextSet = false;
 
     /**
      * Events for state changes.
@@ -48,7 +48,12 @@ export class Player {
     /**
      * state of the player
      */
-    #state: PlayerState;
+    #state: PlaybackState;
+
+    /**
+     * The state of the player at the point of pausing.
+     */
+    #pointOfPause:number | null = null;
 
     //testing
     #loop = false;
@@ -64,7 +69,7 @@ export class Player {
         this.#startTime = 0;
         this.#forwarded = 0;
         this.#readerCollection = new Map();
-        this.#state = PlayerState.Stopped;
+        this.#state = PlaybackState.Stopped;
         this.loadCurrentSet();
 
         this.#loop = loop;
@@ -89,7 +94,7 @@ export class Player {
      *
      * @returns an object containing the state
      */
-    getState() {
+    getState(): PlayerState {
         return {
             id: this.#playlist.getHash(),
             setIndex: this.#playlist.getCurrentIndex(),
@@ -141,7 +146,7 @@ export class Player {
     playAt(forwarded: number, startTime?: number) {
         const currentSet = this.#playlist.getCurrentIndex();
         if (currentSet >= this.#playlist.getLength()) {
-            this.#state = PlayerState.Stopped;
+            this.#state = PlaybackState.Stopped;
             throw new Error("The playlist has ended");
         }
 
@@ -149,7 +154,7 @@ export class Player {
         if (startTime !== undefined) this.#startTime = startTime;
         else this.#startTime = Date.now();
 
-        this.#state = PlayerState.Running;
+        this.#state = PlaybackState.Running;
         this.#playbackTimer?.close();
 
         if (this.#latestSet != currentSet) {
@@ -180,6 +185,23 @@ export class Player {
      */
     playAtStart() {
         this.playAt(0, Date.now());
+    }
+
+    pause() {
+        if(this.#state == PlaybackState.Running) {
+            this.#state = PlaybackState.Paused
+            this.events?.emit("changedState");
+            this.#pointOfPause = Date.now()
+        }
+    }
+
+    resume() {
+        if(this.#state == PlaybackState.Paused && this.#pointOfPause !== null) {
+            this.#forwarded = this.#forwarded + (this.#pointOfPause - this.#startTime)
+            this.#startTime = Date.now()
+            this.#state = PlaybackState.Running
+            this.events?.emit("changedState");
+        }
     }
 
     /**
@@ -260,10 +282,10 @@ export class Player {
 
     #setupPlaybackTimer() {
         this.#playbackTimer = setInterval(() => {
-            if (this.getRemainingTimeSeconds() < 0 && !this.#waitnextset) {
-                this.#waitnextset = true;
+            if (this.getRemainingTimeSeconds() < 0 && !this.#waitNextSet) {
+                this.#waitNextSet = true;
                 setTimeout(() => {
-                    this.#waitnextset = false;
+                    this.#waitNextSet = false;
                     if (!this.#loop) this.nextSet();
                     this.playAtStart();
                 }, globalThis.settings.playerNewSetTimeout);

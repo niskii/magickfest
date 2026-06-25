@@ -7,71 +7,86 @@ export const serviceAPI = express.Router();
 export const publicAPI = express.Router();
 
 export function configureRouter(player: Player) {
-  serviceAPI.route("/*splat").post((req, res, next) => {
-    if (req.session.user?.IsAdmin) {
-      console.log("Admin request:", req.session.user);
-      next();
-    } else {
-      next("No access!");
-    }
-  });
-
-  serviceAPI
-    .route("/playposition")
-    .get((req, res) => {
-      const position = player.getCurrentPositionMilliseconds();
-      if (position && req.query.formatted === "true") {
-        res.json({
-          hours: Math.floor((position / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((position / (1000 * 60)) % 60),
-          seconds: Math.floor((position / 1000) % 60),
-          milliseconds: Math.floor(position % 1000),
-        });
-      } else {
-        res.json({
-          position: position,
-        });
-      }
-    })
-    .post((req, res) => {
-      const parsedTime = parseTime(req.query.time);
-      if (parsedTime === null) {
-        throw new Error("Could not parse input!");
-      }
-      player.setState(null, null, parsedTime * 1000);
-      player.playAtForwarded();
-      res.sendStatus(200);
+    serviceAPI.route("/*splat").post((req, res, next) => {
+        if (req.session.user?.IsAdmin) {
+            console.log("Admin request:", req.session.user);
+            next();
+        } else {
+            next("No access!");
+        }
     });
 
-  serviceAPI
-    .route("/set")
-    .get((_, res) => {
-      const currentSet = player.getPlaylist().getCurrentSet();
-      const set = {
-        SetIndex: player.getPlaylist().getCurrentIndex(),
-        Titel: currentSet.Title,
-        Author: currentSet.Author,
-      };
-      res.json(set);
-    })
-    .post((req, res) => {
-      const setIndex = Number(req.query.setindex);
-      if (Number.isInteger(setIndex)) {
-        player.setState(setIndex, null, null);
+    serviceAPI
+        .route("/playposition")
+        .get((req, res) => {
+            const position = player.getCurrentPositionMilliseconds();
+            if (position && req.query.formatted === "true") {
+                res.json({
+                    hours: Math.floor((position / (1000 * 60 * 60)) % 24),
+                    minutes: Math.floor((position / (1000 * 60)) % 60),
+                    seconds: Math.floor((position / 1000) % 60),
+                    milliseconds: Math.floor(position % 1000),
+                });
+            } else {
+                res.json({
+                    position: position,
+                });
+            }
+        })
+        .post((req, res) => {
+            const parsedTime = parseTime(req.query.time);
+            if (parsedTime === null) {
+                throw new Error("Could not parse input!");
+            }
+            player.setState(null, null, parsedTime * 1000);
+            player.playAtForwarded();
+            res.sendStatus(200);
+        });
+
+    serviceAPI
+        .route("/set")
+        .get((_, res) => {
+            const currentSet = player.getPlaylist().getCurrentSet();
+            const set = {
+                SetIndex: player.getPlaylist().getCurrentIndex(),
+                Titel: currentSet.Title,
+                Author: currentSet.Author,
+            };
+            res.json(set);
+        })
+        .post((req, res) => {
+            const setIndex = Number(req.query.setindex);
+            if (Number.isInteger(setIndex)) {
+                player.setState(setIndex, null, null);
+                player.playAtStart();
+                res.sendStatus(200);
+            } else {
+                throw new Error("Invalid input!");
+            }
+        });
+
+    serviceAPI.route("/pause").post((_, res) => {
+        player.pause();
+        res.sendStatus(200);
+    });
+
+    serviceAPI.route("/resume").post((_, res) => {
+        player.resume();
+        res.sendStatus(200);
+    });
+
+    serviceAPI.route("/pause").post((_, res) => {
+        player.pause();
+        res.sendStatus(200);
+    });
+
+    serviceAPI.route("/playnext").post((_, res) => {
+        player.nextSet();
         player.playAtStart();
         res.sendStatus(200);
-      } else {
-        throw new Error("Invalid input!");
-      }
     });
 
-  serviceAPI.route("/playnext").post((_, res) => {
-    player.nextSet();
-    player.playAtStart();
-    res.sendStatus(200);
-  });
-
-  publicAPI.route("/cover").get((_, res) => {
+    publicAPI.route("/cover").get((_, res) => {
         const currentSet = player.getPlaylist().getCurrentSet();
         const cover = currentSet.CoverFile;
         if (cover !== undefined) {

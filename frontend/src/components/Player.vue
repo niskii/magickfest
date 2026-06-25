@@ -19,6 +19,8 @@ type visualiserType = InstanceType<typeof Visualiser>;
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
+const isPaused = ref(false)
+const setIndex = ref(0)
 
 const overlayToggle = ref<boolean>(true);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
@@ -120,14 +122,37 @@ watch(visualiserOn, () => {
 
 watch(playerState, () => {
     if (isConnected.value) {
-        if (playerState.value.state == 0) {
-            audioStreamPlayer.value.reset();
-            visualiserRef.value.pause();
-        } else {
-            audioStreamPlayer.value.reset();
-            audioStreamPlayer.value.start();
-            visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
-            visualiserRef.value.resume();
+
+        console.log("setIndex", setIndex.value)
+        console.log("condition", setIndex.value == playerState.value.setIndex)
+        console.log("state", playerState.value.state)
+        switch (playerState.value.state) {
+            case 0:
+                audioStreamPlayer.value.reset();
+                visualiserRef.value.pause();
+                break;
+            case 1:
+                if (isPaused.value && setIndex.value == playerState.value.setIndex) {
+                    audioStreamPlayer.value.resume();
+                } else {
+                    audioStreamPlayer.value.reset();
+                    audioStreamPlayer.value.start();
+                    visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
+                    visualiserRef.value.resume();
+                    setIndex.value = playerState.value.setIndex
+                }
+                isPaused.value = false
+                
+                break;
+
+            case 2:
+                audioStreamPlayer.value.pause();
+                isPaused.value = true
+                break;
+                
+
+            default:
+                break;
         }
     }
 })
