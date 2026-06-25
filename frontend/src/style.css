@@ -301,7 +301,7 @@ h3 {
 
     .alwaysVisible {
         width: 95% !important;
-        font-size: 3vw !important;
+        font-size: min(6vmin, 5vh) !important;
     }
 
     #progressbar {
@@ -456,7 +456,7 @@ h3 {
     }
 }
 
-@media screen and (min-aspect-ratio: 7/3) {
+@media screen and (min-aspect-ratio: 7/3) and (max-height: 400px) {
 
     h1,
     h2 {
@@ -471,5 +471,13 @@ h3 {
 
     .visualiser {
         width: 50%;
+    }
+
+    h1 {
+        font-size: 12vmin;
+    }
+
+    h2 {
+        font-size: 8vmin;
     }
 }
