@@ -280,7 +280,7 @@ function overlayClick() {
                 }">
                 <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
                     style="height: 6vh;">
-                <img src="/src/assets/dropdown_arrow.png" alt=""
+                <img class="fullOnly" src="/src/assets/dropdown_arrow.png" alt=""
                     :style="{ height: '2vh', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                     :funcs="[switchQuality, switchQuality, switchQuality]"

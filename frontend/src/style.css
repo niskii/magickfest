@@ -144,6 +144,7 @@ h3 {
 }
 
 #settings-panel {
+    display: flex;
     gap: 1em; 
     padding: 0 2em; 
     font-size: 1.6vmax;
@@ -304,6 +305,10 @@ h3 {
 
     #progressbar {
         height: 6vh !important;
+    }
+
+    #settings-panel {
+        display: none !important;
     }
 
     #main {
