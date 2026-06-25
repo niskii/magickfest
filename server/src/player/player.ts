@@ -28,7 +28,7 @@ export class Player {
     /**
      * The playlist to play.
      */
-    #playlist;
+    #playlist: Playlist;
 
     /**
      * Helper variable for newSet event
@@ -104,108 +104,7 @@ export class Player {
         };
     }
 
-    /**
-     * Sets the state of the player.
-     *
-     * @param setIndex an index of a set
-     * @param startTime the starting point
-     * @param forwarded the time the set is forwarded
-     */
-    setState(
-        setIndex: number | null,
-        startTime: number | null,
-        forwarded: number | null,
-    ) {
-        if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
-            this.#playlist.setCurrentSet(setIndex);
-            this.loadCurrentSet();
-            this.events?.emit("newSet");
-        }
-        if (startTime !== null) {
-            this.#startTime = startTime;
-        }
-        if (forwarded !== null) {
-            this.#forwarded = forwarded;
-        }
-    }
-
-    /**
-     * Changes the state of the player to the next set
-     */
-    nextSet() {
-        this.#playlist.nextSet();
-        this.loadCurrentSet();
-    }
-
-    /**
-     * Play the current set.
-     *
-     * @param forwarded milliseconds the set is forwarded
-     * @param startTime unix time the set started
-     */
-    playAt(forwarded: number, startTime?: number) {
-        const currentSet = this.#playlist.getCurrentIndex();
-        if (currentSet >= this.#playlist.getLength()) {
-            this.#state = PlaybackState.Stopped;
-            throw new Error("The playlist has ended");
-        }
-
-        this.#forwarded = forwarded;
-        if (startTime !== undefined) this.#startTime = startTime;
-        else this.#startTime = Date.now();
-
-        this.#state = PlaybackState.Running;
-        this.#playbackTimer?.close();
-
-        if (this.#latestSet != currentSet) {
-            this.#latestSet = currentSet;
-            this.events?.emit("newSet");
-        }
-
-        this.events?.emit("changedState");
-        this.#setupPlaybackTimer();
-    }
-
-    /**
-     * Play the current set at the state of the player.
-     */
-    playAtState() {
-        this.playAt(this.#forwarded, this.#startTime);
-    }
-
-    /**
-     * Play the current set with the forwarded time. Otherwise starting point is now.
-     */
-    playAtForwarded() {
-        this.playAt(this.#forwarded, Date.now());
-    }
-
-    /**
-     * Play the current set from the beginning.
-     */
-    playAtStart() {
-        this.playAt(0, Date.now());
-    }
-
-    pause() {
-        if(this.#state == PlaybackState.Running) {
-            this.#state = PlaybackState.Paused
-            this.events?.emit("changedState");
-            this.#pointOfPause = Date.now()
-            this.#playbackTimer?.close();
-        }
-    }
-
-    resume() {
-        if(this.#state == PlaybackState.Paused && this.#pointOfPause !== null) {
-            this.#forwarded = this.#forwarded + (this.#pointOfPause - this.#startTime)
-            this.#startTime = Date.now()
-            this.#state = PlaybackState.Running
-            this.events?.emit("changedState");
-            this.#setupPlaybackTimer();
-        }
-    }
-
+    
     /**
      * Returns the remaining time of the file given the position.
      *
@@ -285,6 +184,115 @@ export class Player {
             );
     }
 
+    /**
+     * Sets the state of the player.
+     *
+     * @param setIndex an index of a set
+     * @param startTime the starting point
+     * @param forwarded the time the set is forwarded
+     */
+    setState(
+        setIndex: number | null,
+        startTime: number | null,
+        forwarded: number | null,
+    ) {
+        if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
+            this.#playlist.setCurrentSet(setIndex);
+            this.loadCurrentSet();
+            this.events?.emit("newSet");
+        }
+        if (startTime !== null) {
+            this.#startTime = startTime;
+        }
+        if (forwarded !== null) {
+            this.#forwarded = forwarded;
+        }
+    }
+
+    /**
+     * Changes the state of the player to the next set
+     */
+    nextSet() {
+        try {
+            this.#playlist.nextSet();
+        } catch (error) {
+            this.events?.emit("changedState");
+            this.#state = PlaybackState.Stopped;
+            this.#playlist.setCurrentSet(0)
+            this.#playbackTimer?.close()
+        }
+        this.loadCurrentSet();
+    }
+
+    /**
+     * Play the current set.
+     *
+     * @param forwarded milliseconds the set is forwarded
+     * @param startTime unix time the set started
+     */
+    playAt(forwarded: number, startTime?: number) {
+        const currentSet = this.#playlist.getCurrentIndex();
+        if (currentSet >= this.#playlist.getLength()) {
+            this.#state = PlaybackState.Stopped;
+            this.#playlist.setCurrentSet(0)
+        }
+
+        this.#forwarded = forwarded;
+        if (startTime !== undefined) this.#startTime = startTime;
+        else this.#startTime = Date.now();
+
+        this.#state = PlaybackState.Running;
+        this.#playbackTimer?.close();
+
+        if (this.#latestSet != currentSet) {
+            this.#latestSet = currentSet;
+            this.events?.emit("newSet");
+        }
+
+        this.events?.emit("changedState");
+        this.#setupPlaybackTimer();
+    }
+
+    /**
+     * Play the current set at the state of the player.
+     */
+    playAtState() {
+        this.playAt(this.#forwarded, this.#startTime);
+    }
+
+    /**
+     * Play the current set with the forwarded time. Otherwise starting point is now.
+     */
+    playAtForwarded() {
+        this.playAt(this.#forwarded, Date.now());
+    }
+
+    /**
+     * Play the current set from the beginning.
+     */
+    playAtStart() {
+        this.playAt(0, Date.now());
+    }
+
+    pause() {
+        if(this.#state == PlaybackState.Running) {
+            this.#state = PlaybackState.Paused
+            this.events?.emit("changedState");
+            this.#pointOfPause = Date.now()
+            this.#playbackTimer?.close();
+        }
+    }
+
+    resume() {
+        if(this.#state == PlaybackState.Paused && this.#pointOfPause !== null) {
+            this.#forwarded = this.#forwarded + (this.#pointOfPause - this.#startTime)
+            this.#startTime = Date.now()
+            this.#state = PlaybackState.Running
+            this.events?.emit("changedState");
+            this.#setupPlaybackTimer();
+        }
+    }
+
     #setupPlaybackTimer() {
         this.#playbackTimer = setInterval(() => {
             if (this.getRemainingTimeSeconds() < 0 && !this.#waitNextSet) {
@@ -292,7 +300,8 @@ export class Player {
                 setTimeout(() => {
                     this.#waitNextSet = false;
                     if (!this.#loop) this.nextSet();
-                    this.playAtStart();
+                    if (this.#state == PlaybackState.Running)
+                        this.playAtStart();
                 }, globalThis.settings.playerNewSetTimeout);
             }
         }, globalThis.settings.playerUpdateInterval);
