@@ -39,7 +39,7 @@ const muted = ref<boolean>(false);
 // GUI
 // const isEmbedded = ref<boolean>(true);
 
-function isMobile () {
+function isMobile() {
     return (screen.width <= 760 && screen.height > 400);
 };
 
@@ -239,7 +239,7 @@ function overlayClick() {
             <h3 v-show="!visualiserOn && isMobile()" class="visualiser">[visualizer is off]</h3>
         </div>
     </div>
-    
+
     <div id="bottomBar">
         <div style="min-width: 140px; width: 20em; padding: 0 2em" class="fullOnly">
             <img :src="'/src/assets/volume_icon' + (muted ? '_muted' : '') + '.png'" alt="volume icon"
@@ -264,24 +264,24 @@ function overlayClick() {
         </div>
 
         <div id="settings-panel">
-            <img id="visualiser-button" :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
+            <img id="visualiser-button"
+                :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
                 @click="
                     () => {
                         visualiserOn = !visualiserOn;
                     }
                 " />
-            <div id="quality-button" 
-                @click="() => { 
-                    if (isMobile()) {
-                        mobileBitratesShown = !mobileBitratesShown
-                    } else {
-                        bitratesShown = !bitratesShown
-                    }
-                }">
+            <div id="quality-button">
                 <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
-                    style="height: 6vh;">
+                    style="height: 6vh;" @click="() => {
+                        if (isMobile()) {
+                            mobileBitratesShown = !mobileBitratesShown;
+                        } else {
+                            bitratesShown = !bitratesShown;
+                        }
+                    }">
                 <img src="/src/assets/dropdown_arrow.png" alt=""
-                    :style="{ height: '2vh', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
+                    :style="{ height: '2vh', marginLeft: '0.35vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                     :funcs="[switchQuality, switchQuality, switchQuality]"
                     :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')"
