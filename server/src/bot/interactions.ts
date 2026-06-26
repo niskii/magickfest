@@ -25,22 +25,24 @@ async function isAdmin(interaction: ChatInputCommandInteraction) {
     return hasRole;
 }
 
-async function isPlayerRunning(player: Player, interaction: ChatInputCommandInteraction, verboseOnTrue: boolean = false) {
-    const isRunning = player.getState().state == PlaybackState.Running;
-
-    if (verboseOnTrue && isRunning) {
-        await interaction.reply({
-            content: 'magickfest is already running!'
-        });
+async function replyPlaybackState(player: Player, interaction: ChatInputCommandInteraction) {
+    const state = player.getState().state;
+    let content;
+    switch (state) {
+        case PlaybackState.Running:
+            content = 'magickfest is already running!'
+            break;
+        case PlaybackState.Stopped:
+            content = 'magickfest isn\'t running yet!'
+            break;
+        case PlaybackState.Paused:
+            content = 'magickfest is already paused!'
+            break
+    
+        default:
+            break;
     }
-
-    if (!verboseOnTrue && !isRunning) {
-        await interaction.reply({
-            content: 'magickfest isn\'t running yet!'
-        });
-    }
-
-    return isRunning;
+    await interaction.reply({content: content});
 }
 
 function fancySchmancyTimeConverter(time: number) {
@@ -76,8 +78,8 @@ export function configureInteractions(player: Player, playlist: Playlist, player
 
         try {
             if (commandName == "np") {
-                if (await isPlayerRunning(player, interaction)) {
-                    const coverPath = path.join(__dirname, '../..', player.getPlaylist().getCurrentSet().CoverFile!);
+                if (player.isPlayerRunning()) {
+                    const coverPath = path.resolve(player.getPlaylist().getCurrentSet().CoverFile!);
                     let attachment: AttachmentBuilder;
 
                     let reply: InteractionReplyOptions = {
@@ -107,7 +109,7 @@ export function configureInteractions(player: Player, playlist: Playlist, player
             }
 
             if (commandName == "setlist") {
-                if (await isPlayerRunning(player, interaction)) {
+                if (player.isPlayerRunning()) {
                     let finalString = '';
                     let lastSetTime = Math.round(player.getState().startTime / 1000);
 
@@ -123,19 +125,69 @@ export function configureInteractions(player: Player, playlist: Playlist, player
             }
 
             if (commandName == "start") {
-                if (!(await isPlayerRunning(player, interaction, true))) {
+                if (!player.isPlayerRunning()) {
                     if (await isAdmin(interaction)) {
                         if (playerStateManager.hasLoaded) {
                             player.playAtState();
                         } else {
                             player.playAtForwarded();
-                            playerStateManager.saveState();
                         }
 
                         await interaction.reply({
                             content: `starting magickfest!`
                         })
                     }
+                } else {
+                    replyPlaybackState(player, interaction);
+                }
+            }
+
+            if (commandName == "pause") {
+                if (player.isPlayerRunning()) {
+                    if (await isAdmin(interaction)) {
+                        if (playerStateManager.hasLoaded) {
+                            player.pause();
+                        }
+
+                        await interaction.reply({
+                            content: `pausing magickfest!`
+                        })
+                    }
+                } else {
+                    replyPlaybackState(player, interaction);
+                }
+            }
+
+            if (commandName == "resume") {
+                if (player.getState().state == PlaybackState.Paused) {
+                    if (await isAdmin(interaction)) {
+                        if (playerStateManager.hasLoaded) {
+                            player.resume();
+                        }
+
+                        await interaction.reply({
+                            content: `resuming magickfest!`
+                        })
+                    }
+                } else {
+                    replyPlaybackState(player, interaction);
+                }
+            }
+
+            if (commandName == "playnext") {
+                if (player.getState().state == PlaybackState.Paused) {
+                    if (await isAdmin(interaction)) {
+                        if (playerStateManager.hasLoaded) {
+                            player.nextSet();
+                            player.playAtStart();
+                        }
+
+                        await interaction.reply({
+                            content: `playing next set magickfest!`
+                        })
+                    }
+                } else {
+                    replyPlaybackState(player, interaction);
                 }
             }
         } catch (err) {

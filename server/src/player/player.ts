@@ -209,6 +209,10 @@ export class Player {
         }
     }
 
+    isPlayerRunning() {
+        return this.#state == PlaybackState.Running
+    }
+
     /**
      * Changes the state of the player to the next set
      */
