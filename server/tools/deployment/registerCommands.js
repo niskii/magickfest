@@ -13,8 +13,8 @@ async function deployCommands() {
         Routes.applicationCommands(process.env.ClientId),
         {
             body: new SlashCommandBuilder()
-                .setName("start")
-                .setDescription("(ADMIN ONLY) starts the fest")
+                .setName("example")
+                .setDescription("example command")
                 .toJSON(),
         }
     );
