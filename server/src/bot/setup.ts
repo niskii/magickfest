@@ -1,10 +1,11 @@
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
+import { getDiscordEnvironment } from "../envs";
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildIntegrations]
 });
 
-const TOKEN = process.env.DiscordBotToken;
+const TOKEN = getDiscordEnvironment().DiscordBotToken;
 
 const ready = new Promise<void>((resolve) => {
     client.once("clientReady", async () => {

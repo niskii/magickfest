@@ -3,14 +3,17 @@ import { Playlist } from "../player/playlist";
 import { PlayerStateManager } from "../player/player-state-manager";
 import { client } from "./setup";
 import { sendMessage } from "./actions";
-import { Interaction, GuildMember, MessageFlags, AttachmentBuilder } from "discord.js";
-import { PlaybackState } from "../types/player-state";
+import { Interaction, GuildMember, MessageFlags, AttachmentBuilder, ChatInputCommandInteraction, InteractionReplyOptions, } from "discord.js";
+import { PlaybackState } from "@shared/types/player-state";
 import * as path from "path";
 import { openAsBlob, existsSync } from "fs";
+import { getDiscordEnvironment } from "../envs";
 
-async function isAdmin(interaction: Interaction) {
+const envs = getDiscordEnvironment();
+
+async function isAdmin(interaction: ChatInputCommandInteraction) {
     const member = interaction.member as GuildMember;
-    const hasRole = member.roles.cache.has(process.env.AdminRoleID);
+    const hasRole = member.roles.cache.has(envs.AdminRoleID);
 
     if (!hasRole) {
         await interaction.reply({
@@ -22,7 +25,7 @@ async function isAdmin(interaction: Interaction) {
     return hasRole;
 }
 
-async function isPlayerRunning(player: Player, interaction: Interaction, verboseOnTrue: boolean = false) {
+async function isPlayerRunning(player: Player, interaction: ChatInputCommandInteraction, verboseOnTrue: boolean = false) {
     const isRunning = player.getState().state == PlaybackState.Running;
 
     if (verboseOnTrue && isRunning) {
@@ -75,15 +78,9 @@ export function configureInteractions(player: Player, playlist: Playlist, player
             if (commandName == "np") {
                 if (await isPlayerRunning(player, interaction)) {
                     const coverPath = path.join(__dirname, '../..', player.getPlaylist().getCurrentSet().CoverFile!);
-                    let attachment;
+                    let attachment: AttachmentBuilder;
 
-                    if (existsSync(coverPath)) {
-                        attachment = new AttachmentBuilder(coverPath, {
-                            name: 'cover.png'
-                        });
-                    }
-
-                    await interaction.reply({
+                    let reply: InteractionReplyOptions = {
                         content: '',
                         embeds: [
                             {
@@ -95,9 +92,17 @@ export function configureInteractions(player: Player, playlist: Playlist, player
                                     url: 'attachment://cover.png'
                                 }
                             }
-                        ],
-                        files: [attachment]
-                    });
+                        ]
+                    }
+
+                    if (existsSync(coverPath)) {
+                        attachment = new AttachmentBuilder(coverPath, {
+                            name: 'cover.png'
+                        });
+                        reply.files = [attachment]
+                    }
+
+                    await interaction.reply(reply);
                 };
             }
 
