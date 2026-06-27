@@ -41,9 +41,16 @@ const muted = ref<boolean>(false);
 
 // GUI
 // const isEmbedded = ref<boolean>(true);
+// const titleRender = ref(null);
+// const setInfo = ref(null);
+// const titleFontSize = ref<number>(null);
 
 function isMobile() {
     return (screen.width <= 760 && screen.height > 400);
+};
+
+function isMinimized() {
+    return (window.innerHeight <= 400);
 };
 
 onMounted(() => {
@@ -152,7 +159,7 @@ watch(playerState, () => {
                 audioStreamPlayer.value.pause();
                 isPaused.value = true
                 break;
-                
+
 
             default:
                 break;
@@ -206,6 +213,63 @@ function overlayClick() {
     connect();
     overlayToggle.value = false;
 }
+
+const getStatus = () => {
+    if (playerState.value) {
+        switch (playerState.value.state) {
+            case 0:
+                return {
+                    text: "not running",
+                    color: "darkred"
+                }
+
+            case 1:
+                return {
+                    text: "running",
+                    color: "green"
+                }
+
+            case 2:
+                return {
+                    text: "paused",
+                    color: "yellow"
+                }
+
+            default:
+                return {
+                    text: "no stream",
+                    color: "gray"
+                }
+        }
+    } else {
+        return {
+            text: "no stream",
+            color: "gray"
+        }
+    }
+}
+
+const getTextWidth = (text: String) => {
+    const widths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2796875, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625]
+    const avg = 0.5279276315789471
+
+    if (text) {
+        return Array.from(text).reduce((acc, cur) => acc + (widths[cur.charCodeAt(0)] ?? avg), 0)
+    } else {
+        return 99999999
+    }
+}
+
+const getViewportFontSize = (isAuthor: Boolean) => {
+    if (isMobile()) {
+        return (isAuthor) ? 2.5 : 5;
+    } else if (isMinimized()) {
+        return (isAuthor) ? 3 : 5;
+    } else {
+        return (isAuthor) ? 1.5 : 3;
+    }
+}
+
 </script>
 
 <template>
@@ -244,18 +308,26 @@ function overlayClick() {
             </RadioInput>
             <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
         </div>
+        <div id="statusIndicator" v-show="!isMobile()">
+            <div id="statusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
+            <div id="status" :style="{ backgroundColor: getStatus().color }"></div>
+        </div>
         <img id="cover"
             :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
             alt="cover artwork for set" />
         <div id="setInfo">
-            <h1>
+            <h1 :style="{
+                fontSize: `min(${getViewportFontSize(false)}vmax, ${(getTextWidth(setInformation.setInfo.title) > 9.984375) ? getViewportFontSize(false) * (getTextWidth(setInformation.setInfo.title) / 20) : getViewportFontSize(false)}vmax)`
+            }">
                 {{
                     setInformation.setInfo.title
                         ? setInformation.setInfo.title
                         : "no set avilable"
                 }}
             </h1>
-            <h2>
+            <h2 :style="{
+                fontSize: `min(${getViewportFontSize(true)}vmax, ${(getTextWidth(setInformation.setInfo.author) > 17.5) ? getViewportFontSize(true) * (getTextWidth(setInformation.setInfo.author) / 20) : getViewportFontSize(true)}vmax)`
+            }">
                 {{
                     setInformation.setInfo.author
                         ? "by " + setInformation.setInfo.author
@@ -320,6 +392,13 @@ function overlayClick() {
             </div>
             <img id="settings-button" src="/src/assets/settings_icon.png" alt="settings"
                 @click="() => { settingsShown = !settingsShown }">
+            <div id="statusIndicator" v-show="isMobile()"
+                style="display: 'flex'; align-items: center; order: 0; position: relative; top: 0.75vh; left: 0; margin-right: -1vw;">
+                <div id="status"
+                    :style="{ backgroundColor: getStatus().color, width: '3vh', height: '3vh', top: 0, left: 0 }">
+                </div>
+                <div id="statusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
+            </div>
         </div>
     </div>
 </template>

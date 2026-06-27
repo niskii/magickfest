@@ -68,6 +68,14 @@ h3 {
     font-size: 1.25vmax;
 }
 
+#bottomBar img:hover {
+    filter: brightness(0.5);
+}
+
+#quality-button:hover img {
+    filter: brightness(0.5);
+}
+
 #progressbar {
     position: relative;
     width: 100%;
@@ -170,6 +178,33 @@ h3 {
     cursor: pointer
 }
 
+#statusIndicator {
+    position: absolute;
+    display: flex;
+    top: 3.5vh;
+    right: 1.5vw;
+}
+
+#statusIndicator #status {
+    background-color: #676770;
+    border-radius: 50%;
+    height: 2.5vmax;
+    width: 2.5vmax;
+}
+
+#statusIndicator #statusText {
+    display: flex;
+    color: #676770;
+    font-weight: bold;
+    text-align: right;
+    font-size: 1.2vmax;
+    margin: 0;
+    padding: 0;
+    height: 2.27vmax;
+    align-items: center;
+    margin-right: 1vw;
+}
+
 .dropdown {
     position: absolute;
     flex-direction: column;
@@ -253,6 +288,12 @@ h3 {
     overflow: hidden;
 }
 
+#setInfo h1,
+#setInfo h2 {
+    max-width: 40vw;
+    overflow: hidden;
+}
+
 #visualiserBg {
     position: absolute;
     top: 0;
@@ -292,20 +333,21 @@ h3 {
     }
 
     h1 {
-        font-size: 5vw;
+        font-size: 5vmax;
     }
 
     h2 {
-        font-size: 3vw;
+        font-size: 3vmax;
     }
 
     .alwaysVisible {
         width: 95% !important;
         font-size: min(6vmin, 5vh) !important;
+        gap: 2vh;
     }
 
     #progressbar {
-        height: 6vh !important;
+        height: 6.5vh !important;
     }
 
     #settings-panel {
@@ -314,31 +356,52 @@ h3 {
 
     #main {
         justify-content: space-between;
-        height: 80vh;
+        height: 78vh;
         padding: 0;
     }
 
     #bottomBar {
         justify-content: center !important;
-        height: 20vh;
+        height: 22vh;
     }
 
     #setInfo {
         width: 50vw;
         margin: 0;
         flex-grow: 1;
-        max-height: 80vh;
+        max-height: 78vh;
+        margin-left: 1.25vw;
+    }
+
+    #setInfo h1,
+    #setInfo h2 {
+        max-width: 45vw;
     }
 
     #cover {
-        margin: 2vw;
-        height: calc(80vh - 4vw);
+        margin: 2.25vw 2vw 1.75vw 2.25vw;
+        height: calc(78vh - 4vw);
         object-position: left;
     }
 
     body {
         outline: 3px auto rgba(0, 0, 0, 0.5);
         outline-offset: -3px;
+    }
+
+    #statusIndicator #status {
+        height: 4vmax;
+        width: 4vmax;
+    }
+
+    #statusIndicator #statusText {
+        font-size: 2.15vmax;
+        height: 3.75vmax;
+    }
+
+    .visualiser {
+        width: 45vw;
+        margin-left: -0.5vw;
     }
 }
 
@@ -385,7 +448,7 @@ h3 {
     }
 
     #settings-panel {
-        width: 70%;
+        width: 80%;
         margin-top: 3.5vh;
         flex-direction: row !important;
         justify-content: space-around;
@@ -411,6 +474,13 @@ h3 {
 
     h2 {
         font-size: 2.5vmax;
+    }
+
+    #setInfo h1,
+    #setInfo h2 {
+        max-width: 90vw;
+        text-align: center;
+        margin-left: 5vw;
     }
 
     #setInfo {
