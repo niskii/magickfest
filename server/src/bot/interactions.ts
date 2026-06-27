@@ -1,15 +1,25 @@
-import { Player } from "../player/player";
-import { Playlist } from "../player/playlist";
-import { PlayerStateManager } from "../player/player-state-manager";
-import { client } from "./setup";
-import { sendMessage } from "./actions";
-import { Interaction, GuildMember, MessageFlags, AttachmentBuilder, ChatInputCommandInteraction, InteractionReplyOptions, } from "discord.js";
 import { PlaybackState } from "@shared/types/player-state";
+import {
+    AttachmentBuilder,
+    ChatInputCommandInteraction,
+    GuildMember,
+    Interaction,
+    InteractionReplyOptions,
+    MessageFlags,
+} from "discord.js";
+import { existsSync } from "fs";
 import * as path from "path";
-import { openAsBlob, existsSync } from "fs";
 import { getDiscordEnvironment } from "../envs";
+import { Player } from "../player/player";
+import { PlayerStateManager } from "../player/player-state-manager";
+import { Playlist } from "../player/playlist";
+import { sendMessage } from "./actions";
+import { client } from "./setup";
+import { parseTime } from "../parsing/time-parser";
 
 const envs = getDiscordEnvironment();
+
+const publicCommands = ["np", "setlist"];
 
 async function isAdmin(interaction: ChatInputCommandInteraction) {
     const member = interaction.member as GuildMember;
@@ -18,115 +28,169 @@ async function isAdmin(interaction: ChatInputCommandInteraction) {
     if (!hasRole) {
         await interaction.reply({
             content: `you are not authorized to run this command`,
-            flags: MessageFlags.Ephemeral
-        })
+            flags: MessageFlags.Ephemeral,
+        });
     }
 
     return hasRole;
 }
 
-async function replyPlaybackState(player: Player, interaction: ChatInputCommandInteraction) {
+async function handleTimeParsing(interaction: ChatInputCommandInteraction) {
+    let parsedTime = parseTime(interaction.options.getString("time"));
+
+    if (parsedTime === null) {
+        interaction.reply({
+            content: `could not parse the input time!`,
+            flags: MessageFlags.Ephemeral,
+        });
+        parsedTime = 0;
+    } else {
+        parsedTime *= 1000;
+    }
+
+    return parsedTime;
+}
+
+async function replyPlaybackState(
+    player: Player,
+    interaction: ChatInputCommandInteraction,
+) {
     const state = player.getState().state;
     let content;
     switch (state) {
         case PlaybackState.Running:
-            content = 'magickfest is already running!'
+            content = "magickfest is already running!";
             break;
         case PlaybackState.Stopped:
-            content = 'magickfest isn\'t running yet!'
+            content = "magickfest isn't running yet!";
             break;
         case PlaybackState.Paused:
-            content = 'magickfest is already paused!'
-            break
-    
+            content = "magickfest is already paused!";
+            break;
+
         default:
             break;
     }
-    await interaction.reply({content: content});
+    await interaction.reply({ content: content });
 }
 
 function fancySchmancyTimeConverter(time: number) {
     time = Math.round(time);
-    return Math.floor(time / 60).toString().padStart(2, '0') + ':' + Math.floor(time % 60).toString().padStart(2, '0');
+    return (
+        Math.floor(time / 60)
+            .toString()
+            .padStart(2, "0") +
+        ":" +
+        Math.floor(time % 60)
+            .toString()
+            .padStart(2, "0")
+    );
 }
 
 function fancySchmancyBarConverter(time: number, fullTime: number) {
-    let finalMsg = '';
-    let timestampPoint = time < (fullTime / 15);
+    let finalMsg = "";
+    let timestampPoint = time < fullTime / 15;
     let hasAppended = false;
 
     for (let i = 2; i < 17; i++) {
-        if (timestampPoint && !hasAppended) { finalMsg += 'o'; hasAppended = true; };
-        finalMsg += '⏤';
-        timestampPoint = time < ((fullTime / 15) * i);
+        if (timestampPoint && !hasAppended) {
+            finalMsg += "o";
+            hasAppended = true;
+        }
+        finalMsg += "⏤";
+        timestampPoint = time < (fullTime / 15) * i;
     }
 
-    if (timestampPoint && !hasAppended) finalMsg += 'o';
+    if (timestampPoint && !hasAppended) finalMsg += "o";
 
     return finalMsg;
 }
 
-export function configureInteractions(player: Player, playlist: Playlist, playerStateManager: PlayerStateManager) {
+export function configureInteractions(
+    player: Player,
+    playlist: Playlist,
+    playerStateManager: PlayerStateManager,
+) {
     player.events?.on("newSet", async () => {
-        await sendMessage(`# now playing: ${playlist.getCurrentSet().Author} - ${playlist.getCurrentSet().Title}`);
-    })
+        await sendMessage(
+            `# now playing: ${playlist.getCurrentSet().Author} - ${playlist.getCurrentSet().Title}`,
+        );
+    });
 
     client.on("interactionCreate", async (interaction: Interaction) => {
         if (!interaction.isChatInputCommand()) return;
 
         const { commandName } = interaction;
 
+        // Check if admin permissions are relevant once.
+        if (
+            !publicCommands.includes(commandName) &&
+            !(await isAdmin(interaction))
+        )
+            return;
+
         try {
-            if (commandName == "np") {
-                if (player.isPlayerRunning()) {
-                    const coverPath = path.resolve(player.getPlaylist().getCurrentSet().CoverFile!);
+            switch (commandName) {
+                case "np":
+                    if (!player.isPlayerRunning()) return;
+                    const coverPath = path.resolve(
+                        player.getPlaylist().getCurrentSet().CoverFile!,
+                    );
                     let attachment: AttachmentBuilder;
 
                     let reply: InteractionReplyOptions = {
-                        content: '',
+                        content: "",
                         embeds: [
                             {
-                                "title": "MAGICKFEST 2026",
-                                "description": `# NOW PLAYING: ${player.getPlaylist().getCurrentSet().Author} - ${player.getPlaylist().getCurrentSet().Title}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), (player.getPlaylist().getCurrentSet().Seconds as number))}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(player.getPlaylist().getCurrentSet().Seconds as number)}`,
-                                "color": 2326507,
-                                "fields": [],
-                                "thumbnail": {
-                                    url: 'attachment://cover.png'
-                                }
-                            }
-                        ]
-                    }
+                                title: "MAGICKFEST 2026",
+                                description: `# NOW PLAYING: ${player.getPlaylist().getCurrentSet().Author} - ${player.getPlaylist().getCurrentSet().Title}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), player.getPlaylist().getCurrentSet().Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(player.getPlaylist().getCurrentSet().Seconds as number)}`,
+                                color: 2326507,
+                                fields: [],
+                                thumbnail: {
+                                    url: "attachment://cover.png",
+                                },
+                            },
+                        ],
+                    };
 
                     if (existsSync(coverPath)) {
                         attachment = new AttachmentBuilder(coverPath, {
-                            name: 'cover.png'
+                            name: "cover.png",
                         });
-                        reply.files = [attachment]
+                        reply.files = [attachment];
                     }
 
                     await interaction.reply(reply);
-                };
-            }
+                    break;
 
-            if (commandName == "setlist") {
-                if (player.isPlayerRunning()) {
-                    let finalString = '';
-                    let lastSetTime = Math.round(player.getState().startTime / 1000);
+                case "setlist":
+                    if (!player.isPlayerRunning()) return;
+                    let finalString = "";
+                    let lastSetTime = Math.round(
+                        player.getState().startTime / 1000,
+                    );
 
                     playlist.getSets().forEach((set) => {
-                        finalString += '(<t:' + lastSetTime + ':t>-<t:' + (lastSetTime + Math.round(set.Seconds as number)) + ':t>) ' + set.Author + ' - ' + set.Title + '\n';
+                        finalString +=
+                            "(<t:" +
+                            lastSetTime +
+                            ":t>-<t:" +
+                            (lastSetTime + Math.round(set.Seconds as number)) +
+                            ":t>) " +
+                            set.Author +
+                            " - " +
+                            set.Title +
+                            "\n";
                         lastSetTime += Math.round(set.Seconds as number);
-                    })
+                    });
 
                     await interaction.reply({
-                        content: `# setlist\n${finalString}`
-                    })
-                };
-            }
+                        content: `# setlist\n${finalString}`,
+                    });
+                    break;
 
-            if (commandName == "start") {
-                if (!player.isPlayerRunning()) {
-                    if (await isAdmin(interaction)) {
+                case "start":
+                    if (!player.isPlayerRunning()) {
                         if (playerStateManager.hasLoaded) {
                             player.playAtState();
                         } else {
@@ -134,61 +198,71 @@ export function configureInteractions(player: Player, playlist: Playlist, player
                         }
 
                         await interaction.reply({
-                            content: `starting magickfest!`
-                        })
+                            content: `starting magickfest!`,
+                        });
+                    } else {
+                        replyPlaybackState(player, interaction);
                     }
-                } else {
-                    replyPlaybackState(player, interaction);
-                }
-            }
+                    break;
 
-            if (commandName == "pause") {
-                if (player.isPlayerRunning()) {
-                    if (await isAdmin(interaction)) {
+                case "pause":
+                    if (player.isPlayerRunning()) {
                         if (playerStateManager.hasLoaded) {
                             player.pause();
                         }
 
                         await interaction.reply({
-                            content: `pausing magickfest!`
-                        })
+                            content: `pausing magickfest!`,
+                        });
+                    } else {
+                        replyPlaybackState(player, interaction);
                     }
-                } else {
-                    replyPlaybackState(player, interaction);
-                }
-            }
+                    break;
 
-            if (commandName == "resume") {
-                if (player.getState().state == PlaybackState.Paused) {
-                    if (await isAdmin(interaction)) {
+                case "resume":
+                    if (player.isPlayerPaused()) {
                         if (playerStateManager.hasLoaded) {
                             player.resume();
                         }
 
                         await interaction.reply({
-                            content: `resuming magickfest!`
-                        })
+                            content: `resuming magickfest!`,
+                        });
+                    } else {
+                        replyPlaybackState(player, interaction);
                     }
-                } else {
-                    replyPlaybackState(player, interaction);
-                }
-            }
+                    break;
 
-            if (commandName == "playnext") {
-                if (player.getState().state == PlaybackState.Paused) {
-                    if (await isAdmin(interaction)) {
+                case "playnext":
+                    if (player.isPlayerRunning()) {
                         if (playerStateManager.hasLoaded) {
                             player.nextSet();
                             player.playAtStart();
                         }
 
                         await interaction.reply({
-                            content: `playing next set magickfest!`
-                        })
+                            content: `playing next set magickfest!`,
+                        });
+                    } else {
+                        replyPlaybackState(player, interaction);
                     }
-                } else {
-                    replyPlaybackState(player, interaction);
-                }
+                    break;
+
+                case "seek":
+                    if (player.isPlayerRunning()) {
+                        const parsedTime = await handleTimeParsing(interaction);
+                        player.setState(null, null, parsedTime);
+                        player.playAtForwarded();
+                    }
+
+                case "playset":
+                    const setIndex = interaction.options.getInteger("index");
+                    const parsedTime = await handleTimeParsing(interaction);
+                    player.setState(setIndex, null, parsedTime);
+                    player.playAtForwarded()
+
+                default:
+                    break;
             }
         } catch (err) {
             console.error(err);
@@ -196,7 +270,7 @@ export function configureInteractions(player: Player, playlist: Playlist, player
             if (interaction.isRepliable()) {
                 await interaction.reply({
                     content: "borked",
-                    flags: MessageFlags.Ephemeral
+                    flags: MessageFlags.Ephemeral,
                 });
             }
         }

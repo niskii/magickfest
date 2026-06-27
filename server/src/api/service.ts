@@ -75,11 +75,6 @@ export function configureRouter(player: Player) {
         res.sendStatus(200);
     });
 
-    serviceAPI.route("/pause").post((_, res) => {
-        player.pause();
-        res.sendStatus(200);
-    });
-
     serviceAPI.route("/playnext").post((_, res) => {
         player.nextSet();
         player.playAtStart();

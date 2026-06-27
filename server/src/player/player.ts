@@ -187,9 +187,9 @@ export class Player {
     /**
      * Sets the state of the player.
      *
-     * @param setIndex an index of a set
-     * @param startTime the starting point
-     * @param forwarded the time the set is forwarded
+     * @param setIndex an index of a set. Null will not change the value.
+     * @param startTime the starting point. Null will not change the value.
+     * @param forwarded the time the set is forwarded. Null will not change the value.
      */
     setState(
         setIndex: number | null,
@@ -199,7 +199,6 @@ export class Player {
         if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
             this.#playlist.setCurrentSet(setIndex);
             this.loadCurrentSet();
-            this.events?.emit("newSet");
         }
         if (startTime !== null) {
             this.#startTime = startTime;
@@ -211,6 +210,10 @@ export class Player {
 
     isPlayerRunning() {
         return this.#state == PlaybackState.Running
+    }
+
+    isPlayerPaused() {
+        return this.#state == PlaybackState.Paused
     }
 
     /**
