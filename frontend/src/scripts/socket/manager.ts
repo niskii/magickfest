@@ -1,17 +1,30 @@
-import { SetInfoFetcher } from "./set-info-fetcher";
+import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";
 import { socket } from "./socket";
 import { type PlayerState } from '@shared/types/player-state';
 
-import { ref } from "vue";
+import { reactive, ref } from "vue";
 
-export const isConnected = ref(socket.connected);
-export const setInformation = new SetInfoFetcher(socket);
 export const playerState = ref<PlayerState>(null);
-export const authToggle = ref<boolean>(false);
-export const alreadyConnected = ref<boolean>(false);
+
+interface Store {
+  isConnected:boolean,
+  authToggle: boolean
+  alreadyConnected: boolean
+  setInformation: SetInfo
+}
+
+const fetcher = new SetInfoFetcher(socket);
+
+export const socketStore: Store = reactive({
+  isConnected: socket.connected,
+  setInformation: {},
+  authToggle: false,
+  alreadyConnected: false,
+})
+
 
 function onConnect() {
-  isConnected.value = true;
+  socketStore.isConnected = true;
   fetchInfo();
   socket.emit("getPlayerState");
 
@@ -23,26 +36,26 @@ function onDisconnect() {
   socket.off("newSet", newSetEvent);
   socket.off("currentPlayerState", currentPlayerState);
   playerState.value = null;
-  authToggle.value = false;
-  alreadyConnected.value = false;
-  isConnected.value = false;
+  socketStore.authToggle = false;
+  socketStore.alreadyConnected = false;
+  socketStore.isConnected = false;
 }
 
 function onConnectError(err: Error) {
   socket.disconnect();
-  isConnected.value = false;
+  socketStore.isConnected = false;
   switch (err.message) {
     case "unauthorized": {
-      authToggle.value = true;
+      socketStore.authToggle = true;
       break;
     }
     case "already_connected": {
-      alreadyConnected.value = true;
+      socketStore.alreadyConnected = true;
       break;
     }
     default: {
       setTimeout(() => {
-        socket.connect();
+        connect();
       }, 10000);
     }
   }
@@ -60,8 +73,22 @@ export function shutdownSocket() {
   socket.off("disconnect", onDisconnect);
 }
 
-function fetchInfo() {
-  setInformation.fetchInformation();
+export function connect() {
+  try {
+    socket.connect();
+  } catch (error) {
+    console.log("Error connecting to server!")
+  }
+}
+
+export function disconnect() {
+  socket.removeAllListeners();
+  socket.disconnect();
+  socketStore.isConnected = false;
+}
+
+async function fetchInfo() {
+  socketStore.setInformation = await fetcher.fetchInformation();
 }
 
 function currentPlayerState(state: PlayerState) {
@@ -69,7 +96,8 @@ function currentPlayerState(state: PlayerState) {
 }
 
 function newSetEvent() {
-  if (isConnected.value) {
+  if (socketStore.isConnected) {
     fetchInfo();
   }
 }
+

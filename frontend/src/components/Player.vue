@@ -9,7 +9,8 @@ import Button from './Button.vue';
 import RadioInput from './RadioInput.vue';
 
 import Visualiser from "./Visualiser.vue";
-import { alreadyConnected, authToggle, isConnected, playerState, setInformation, setupSocket, shutdownSocket } from '../scripts/socket/manager';
+import * as SocketManager from '../scripts/socket/manager';
+import {playerState, socketStore} from '../scripts/socket/manager';
 import NumberInput from './NumberInput.vue';
 import ColorInput from './ColorInput.vue';
 
@@ -84,10 +85,10 @@ onMounted(() => {
 
     // isEmbedded.value = window.self !== window.top;
 
-    setupSocket();
+    SocketManager.setupSocket();
 
     onUnmounted(() => {
-        shutdownSocket()
+        SocketManager.shutdownSocket()
         disconnect();
     });
 });
@@ -136,7 +137,7 @@ function playerStart() {
 }
 
 watch(playerState, () => {
-    if (isConnected.value) {
+    if (socketStore.isConnected) {
         switch (playerState.value.state) {
             case 0:
                 audioStreamPlayer.value.reset();
@@ -170,24 +171,22 @@ watch(playerState, () => {
 })
 
 async function connect() {
-    if (!isConnected.value) {
+    if (!socketStore.isConnected) {
+        SocketManager.connect()
         console.log("Joining audio!");
-        socket.connect();
+        
     }
 }
 
 async function disconnect() {
-    if (isConnected.value) {
+    if (socketStore.isConnected) {
         clearInterval(stateInterval.value);
         stateInterval.value = null;
 
         audioStreamPlayer.value.close();
         audioStreamPlayer.value = null;
 
-        socket.removeAllListeners();
-        socket.disconnect();
-
-        isConnected.value = false;
+        SocketManager.disconnect()
     }
 }
 
@@ -280,11 +279,11 @@ const getViewportFontSize = (isAuthor: Boolean) => {
                 style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;" class="hoverBtn"
                 @click="overlayClick" />
         </div>
-        <div class="overlay" v-show="authToggle">
+        <div class="overlay" v-show="socketStore.authToggle">
             <h1>browser mode - authenticate through discord</h1>
             <a href="https://localhost:8080/api/auth/login">authenticate here</a>
         </div>
-        <div class="overlay" v-show="alreadyConnected">
+        <div class="overlay" v-show="socketStore.alreadyConnected">
             <h1>you're already connected elsewhere</h1>
         </div>
         <div class="overlay" v-show="settingsShown">
@@ -313,24 +312,24 @@ const getViewportFontSize = (isAuthor: Boolean) => {
             <div id="status" :style="{ backgroundColor: getStatus().color }"></div>
         </div>
         <img id="cover"
-            :src="setInformation.setInfo.coverURL ? setInformation.setInfo.coverURL : '/src/assets/noartwork.png'"
+            :src="socketStore.setInformation.coverURL ? socketStore.setInformation.coverURL : '/src/assets/noartwork.png'"
             alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
-                fontSize: `min(${getViewportFontSize(false)}vmax, ${(getTextWidth(setInformation.setInfo.title) > 9.984375) ? getViewportFontSize(false) * (getTextWidth(setInformation.setInfo.title) / 20) : getViewportFontSize(false)}vmax)`
+                fontSize: `min(${getViewportFontSize(false)}vmax, ${(getTextWidth(socketStore.setInformation.title) > 9.984375) ? getViewportFontSize(false) * (getTextWidth(socketStore.setInformation.title) / 20) : getViewportFontSize(false)}vmax)`
             }">
                 {{
-                    setInformation.setInfo.title
-                        ? setInformation.setInfo.title
+                    socketStore.setInformation.title
+                        ? socketStore.setInformation.title
                         : "no set avilable"
                 }}
             </h1>
             <h2 :style="{
-                fontSize: `min(${getViewportFontSize(true)}vmax, ${(getTextWidth(setInformation.setInfo.author) > 17.5) ? getViewportFontSize(true) * (getTextWidth(setInformation.setInfo.author) / 20) : getViewportFontSize(true)}vmax)`
+                fontSize: `min(${getViewportFontSize(true)}vmax, ${(getTextWidth(socketStore.setInformation.author) > 17.5) ? getViewportFontSize(true) * (getTextWidth(socketStore.setInformation.author) / 20) : getViewportFontSize(true)}vmax)`
             }">
                 {{
-                    setInformation.setInfo.author
-                        ? "by " + setInformation.setInfo.author
+                    socketStore.setInformation.author
+                        ? "by " + socketStore.setInformation.author
                         : null
                 }}
             </h2>
