@@ -187,6 +187,7 @@ export function configureInteractions(
                     await interaction.reply({
                         content: `# setlist\n${finalString}`,
                     });
+                    
                     break;
 
                 case "start":
@@ -203,13 +204,12 @@ export function configureInteractions(
                     } else {
                         replyPlaybackState(player, interaction);
                     }
+
                     break;
 
                 case "pause":
                     if (player.isPlayerRunning()) {
-                        if (playerStateManager.hasLoaded) {
-                            player.pause();
-                        }
+                        player.pause();
 
                         await interaction.reply({
                             content: `pausing magickfest!`,
@@ -217,13 +217,12 @@ export function configureInteractions(
                     } else {
                         replyPlaybackState(player, interaction);
                     }
+
                     break;
 
                 case "resume":
                     if (player.isPlayerPaused()) {
-                        if (playerStateManager.hasLoaded) {
-                            player.resume();
-                        }
+                        player.resume();
 
                         await interaction.reply({
                             content: `resuming magickfest!`,
@@ -231,21 +230,21 @@ export function configureInteractions(
                     } else {
                         replyPlaybackState(player, interaction);
                     }
+
                     break;
 
                 case "playnext":
                     if (player.isPlayerRunning()) {
-                        if (playerStateManager.hasLoaded) {
-                            player.nextSet();
-                            player.playAtStart();
-                        }
+                        player.nextSet();
+                        player.playAtStart();
 
                         await interaction.reply({
-                            content: `playing next set magickfest!`,
+                            content: `playing next set!`,
                         });
                     } else {
                         replyPlaybackState(player, interaction);
                     }
+
                     break;
 
                 case "seek":
@@ -253,13 +252,27 @@ export function configureInteractions(
                         const parsedTime = await handleTimeParsing(interaction);
                         player.setState(null, null, parsedTime);
                         player.playAtForwarded();
+
+                        await interaction.reply({
+                            content: `playing the current set at the given point of time!`,
+                        });
+                    } else {
+                        replyPlaybackState(player, interaction);
                     }
+
+                    break;
 
                 case "playset":
                     const setIndex = interaction.options.getInteger("index");
                     const parsedTime = await handleTimeParsing(interaction);
                     player.setState(setIndex, null, parsedTime);
                     player.playAtForwarded()
+
+                    await interaction.reply({
+                        content: `playing a specific set!`,
+                    });
+
+                    break;
 
                 default:
                     break;
