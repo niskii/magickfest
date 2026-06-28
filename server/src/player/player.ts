@@ -223,10 +223,7 @@ export class Player {
         try {
             this.#playlist.nextSet();
         } catch (error) {
-            this.events?.emit("changedState");
-            this.#state = PlaybackState.Stopped;
-            this.#playlist.setCurrentSet(0)
-            this.#playbackTimer?.close()
+            this.stop()
         }
         this.loadCurrentSet();
     }
@@ -284,20 +281,27 @@ export class Player {
     pause() {
         if(this.#state == PlaybackState.Running) {
             this.#state = PlaybackState.Paused
-            this.events?.emit("changedState");
             this.#pointOfPause = Date.now()
+            this.events?.emit("changedState");
             this.#playbackTimer?.close();
         }
     }
 
     resume() {
         if(this.#state == PlaybackState.Paused && this.#pointOfPause !== null) {
+            this.#state = PlaybackState.Running
             this.#forwarded = this.#forwarded + (this.#pointOfPause - this.#startTime)
             this.#startTime = Date.now()
-            this.#state = PlaybackState.Running
             this.events?.emit("changedState");
             this.#setupPlaybackTimer();
         }
+    }
+
+    stop() {
+        this.#state = PlaybackState.Stopped;
+        this.#playlist.setCurrentSet(0)
+        this.events?.emit("changedState");
+        this.#playbackTimer?.close()
     }
 
     #setupPlaybackTimer() {
