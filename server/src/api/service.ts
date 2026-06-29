@@ -46,9 +46,9 @@ export function configureRouter(player: Player) {
     serviceAPI
         .route("/set")
         .get((_, res) => {
-            const currentSet = player.getPlaylist().getCurrentSet();
+            const currentSet = player.getCurrentSet();
             const set = {
-                SetIndex: player.getPlaylist().getCurrentIndex(),
+                SetIndex: player.getState().setIndex,
                 Titel: currentSet.Title,
                 Author: currentSet.Author,
             };
@@ -82,7 +82,7 @@ export function configureRouter(player: Player) {
     });
 
     publicAPI.route("/cover").get((_, res) => {
-        const currentSet = player.getPlaylist().getCurrentSet();
+        const currentSet = player.getCurrentSet();
         const cover = currentSet.CoverFile;
         if (cover !== undefined) {
             const coverPath = path.resolve(cover);

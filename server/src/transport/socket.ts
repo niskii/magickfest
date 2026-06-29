@@ -82,7 +82,7 @@ export function socketSetup(
          * Sends the set information and streams the cover image.
          */
         socket.on("fetchSetInformation", () => {
-            const currentSet = player.getPlaylist().getCurrentSet();
+            const currentSet = player.getCurrentSet();
             const imageFile = currentSet.CoverFile;
 
             const setInfo: SocketSetInfo = {

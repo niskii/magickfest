@@ -108,12 +108,12 @@ function fancySchmancyBarConverter(time: number, fullTime: number) {
 
 export function configureInteractions(
     player: Player,
-    playlist: Playlist,
     playerStateManager: PlayerStateManager,
 ) {
     player.events?.on("newSet", async () => {
+        const currentSet = player.getCurrentSet();
         await sendMessage(
-            `# now playing: ${playlist.getCurrentSet().Author} - ${playlist.getCurrentSet().Title}`,
+            `# now playing: ${currentSet.Author} - ${currentSet.Title}`,
         );
     });
 
@@ -133,8 +133,10 @@ export function configureInteractions(
             switch (commandName) {
                 case "np":
                     if (!player.isPlayerRunning()) return;
+
+                    const currentSet = player.getCurrentSet()
                     const coverPath = path.resolve(
-                        player.getPlaylist().getCurrentSet().CoverFile!,
+                        currentSet.CoverFile!,
                     );
                     let attachment: AttachmentBuilder;
 
@@ -143,7 +145,7 @@ export function configureInteractions(
                         embeds: [
                             {
                                 title: "MAGICKFEST 2026",
-                                description: `# NOW PLAYING: ${player.getPlaylist().getCurrentSet().Author} - ${player.getPlaylist().getCurrentSet().Title}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), player.getPlaylist().getCurrentSet().Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(player.getPlaylist().getCurrentSet().Seconds as number)}`,
+                                description: `# NOW PLAYING: ${currentSet.Author} - ${currentSet.Title}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), currentSet.Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(currentSet.Seconds as number)}`,
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
@@ -170,7 +172,7 @@ export function configureInteractions(
                         player.getState().startTime / 1000,
                     );
 
-                    playlist.getSets().forEach((set) => {
+                    player.getPlaylistSets().forEach((set) => {
                         finalString +=
                             "(<t:" +
                             lastSetTime +

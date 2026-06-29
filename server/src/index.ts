@@ -22,8 +22,7 @@ const httpsOptions = {
     passphrase: process.env.PfxSecret,
 };
 
-const playlist = new Playlist(commandLineOptions.playlistFile);
-const player = new Player(playlist, commandLineOptions.isLooped);
+const player = new Player(commandLineOptions.playlistFile, commandLineOptions.isLooped);
 
 const app = express();
 
@@ -63,7 +62,7 @@ const playerStateManager = new PlayerStateManager(
 );
 
 playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
-configureInteractions(player, playlist, playerStateManager);
+configureInteractions(player, playerStateManager);
 
 // TODO rework this in the command, for now use /start and i'll deal with scheduling soon
 

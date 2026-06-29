@@ -3,12 +3,12 @@ import { Bitrate } from "@shared/types/audio-transfer";
 import { readFileSync } from "fs";
 import path from "path";
 
-interface AudioFile {
+export interface AudioFile {
     Bitrate: Bitrate;
     File: string;
 }
 
-interface Set {
+export interface Set {
     Title: string;
     Author: string;
     Seconds: Number;
