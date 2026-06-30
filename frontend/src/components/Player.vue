@@ -116,7 +116,7 @@ watch([visualizerColor, visualizerFFTSize, visualizerFPSLimit, visualizerWidth],
 watch(visualiserOn, () => {
     localStorage.setItem('visualiserOn', visualiserOn.value.toString());
 
-    if (visualiserOn.value && playerState.value.state == PlaybackState.Running) {
+    if (visualiserOn.value && playerState.value && playerState.value.state == PlaybackState.Running) {
         visualiserRef.value.resume()
     } else {
         visualiserRef.value.pause()
