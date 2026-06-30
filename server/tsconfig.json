@@ -12,7 +12,7 @@
         ],
         "module": "nodenext",
         "target": "es2024",
-        "types": ["node"],
+        "types": ["node", "@types/bun"],
         "strict": true,
         "sourceMap": true,
         "esModuleInterop": true,
@@ -20,7 +20,7 @@
         "skipLibCheck": true,
         "moduleResolution": "node16",
         "paths": {
-            "@shared/*": ["../shared/*"],
+            "@shared/*": ["../shared/*.ts"],
             "*": ["./*"]
         },
 
