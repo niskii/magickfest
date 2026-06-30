@@ -513,6 +513,11 @@ h3 {
         width: 100%;
     }
 
+    .numberInput .button {
+        width: 3em;
+        height: 2em;
+    }
+
     .overlay h2 {
         font-size: 3vmax;
     }
@@ -523,6 +528,20 @@ h3 {
 
     h3.visualiser {
         padding-top: 3vh;
+    }
+
+    #statusIndicator {
+        margin: 0 0.5em;
+        top: 0;
+        display: flex;
+        flex-direction: row !important;
+        align-items: center;
+        justify-content: center;
+        position: relative; 
+    }
+
+    #statusText {
+        display: none !important;
     }
 }
 

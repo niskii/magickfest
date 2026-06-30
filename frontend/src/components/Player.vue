@@ -13,6 +13,8 @@ import * as SocketManager from '../scripts/socket/manager';
 import {playerState, socketStore} from '../scripts/socket/manager';
 import NumberInput from './NumberInput.vue';
 import ColorInput from './ColorInput.vue';
+import StatusIndicator from './StatusIndicator.vue';
+import {PlaybackState} from '@shared/types/player-state'
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
@@ -45,14 +47,6 @@ const muted = ref<boolean>(false);
 // const titleRender = ref(null);
 // const setInfo = ref(null);
 // const titleFontSize = ref<number>(null);
-
-function isMobile() {
-    return (screen.width <= 760 && screen.height > 400);
-};
-
-function isMinimized() {
-    return (window.innerHeight <= 400);
-};
 
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
@@ -122,28 +116,22 @@ watch([visualizerColor, visualizerFFTSize, visualizerFPSLimit, visualizerWidth],
 watch(visualiserOn, () => {
     localStorage.setItem('visualiserOn', visualiserOn.value.toString());
 
-    if (visualiserOn.value) {
+    if (visualiserOn.value && playerState.value.state == PlaybackState.Running) {
         visualiserRef.value.resume()
     } else {
         visualiserRef.value.pause()
     }
 })
 
-function playerStart() {
-    audioStreamPlayer.value.reset();
-    audioStreamPlayer.value.start();
-    visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
-    visualiserRef.value.resume();
-}
-
 watch(playerState, () => {
     if (socketStore.isConnected) {
         switch (playerState.value.state) {
-            case 0:
+            case PlaybackState.Stopped:
                 audioStreamPlayer.value.reset();
                 visualiserRef.value.pause();
                 break;
-            case 1:
+                
+            case PlaybackState.Running:
                 if (isPaused.value && setIndex.value == playerState.value.setIndex) {
                     audioStreamPlayer.value.resume();
                 } else {
@@ -153,7 +141,7 @@ watch(playerState, () => {
                 isPaused.value = false
                 break;
 
-            case 2:
+            case PlaybackState.Paused:
                 if (startPaused.value) {
                     playerStart();
                 }
@@ -169,6 +157,19 @@ watch(playerState, () => {
         startPaused.value = false
     }
 })
+
+function playerStart() {
+    audioStreamPlayer.value.reset();
+    audioStreamPlayer.value.start();
+    setVisualiser();
+}
+
+function setVisualiser() {
+    visualiserRef.value.setAnalyser(audioStreamPlayer.value.getAnalyzer());
+    if (visualiserOn.value) {
+        visualiserRef.value.resume();
+    }
+}
 
 async function connect() {
     if (!socketStore.isConnected) {
@@ -189,6 +190,14 @@ async function disconnect() {
         SocketManager.disconnect()
     }
 }
+
+function isMobile() {
+    return (screen.width <= 760 && screen.height > 400);
+};
+
+function isMinimized() {
+    return (window.innerHeight <= 400);
+};
 
 const timeConverter = (time: number) => {
     time = Math.round(time);
@@ -213,40 +222,7 @@ function overlayClick() {
     overlayToggle.value = false;
 }
 
-const getStatus = () => {
-    if (playerState.value) {
-        switch (playerState.value.state) {
-            case 0:
-                return {
-                    text: "not running",
-                    color: "darkred"
-                }
 
-            case 1:
-                return {
-                    text: "running",
-                    color: "green"
-                }
-
-            case 2:
-                return {
-                    text: "paused",
-                    color: "yellow"
-                }
-
-            default:
-                return {
-                    text: "no stream",
-                    color: "gray"
-                }
-        }
-    } else {
-        return {
-            text: "no stream",
-            color: "gray"
-        }
-    }
-}
 
 const getTextWidth = (text: String) => {
     const widths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2796875, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625]
@@ -307,10 +283,7 @@ const getViewportFontSize = (isAuthor: Boolean) => {
             </RadioInput>
             <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
         </div>
-        <div id="statusIndicator" v-show="!isMobile()">
-            <div id="statusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
-            <div id="status" :style="{ backgroundColor: getStatus().color }"></div>
-        </div>
+        <StatusIndicator :status="playerState" v-show="!isMobile()"></StatusIndicator>
         <img id="cover"
             :src="socketStore.setInformation.coverURL ? socketStore.setInformation.coverURL : '/src/assets/noartwork.png'"
             alt="cover artwork for set" />
@@ -355,7 +328,10 @@ const getViewportFontSize = (isAuthor: Boolean) => {
             </div>
         </div>
         <div style="width: 100%; flex-direction: column" class="alwaysVisible">
-            {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
+            <div style="display: flex; flex-direction: row !important;">
+                <StatusIndicator :status="playerState" v-show="isMobile()"></StatusIndicator>
+                {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
+            </div>
             <div id="progressbar">
                 <div id="buffered" :style="{
                     width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
@@ -391,13 +367,6 @@ const getViewportFontSize = (isAuthor: Boolean) => {
             </div>
             <img id="settings-button" src="/src/assets/settings_icon.png" alt="settings"
                 @click="() => { settingsShown = !settingsShown }">
-            <div id="statusIndicator" v-show="isMobile()"
-                style="display: 'flex'; align-items: center; order: 0; position: relative; top: 0.75vh; left: 0; margin-right: -1vw;">
-                <div id="status"
-                    :style="{ backgroundColor: getStatus().color, width: '3vh', height: '3vh', top: 0, left: 0 }">
-                </div>
-                <div id="statusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
-            </div>
         </div>
     </div>
 </template>

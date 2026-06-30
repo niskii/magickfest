@@ -15,7 +15,7 @@
     "ogg-opus-decoder": "^1.7.3",
     "socket.io-client": "^4.8.1",
     "socket.io-stream": "^0.9.1",
-    "vite-plugin-node-polyfills": "^0.24.0",
+    "vite-plugin-node-polyfills": "^0.28.0",
     "vue": "^3.5.22"
   },
   "devDependencies": {
@@ -24,7 +24,7 @@
     "@vue/tsconfig": "^0.8.1",
     "prettier": "3.6.2",
     "typescript": "^5.9.3",
-    "vite": "^7.1.7",
+    "vite": "^8.1.1",
     "vue-tsc": "^3.1.0"
   },
   "packageManager": "yarn@4.16.0"
