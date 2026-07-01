@@ -11,7 +11,9 @@ DiscordGuildID= Discord server ID
 DiscordClientID= ID of discord application
 DiscordClientSecret= Secret of discord application
 DiscordAppToken= Token of discord application
+DiscordBotToken= Token of discord bot
 DiscordAdminRole= ID of the role that should give admin perms for restricted api endpoints
+AdminRoleID = ID of the role needed for discord interactions
 DiscordRedirectUrl= Endpoint where discord redirects after oauth.
 ClientRedirectUrl= URL for the client of this application / service.
 
