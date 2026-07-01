@@ -1,9 +1,8 @@
-import { MessagePayload } from "discord.js";
 import { client, ready } from "./setup";
 
 const CHANNEL_ID = "1431036238474776708";
 
-const sendMessage = async(message: string) => {
+const sendMessage = async (message: string) => {
     await ready;
 
     const channel = await client.channels.fetch(CHANNEL_ID);
@@ -13,6 +12,6 @@ const sendMessage = async(message: string) => {
     }
 
     channel.send(message);
-}
+};
 
-export { sendMessage }
+export { sendMessage };

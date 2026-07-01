@@ -6,14 +6,13 @@ import express from "express";
 import { readFileSync } from "fs";
 import https from "https";
 import { Server } from "socket.io";
-import { readCommands } from "./commandline";
 import { setupMiddleware } from "./api/middlewares";
+import { configureInteractions } from "./bot/interactions";
+import { readCommands } from "./commandline";
 import { Player } from "./player/player";
 import { PlayerStateManager } from "./player/player-state-manager";
-import { Playlist } from "./player/playlist";
 import { socketSetup as setupSocket } from "./transport/socket";
 import { UserManager } from "./user/user-manager";
-import { configureInteractions } from "./bot/interactions";
 
 const commandLineOptions = readCommands();
 
@@ -22,7 +21,10 @@ const httpsOptions = {
     passphrase: process.env.PfxSecret,
 };
 
-const player = new Player(commandLineOptions.playlistFile, commandLineOptions.isLooped);
+const player = new Player(
+    commandLineOptions.playlistFile,
+    commandLineOptions.isLooped,
+);
 
 const app = express();
 
@@ -77,4 +79,3 @@ configureInteractions(player, playerStateManager);
 //     },
 //     Math.max(1, commandLineOptions.scheduledStart - Date.now()),
 // );
-

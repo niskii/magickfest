@@ -1,9 +1,9 @@
-import EventEmitter from "node:events";
-import { OpusReader } from "./opus-reader";
-import { Playlist, Set } from "./playlist";
 import { Bitrate } from "@shared/types/audio-transfer";
 import { PlaybackState, PlayerState } from "@shared/types/player-state";
+import EventEmitter from "node:events";
 import { DeepReadonly } from "../types/deep-readonly";
+import { OpusReader } from "./opus-reader";
+import { Playlist, Set } from "./playlist";
 
 export class Player {
     /**

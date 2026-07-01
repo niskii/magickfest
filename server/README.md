@@ -48,11 +48,11 @@ A playlist has the following format:
 
 ```json
 {
-  "Sets": [
-    "sets/my first set yay/set.json",
-    "sets/slimy beat party/set.json",
-    "sets/my first set part 2/set.json"
-  ]
+    "Sets": [
+        "sets/my first set yay/set.json",
+        "sets/slimy beat party/set.json",
+        "sets/my first set part 2/set.json"
+    ]
 }
 ```
 

@@ -1,7 +1,7 @@
 import express from "express";
+import path from "path";
 import { parseTime } from "../parsing/time-parser";
 import { Player } from "../player/player";
-import path from "path";
 
 export const serviceAPI = express.Router();
 export const publicAPI = express.Router();

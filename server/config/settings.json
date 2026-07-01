@@ -1,14 +1,14 @@
 {
-  "setsLocation": "public",
-  "chunkDuration": 4,
-  "maxSecondsLoadAhead": 30,
-  "playerUpdateInterval": 1000,
-  "playerNewSetTimeout": 5000,
-  "sesstionStorageLocation": "temp/sessions.sqlite",
-  "sessionMaxAge": 864000000,
-  "rateWindowMs": 900000,
-  "expireCheckMs": 900000,
-  "rateLimit": 20,
-  "port": 8080,
-  "origins": ["https://localhost:5173"]
+    "setsLocation": "public",
+    "chunkDuration": 4,
+    "maxSecondsLoadAhead": 30,
+    "playerUpdateInterval": 1000,
+    "playerNewSetTimeout": 5000,
+    "sesstionStorageLocation": "temp/sessions.sqlite",
+    "sessionMaxAge": 864000000,
+    "rateWindowMs": 900000,
+    "expireCheckMs": 900000,
+    "rateLimit": 20,
+    "port": 8080,
+    "origins": ["https://localhost:5173"]
 }

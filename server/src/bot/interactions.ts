@@ -10,12 +10,11 @@ import {
 import { existsSync } from "fs";
 import * as path from "path";
 import { getDiscordEnvironment } from "../envs";
+import { parseTime } from "../parsing/time-parser";
 import { Player } from "../player/player";
 import { PlayerStateManager } from "../player/player-state-manager";
-import { Playlist } from "../player/playlist";
 import { sendMessage } from "./actions";
 import { client } from "./setup";
-import { parseTime } from "../parsing/time-parser";
 
 const envs = getDiscordEnvironment();
 
@@ -134,10 +133,8 @@ export function configureInteractions(
                 case "np":
                     if (!player.isPlayerRunning()) return;
 
-                    const currentSet = player.getCurrentSet()
-                    const coverPath = path.resolve(
-                        currentSet.CoverFile!,
-                    );
+                    const currentSet = player.getCurrentSet();
+                    const coverPath = path.resolve(currentSet.CoverFile!);
                     let attachment: AttachmentBuilder;
 
                     let reply: InteractionReplyOptions = {
@@ -189,7 +186,7 @@ export function configureInteractions(
                     await interaction.reply({
                         content: `# setlist\n${finalString}`,
                     });
-                    
+
                     break;
 
                 case "start":
@@ -268,7 +265,7 @@ export function configureInteractions(
                     const setIndex = interaction.options.getInteger("index");
                     const parsedTime = await handleTimeParsing(interaction);
                     player.setState(setIndex, null, parsedTime);
-                    player.playAtForwarded()
+                    player.playAtForwarded();
 
                     await interaction.reply({
                         content: `playing a specific set!`,

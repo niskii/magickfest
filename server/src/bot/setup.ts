@@ -1,8 +1,12 @@
-import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
+import { Client, GatewayIntentBits } from "discord.js";
 import { getDiscordEnvironment } from "../envs";
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildIntegrations]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildIntegrations,
+    ],
 });
 
 const TOKEN = getDiscordEnvironment().DiscordBotToken;

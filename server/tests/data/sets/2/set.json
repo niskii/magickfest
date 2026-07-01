@@ -1,17 +1,17 @@
 {
-  "CoverFile": "sets/2/cover.jpg",
-  "AudioFiles": [
-    {
-      "Bitrate": 128,
-      "File": "sets/2/2_128.opus"
-    },
-    {
-      "Bitrate": 96,
-      "File": "sets/2/2_96.opus"
-    },
-    {
-      "Bitrate": 64,
-      "File": "sets/2/2_64.opus"
-    }
-  ]
+    "CoverFile": "sets/2/cover.jpg",
+    "AudioFiles": [
+        {
+            "Bitrate": 128,
+            "File": "sets/2/2_128.opus"
+        },
+        {
+            "Bitrate": 96,
+            "File": "sets/2/2_96.opus"
+        },
+        {
+            "Bitrate": 64,
+            "File": "sets/2/2_64.opus"
+        }
+    ]
 }

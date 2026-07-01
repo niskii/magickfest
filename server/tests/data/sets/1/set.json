@@ -1,19 +1,19 @@
 {
-  "CoverFile": "sets/1/cover.jpg",
-  "AudioFiles": [
-    {
-      "Bitrate": 128,
-      "File": "sets/1/1_128.opus"
-    },
-    {
-      "Bitrate": 96,
-      "File": "sets/1/1_96.opus"
-    },
-    {
-      "Bitrate": 64,
-      "File": "sets/1/1_64.opus"
-    }
-  ],
-  "Author": "author",
-  "Title": "title"
+    "CoverFile": "sets/1/cover.jpg",
+    "AudioFiles": [
+        {
+            "Bitrate": 128,
+            "File": "sets/1/1_128.opus"
+        },
+        {
+            "Bitrate": 96,
+            "File": "sets/1/1_96.opus"
+        },
+        {
+            "Bitrate": 64,
+            "File": "sets/1/1_64.opus"
+        }
+    ],
+    "Author": "author",
+    "Title": "title"
 }
