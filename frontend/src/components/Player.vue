@@ -10,11 +10,11 @@ import RadioInput from './RadioInput.vue';
 
 import Visualiser from "./Visualiser.vue";
 import * as SocketManager from '../scripts/socket/manager';
-import {playerState, socketStore} from '../scripts/socket/manager';
+import { playerState, socketStore } from '../scripts/socket/manager';
 import NumberInput from './NumberInput.vue';
 import ColorInput from './ColorInput.vue';
 import StatusIndicator from './StatusIndicator.vue';
-import {PlaybackState} from '@shared/types/player-state'
+import { PlaybackState } from '@shared/types/player-state'
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
@@ -130,7 +130,7 @@ watch(playerState, () => {
                 audioStreamPlayer.value.reset();
                 visualiserRef.value.pause();
                 break;
-                
+
             case PlaybackState.Running:
                 if (isPaused.value && setIndex.value == playerState.value.setIndex) {
                     audioStreamPlayer.value.resume();
@@ -175,7 +175,7 @@ async function connect() {
     if (!socketStore.isConnected) {
         SocketManager.connect()
         console.log("Joining audio!");
-        
+
     }
 }
 
@@ -228,7 +228,7 @@ const getTextWidth = (text: String) => {
     const widths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2796875, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625]
     const avg = 0.5279276315789471
 
-    if (text) {
+    if (text && playerState.value && playerState.value.state != PlaybackState.Stopped) {
         return Array.from(text).reduce((acc, cur) => acc + (widths[cur.charCodeAt(0)] ?? avg), 0)
     } else {
         return 99999999
@@ -245,65 +245,67 @@ const getViewportFontSize = (isAuthor: Boolean) => {
     }
 }
 
+const renderStreamInfoPerStatus = (isRunningWithData: String, isRunningNoData: String, isNotRunning: String, prefix: String = "") => {
+    if (playerState.value && playerState.value.state != PlaybackState.Stopped) {
+        return (isRunningWithData) ? prefix + isRunningWithData : prefix + isRunningNoData;
+    } else {
+        return isNotRunning;
+    }
+}
+
 </script>
 
 <template>
+    <div class="overlay" v-show="overlayToggle">
+        <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
+        <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
+            class="hoverBtn" @click="overlayClick" />
+    </div>
+    <div class="overlay" v-show="socketStore.authToggle">
+        <h1>browser mode - authenticate through discord</h1>
+        <a href="https://localhost:8080/api/auth/login">authenticate here</a>
+    </div>
+    <div class="overlay" v-show="socketStore.alreadyConnected">
+        <h1>you're already connected elsewhere</h1>
+    </div>
+    <div class="overlay" v-show="settingsShown">
+        <h1>settings</h1>
+        <h2>visualizer FFT size: </h2>
+        <NumberInput v-model="visualizerFFTSize" min="5" max="15"></NumberInput>
+        <h2>visualizer FPS limit: </h2>
+        <NumberInput v-model="visualizerFPSLimit" min="1" max="60"></NumberInput>
+        <h2>visualizer line width: </h2>
+        <NumberInput v-model="visualizerWidth" min="1" max="10" step="0.5"></NumberInput>
+        <h2>visualizer color: </h2>
+        <ColorInput v-model="visualizerColor"></ColorInput>
+        <br>
+        <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { settingsShown = false }" />
+    </div>
+    <div class="overlay" v-show="mobileBitratesShown">
+        <h1>select bitrate</h1>
+        <RadioInput :elements="['128kbps', '96kbps', '64kbps']" :funcs="[switchQuality, switchQuality, switchQuality]"
+            :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')">
+        </RadioInput>
+        <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
+    </div>
     <div id="main">
-        <div class="overlay" v-show="overlayToggle">
-            <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
-            <img src="/src/assets/connect_icon.png"
-                style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;" class="hoverBtn"
-                @click="overlayClick" />
-        </div>
-        <div class="overlay" v-show="socketStore.authToggle">
-            <h1>browser mode - authenticate through discord</h1>
-            <a href="https://localhost:8080/api/auth/login">authenticate here</a>
-        </div>
-        <div class="overlay" v-show="socketStore.alreadyConnected">
-            <h1>you're already connected elsewhere</h1>
-        </div>
-        <div class="overlay" v-show="settingsShown">
-            <h1>settings</h1>
-            <h2>visualizer FFT size: </h2>
-            <NumberInput v-model="visualizerFFTSize" min="5" max="15"></NumberInput>
-            <h2>visualizer FPS limit: </h2>
-            <NumberInput v-model="visualizerFPSLimit" min="1" max="60"></NumberInput>
-            <h2>visualizer line width: </h2>
-            <NumberInput v-model="visualizerWidth" min="1" max="10" step="0.5"></NumberInput>
-            <h2>visualizer color: </h2>
-            <ColorInput v-model="visualizerColor"></ColorInput>
-            <br>
-            <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { settingsShown = false }" />
-        </div>
-        <div class="overlay" v-show="mobileBitratesShown">
-            <h1>select bitrate</h1>
-            <RadioInput :elements="['128kbps', '96kbps', '64kbps']"
-                :funcs="[switchQuality, switchQuality, switchQuality]"
-                :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')">
-            </RadioInput>
-            <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
-        </div>
         <StatusIndicator :status="playerState" v-show="!isMobile()"></StatusIndicator>
         <img id="cover"
-            :src="socketStore.setInformation.coverURL ? socketStore.setInformation.coverURL : '/src/assets/noartwork.png'"
+            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.png', '/src/assets/nostream.png')"
             alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
                 fontSize: `min(${getViewportFontSize(false)}vmax, ${(getTextWidth(socketStore.setInformation.title) > 9.984375) ? getViewportFontSize(false) * (getTextWidth(socketStore.setInformation.title) / 20) : getViewportFontSize(false)}vmax)`
             }">
                 {{
-                    socketStore.setInformation.title
-                        ? socketStore.setInformation.title
-                        : "no set avilable"
+                    renderStreamInfoPerStatus(socketStore.setInformation.title, '[untitled]', 'no set available')
                 }}
             </h1>
             <h2 :style="{
                 fontSize: `min(${getViewportFontSize(true)}vmax, ${(getTextWidth(socketStore.setInformation.author) > 17.5) ? getViewportFontSize(true) * (getTextWidth(socketStore.setInformation.author) / 20) : getViewportFontSize(true)}vmax)`
             }">
                 {{
-                    socketStore.setInformation.author
-                        ? "by " + socketStore.setInformation.author
-                        : null
+                    renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, "by ")
                 }}
             </h2>
             <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize="visualizerFFTSize"
