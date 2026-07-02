@@ -109,7 +109,7 @@ export function configureInteractions(
     player: Player,
     playerStateManager: PlayerStateManager,
 ) {
-    player.events?.on("newSet", async () => {
+    player.events.on("newSet", async () => {
         const currentSet = player.getCurrentSet();
         await sendMessage(
             `# now playing: ${currentSet.Author} - ${currentSet.Title}`,

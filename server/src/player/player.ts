@@ -44,7 +44,7 @@ export class Player {
     /**
      * Events for state changes.
      */
-    events: EventEmitter | undefined;
+    events: EventEmitter;
 
     /**
      * state of the player
@@ -232,7 +232,7 @@ export class Player {
      * @param forwarded milliseconds the set is forwarded
      * @param startTime unix time the set started
      */
-    playAt(forwarded: number, startTime?: number) {
+    play(forwarded: number, startTime?: number) {
         const currentSet = this.#playlist.getCurrentIndex();
         if (currentSet >= this.#playlist.getLength()) {
             this.stop();
@@ -247,10 +247,10 @@ export class Player {
 
         if (this.#latestSet != currentSet) {
             this.#latestSet = currentSet;
-            this.events?.emit("newSet");
+            this.events.emit("newSet");
         }
 
-        this.events?.emit("changedState");
+        this.events.emit("changedState");
         this.#setupPlaybackTimer();
     }
 
@@ -258,28 +258,28 @@ export class Player {
      * Play the current set at the state of the player.
      */
     playAtState() {
-        this.playAt(this.#forwarded, this.#startTime);
+        this.play(this.#forwarded, this.#startTime);
     }
 
     /**
      * Play the current set with the forwarded time. Otherwise starting point is now.
      */
     playAtForwarded() {
-        this.playAt(this.#forwarded, Date.now());
+        this.play(this.#forwarded, Date.now());
     }
 
     /**
      * Play the current set from the beginning.
      */
     playAtStart() {
-        this.playAt(0, Date.now());
+        this.play(0, Date.now());
     }
 
     pause() {
         if (this.#state == PlaybackState.Running) {
             this.#state = PlaybackState.Paused;
             this.#pointOfPause = Date.now();
-            this.events?.emit("changedState");
+            this.events.emit("changedState");
             this.#playbackTimer?.close();
         }
     }
@@ -293,7 +293,7 @@ export class Player {
             this.#forwarded =
                 this.#forwarded + (this.#pointOfPause - this.#startTime);
             this.#startTime = Date.now();
-            this.events?.emit("changedState");
+            this.events.emit("changedState");
             this.#setupPlaybackTimer();
         }
     }
@@ -301,7 +301,7 @@ export class Player {
     stop() {
         this.#state = PlaybackState.Stopped;
         this.setState(0, 0, 0);
-        this.events?.emit("changedState");
+        this.events.emit("changedState");
         this.#playbackTimer?.close();
     }
 

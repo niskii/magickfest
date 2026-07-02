@@ -28,8 +28,8 @@ export function socketSetup(
             socket.emit("currentPlayerState", player.getState());
         };
 
-        player.events?.on("newSet", sendNewSetAlert);
-        player.events?.on("changedState", sendChangedStateAlert);
+        player.events.on("newSet", sendNewSetAlert);
+        player.events.on("changedState", sendChangedStateAlert);
 
         /**
          * Clean up when a user disconnects.
@@ -37,8 +37,8 @@ export function socketSetup(
         socket.on("disconnect", () => {
             console.log("a user disconnected");
             userManager.removeUser(user!);
-            player.events?.off("newSet", sendNewSetAlert);
-            player.events?.off("changedState", sendChangedStateAlert);
+            player.events.off("newSet", sendNewSetAlert);
+            player.events.off("changedState", sendChangedStateAlert);
         });
 
         socket.on("getPlayerState", () => {
