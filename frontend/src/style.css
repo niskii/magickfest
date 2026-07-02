@@ -17,7 +17,7 @@ body {
 }
 
 #main {
-    z-index: 5;
+    z-index: 0;
     background-color: #0c0c11;
     display: flex;
     flex-direction: row;
@@ -54,7 +54,7 @@ h3 {
 }
 
 #bottomBar {
-    z-index: 6;
+    z-index: 1;
     background-color: #232326;
     width: 100%;
     height: 10%;
@@ -70,6 +70,10 @@ h3 {
     font-size: 1.25vmax;
 }
 
+.alwaysVisible {
+    margin-top: -0.5vh;
+}
+
 #bottomBar img:hover {
     filter: brightness(0.5);
 }
@@ -83,7 +87,7 @@ h3 {
     width: 100%;
     height: 1vh;
     background-color: #505056;
-    margin-top: 1vh;
+    margin-top: 1.5vh;
 }
 
 #filled {
@@ -211,7 +215,7 @@ h3 {
 .dropdown {
     position: absolute;
     flex-direction: column;
-    z-index: 1;
+    z-index: 3;
     margin: 0;
     margin-bottom: 2vh;
     padding: 0;
@@ -219,6 +223,15 @@ h3 {
     bottom: 105%;
     text-align: center;
     font-size: 1.5vmax;
+}
+
+.dropdown div:not(.dropdownSelected):hover {
+    cursor: pointer;
+    filter: brightness(0.65);
+}
+
+#quality-button:has(div:hover) img {
+    filter: brightness(1);
 }
 
 .line {
@@ -277,6 +290,7 @@ h3 {
     align-items: center;
     justify-content: center;
     margin: 0 !important;
+    text-align: center;
 }
 
 .mobileOnly {
@@ -345,12 +359,13 @@ h3 {
 
     .alwaysVisible {
         width: 95% !important;
-        font-size: min(6vmin, 5vh) !important;
-        gap: 2vh;
+        font-size: min(6vmin, 5.65vh) !important;
+        gap: 1.25vh;
+        margin-top: -2.25vh;
     }
 
     #progressbar {
-        height: 6.5vh !important;
+        height: 5.5vh !important;
     }
 
     #settings-panel {
@@ -361,11 +376,13 @@ h3 {
         justify-content: space-between;
         height: 78vh;
         padding: 0;
+        z-index: -2;
     }
 
     #bottomBar {
         justify-content: center !important;
         height: 22vh;
+        z-index: -1;
     }
 
     #setInfo {
@@ -382,7 +399,7 @@ h3 {
     }
 
     #cover {
-        margin: 2.25vw 2vw 1.75vw 2.25vw;
+        margin: 2.15vw 2vw 1.75vw 2.15vw;
         height: calc(78vh - 4vw);
         object-position: left;
     }
@@ -392,19 +409,34 @@ h3 {
         outline-offset: -3px;
     }
 
+    #statusIndicator {
+        margin: 0.75vh 1vw;
+    }
+
     #statusIndicator #status {
-        height: 4vmax;
-        width: 4vmax;
+        height: 3.5vmax;
+        width: 3.5vmax;
     }
 
     #statusIndicator #statusText {
         font-size: 2.15vmax;
-        height: 3.75vmax;
+        height: 3vmax;
     }
 
     .visualiser {
         width: 45vw;
         margin-left: -0.5vw;
+    }
+}
+
+@media screen and (max-width: 760px) and (min-width: 501px) and (min-height: 401px) {
+    .alwaysVisible {
+        font-size: 2vmax !important;
+    }
+
+    #statusText {
+        font-size: 1.5vmax !important;
+        margin-top: -0.075vmax !important;
     }
 }
 
@@ -534,18 +566,19 @@ h3 {
     }
 
     #statusIndicator #status {
-        height: 1.25vmax;
-        width: 1.25vmax;
+        height: 2vmax;
+        width: 2vmax;
+        margin-top: 0.4vmax;
     }
 
     #statusIndicator {
-        margin: 0 0.5em;
+        margin: 0 2vw;
         top: 0;
         display: flex;
         flex-direction: row !important;
         align-items: center;
         justify-content: center;
-        position: relative; 
+        position: relative;
     }
 
     #statusText {
