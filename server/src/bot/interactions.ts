@@ -105,6 +105,10 @@ function fancySchmancyBarConverter(time: number, fullTime: number) {
     return finalMsg;
 }
 
+function handleSetInfo(info: String, noInfo: String) {
+    return (info) ? info : noInfo;
+}
+
 export function configureInteractions(
     player: Player,
     playerStateManager: PlayerStateManager,
@@ -112,7 +116,7 @@ export function configureInteractions(
     player.events?.on("newSet", async () => {
         const currentSet = player.getCurrentSet();
         await sendMessage(
-            `# now playing: ${currentSet.Author} - ${currentSet.Title}`,
+            `# now playing: ${handleSetInfo(currentSet.Author, '[unknown author]')} - ${handleSetInfo(currentSet.Title, '[untitled]')}`,
         );
     });
 
@@ -142,7 +146,7 @@ export function configureInteractions(
                         embeds: [
                             {
                                 title: "MAGICKFEST 2026",
-                                description: `# NOW PLAYING: ${currentSet.Author} - ${currentSet.Title}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), currentSet.Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(currentSet.Seconds as number)}`,
+                                description: `# NOW PLAYING: ${handleSetInfo(currentSet.Author, '[unknown author]')} - ${handleSetInfo(currentSet.Title, '[untitled]')}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), currentSet.Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(currentSet.Seconds as number)}`,
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
@@ -176,9 +180,9 @@ export function configureInteractions(
                             ":t>-<t:" +
                             (lastSetTime + Math.round(set.Seconds as number)) +
                             ":t>) " +
-                            set.Author +
+                            handleSetInfo(set.Author, '[unknown author]') +
                             " - " +
-                            set.Title +
+                            handleSetInfo(set.Title, '[untitled]') +
                             "\n";
                         lastSetTime += Math.round(set.Seconds as number);
                     });
