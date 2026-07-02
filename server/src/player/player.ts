@@ -71,7 +71,7 @@ export class Player {
         this.#forwarded = 0;
         this.#state = PlaybackState.Stopped;
         this.#readerCollection = new Map();
-        this.loadCurrentSet();
+        this.#loadCurrentSet();
 
         this.#loop = loop;
 
@@ -81,10 +81,20 @@ export class Player {
         }
     }
 
+    /**
+     * Gets a readonly view of the playlist sets.
+     *
+     * @returns playlist array
+     */
     getPlaylistSets(): DeepReadonly<Array<Set>> {
         return this.#playlist.getSets();
     }
 
+    /**
+     * Gets a readonly view of the current set.
+     *
+     * @returns Set object
+     */
     getCurrentSet(): DeepReadonly<Set> {
         return this.#playlist.getCurrentSet();
     }
@@ -135,14 +145,6 @@ export class Player {
      */
     getCurrentPositionSeconds() {
         return this.getCurrentPositionMilliseconds() / 1000;
-    }
-
-    async loadCurrentSet() {
-        this.#readerCollection.clear();
-        this.#playlist.forEachCurrentAudioFile((audioFile) => {
-            const reader = new OpusReader(audioFile.File);
-            this.#readerCollection.set(audioFile.Bitrate, reader);
-        });
     }
 
     /**
@@ -196,7 +198,7 @@ export class Player {
     ) {
         if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
             this.#playlist.setCurrentSet(setIndex);
-            this.loadCurrentSet();
+            this.#loadCurrentSet();
         }
         if (startTime !== null) {
             this.#startTime = startTime;
@@ -206,16 +208,26 @@ export class Player {
         }
     }
 
+    /**
+     * Returns true if the player is running.
+     *
+     * @returns boolean value
+     */
     isPlayerRunning() {
         return this.#state == PlaybackState.Running;
     }
 
+    /**
+     * Returns true if player is paused.
+     *
+     * @returns boolean value
+     */
     isPlayerPaused() {
         return this.#state == PlaybackState.Paused;
     }
 
     /**
-     * Changes the state of the player to the next set
+     * Changes the state of the player to the next set.
      */
     nextSet() {
         try {
@@ -223,7 +235,7 @@ export class Player {
         } catch (error) {
             this.stop();
         }
-        this.loadCurrentSet();
+        this.#loadCurrentSet();
     }
 
     /**
@@ -275,6 +287,9 @@ export class Player {
         this.play(0, Date.now());
     }
 
+    /**
+     * Pauses the set.
+     */
     pause() {
         if (this.#state == PlaybackState.Running) {
             this.#state = PlaybackState.Paused;
@@ -284,6 +299,9 @@ export class Player {
         }
     }
 
+    /**
+     * Resumes the set.
+     */
     resume() {
         if (
             this.#state == PlaybackState.Paused &&
@@ -298,11 +316,22 @@ export class Player {
         }
     }
 
+    /**
+     * Stops the set.
+     */
     stop() {
         this.#state = PlaybackState.Stopped;
         this.setState(0, 0, 0);
         this.events.emit("changedState");
         this.#playbackTimer?.close();
+    }
+
+    #loadCurrentSet() {
+        this.#readerCollection.clear();
+        this.#playlist.forEachCurrentAudioFile((audioFile) => {
+            const reader = new OpusReader(audioFile.File);
+            this.#readerCollection.set(audioFile.Bitrate, reader);
+        });
     }
 
     #setupPlaybackTimer() {
