@@ -3,8 +3,9 @@ $bitrates = 128, 96, 64
 $folder = Get-Location
 Write-Output "Searching files in $folder"
 
-$audioFiles = Get-ChildItem -Recurse -Path $folder | Where-Object { ($_.Name -like "*.mp3") -or ($_.Name -like "*.flac") -or ($_.Name -like "*.aif") -or ($_.Name -like "*.m4a") -or ($_.Name -like "*.wav") }
+$audioFiles = @(Get-ChildItem -Recurse -Path $folder | Where-Object { ($_.Name -like "*.mp3") -or ($_.Name -like "*.flac") -or ($_.Name -like "*.aif") -or ($_.Name -like "*.m4a") -or ($_.Name -like "*.wav") })
 
+$playlist = [System.Collections.ArrayList]::new()
 $lastPath = $null
 foreach ($file in $audioFiles) {
     $path = $file.Directory.BaseName
@@ -12,9 +13,16 @@ foreach ($file in $audioFiles) {
         Write-Output "found $($path)"
         $lastPath = $path
     }
+    if (!$playlist.Contains($path)) {
+        $playlist.Add((Join-Path -Path "sets" -ChildPath "$path/set.json"))
+    }
 }
 
+
 $confirmation = Read-Host -Prompt "Convert these files? (y/n)"
+
+$jsonPath = Join-Path -Path $folder -ChildPath "playlist.json"
+@{Sets = $playlist} | ConvertTo-Json | Out-File $jsonPath
 
 if ($confirmation -ne "y") {
     Write-Output "Exiting"
@@ -55,7 +63,7 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     $duration = & mediainfo --Inform="General;%Duration%" "$($_.FullName)"
     $total = $bitratesCopy.Length * $duration / 1000
     $progress = @{}
-  
+
     $process.PercentComplete = 0
 
     $basePath = "sets/$($_.BaseName)"
@@ -82,11 +90,11 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
         Title      = ""
         Author     = ""
         Seconds    = $duration / 1000
-        CoverFile  = "$($basePath)/cover.jpg"
+        CoverFile  = "./cover.jpg"
         AudioFiles = @(
             foreach ($bitrate in $($using:bitrates)) {
                 @{
-                    File    = "$($basePath)/$($_.BaseName)_$bitrate.opus"
+                    File    = "./$($_.BaseName)_$bitrate.opus"
                     Bitrate = $bitrate
                 }
             }

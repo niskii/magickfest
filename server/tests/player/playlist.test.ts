@@ -15,7 +15,7 @@ test("loads one set", () => {
 test("are file paths correctly constructed", () => {
     const currentSet = playlist.getCurrentSet();
     const audioFiles = currentSet.AudioFiles;
-    expect(currentSet.CoverFile).toBe("tests/data/sets/1/cover.jpg");
+    expect(currentSet.CoverFile).toBe("tests\\data\\sets\\1\\cover.jpg");
     expect(audioFiles[0].File).toBe("tests\\data\\sets\\1\\1_128.opus");
     expect(audioFiles[1].File).toBe("tests\\data\\sets\\1\\1_96.opus");
     expect(audioFiles[2].File).toBe("tests\\data\\sets\\1\\1_64.opus");

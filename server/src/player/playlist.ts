@@ -38,16 +38,17 @@ export class Playlist {
 
         this.#sets = new Array();
         setfiles.forEach((file) => {
+            const folder = "sets/" + path.basename(path.dirname(file))
             const set: Set = JSON.parse(
                 readFileSync(path.join(location, file)).toString(),
             );
 
             // Handle the relative paths.
             set.CoverFile = set.CoverFile
-                ? location + set.CoverFile
+                ? path.join(location, folder, set.CoverFile)
                 : undefined;
             set.AudioFiles.map((af) => {
-                af.File = path.join(location, af.File);
+                af.File = path.join(location, folder, af.File);
             });
             this.#sets.push(set);
         });
