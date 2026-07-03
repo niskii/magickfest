@@ -4,32 +4,32 @@ $folder = Get-Location
 Write-Output "Searching files in $folder"
 
 $audioFiles = @(Get-ChildItem -Recurse -Path $folder | Where-Object { ($_.Name -like "*.mp3") -or ($_.Name -like "*.flac") -or ($_.Name -like "*.aif") -or ($_.Name -like "*.m4a") -or ($_.Name -like "*.wav") })
-$covers = @{}
-
+$covers = [System.Object[]]::new($audioFiles.Length);
 $playlist = [System.Collections.ArrayList]::new()
+
 foreach ($file in $audioFiles) {
     $path = $file.Directory.BaseName
+    $index = $audioFiles.IndexOf($file)
     if (!$playlist.Contains($path)) {
-        Write-Output "found $($path)/$($file.Name)"
-        $playlist.Add((Join-Path -Path "sets" -ChildPath "$path/set.json"))
+        $playlist.Add((Join-Path -Path "sets" -ChildPath "$($path)/set.json")) > $null
         $sub = $file.Directory
         if ($folder.ToString() -ne $sub.ToString()) {
-            $cover = Get-ChildItem -Path $sub | Where-Object {($_.Name -like "*.jpg") -or ($_.Name -like "*.jpeg") -or ($_.Name -like "*.gif") -or ($_.Name -like "*.png")}
+            $cover = Get-ChildItem -Path $sub | Where-Object { ($_.Name -like "*.jpg") -or ($_.Name -like "*.jpeg") -or ($_.Name -like "*.gif") -or ($_.Name -like "*.png") }
             if (![string]::IsNullOrEmpty($cover)) {
-                Write-Output "found cover in subfolder $($cover.Name)"
-                $covers.Add($sub, $cover)
-                Write-Output $covers
+                Write-Output "found $($path)/$($file.Name) with cover $($cover.Name)"
+                $covers[$index] = $cover
             }
+        }
+        else {
+            Write-Output "found $($path)/$($file.Name)"
         }
     }
 }
 
-#TODO: Convert cover to webp and add to json output.
-
 $confirmation = Read-Host -Prompt "Convert these files? (y/n)"
 
 $jsonPath = Join-Path -Path $folder -ChildPath "playlist.json"
-@{Sets = $playlist} | ConvertTo-Json | Out-File $jsonPath
+@{Sets = $playlist } | ConvertTo-Json | Out-File $jsonPath
 
 if ($confirmation -ne "y") {
     Write-Output "Exiting"
@@ -52,12 +52,35 @@ $audioFiles | ForEach-Object {
     $origin.($audioFiles.IndexOf($_)) = @{}
 }
 
+
 $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
 $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     $syncCopy = $Using:sync
-    $index = $($using:audioFiles).IndexOf($_)
+    $index = ($using:audioFiles).IndexOf($_)
     $process = $syncCopy.$($index)
+
+    $basePath = "sets/$($_.BaseName)"
+
+    $cover = ($using:covers)[$index]
+    $coverDimensions = (& mediainfo --Inform="Image;%Width%,%Height%" "$($cover.Fullname)") -split ","
+
+    $inputRatio = $coverDimensions[0] / $coverDimensions[1]
+    $outputWidth = $coverDimensions[0]
+    $outputHeight = $coverDimensions[1]
+    $x = 0
+    $y = 0
+
+    if ($inputRatio -ge 1) {
+        $outputWidth = $coverDimensions[1]
+        $x = ($coverDimensions[0] - $outputWidth) / 2
+    }
+    else {
+        $outputHeight = $coverDimensions[0]
+        $y = ($coverDimensions[1] - $outputHeight) / 2
+    }
+
+    cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -lossless "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
 
     $bitratesCopy = $using:bitrates
 
@@ -72,8 +95,6 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     $progress = @{}
 
     $process.PercentComplete = 0
-
-    $basePath = "sets/$($_.BaseName)"
 
     foreach ($bitrate in $bitratesCopy) {
         $process.Status = "Converting $($_.BaseName) $percent/100"
@@ -97,7 +118,7 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
         Title      = ""
         Author     = ""
         Seconds    = $duration / 1000
-        CoverFile  = "./cover.jpg"
+        CoverFile  = "$($output)"
         AudioFiles = @(
             foreach ($bitrate in $($using:bitrates)) {
                 @{
