@@ -80,7 +80,7 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
         $y = ($coverDimensions[1] - $outputHeight) / 2
     }
 
-    cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -lossless "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
+    cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -lossless -resize 512 512 "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
 
     $bitratesCopy = $using:bitrates
 
