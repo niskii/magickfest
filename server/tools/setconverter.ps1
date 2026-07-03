@@ -4,20 +4,27 @@ $folder = Get-Location
 Write-Output "Searching files in $folder"
 
 $audioFiles = @(Get-ChildItem -Recurse -Path $folder | Where-Object { ($_.Name -like "*.mp3") -or ($_.Name -like "*.flac") -or ($_.Name -like "*.aif") -or ($_.Name -like "*.m4a") -or ($_.Name -like "*.wav") })
+$covers = @{}
 
 $playlist = [System.Collections.ArrayList]::new()
-$lastPath = $null
 foreach ($file in $audioFiles) {
     $path = $file.Directory.BaseName
-    if ($lastPath -ne $path) {
-        Write-Output "found $($path)"
-        $lastPath = $path
-    }
     if (!$playlist.Contains($path)) {
+        Write-Output "found $($path)/$($file.Name)"
         $playlist.Add((Join-Path -Path "sets" -ChildPath "$path/set.json"))
+        $sub = $file.Directory
+        if ($folder.ToString() -ne $sub.ToString()) {
+            $cover = Get-ChildItem -Path $sub | Where-Object {($_.Name -like "*.jpg") -or ($_.Name -like "*.jpeg") -or ($_.Name -like "*.gif") -or ($_.Name -like "*.png")}
+            if (![string]::IsNullOrEmpty($cover)) {
+                Write-Output "found cover in subfolder $($cover.Name)"
+                $covers.Add($sub, $cover)
+                Write-Output $covers
+            }
+        }
     }
 }
 
+#TODO: Convert cover to webp and add to json output.
 
 $confirmation = Read-Host -Prompt "Convert these files? (y/n)"
 
