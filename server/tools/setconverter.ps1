@@ -10,8 +10,9 @@ $playlist = [System.Collections.ArrayList]::new()
 foreach ($file in $audioFiles) {
     $path = $file.Directory.BaseName
     $index = $audioFiles.IndexOf($file)
-    if (!$playlist.Contains($path)) {
-        $playlist.Add((Join-Path -Path "sets" -ChildPath "$($path)/set.json")) > $null
+    $setfile = (Join-Path -Path "sets" -ChildPath "$($file.BaseName)/set.json")
+    if (!$playlist.Contains($setfile)) {
+        $playlist.Add($setfile) > $null
         $sub = $file.Directory
         if ($folder.ToString() -ne $sub.ToString()) {
             $cover = Get-ChildItem -Path $sub | Where-Object { ($_.Name -like "*.jpg") -or ($_.Name -like "*.jpeg") -or ($_.Name -like "*.gif") -or ($_.Name -like "*.png") }
