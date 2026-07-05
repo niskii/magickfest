@@ -3,6 +3,7 @@ import { type AudioPacket, Bitrate } from "@shared/types/audio-transfer";
 import { TimeKeeper } from "./time-keeper";
 import { ReadCode } from "@shared/types/read-codes";
 import config from "../../config/client.json";
+import logger from "../../logger";
 
 export class AudioStreamSocket {
   #socket: Socket;
@@ -34,7 +35,7 @@ export class AudioStreamSocket {
 
   handleChunk(data: AudioPacket) {
     this.#isFetching = false;
-    if (data == null) return
+    if (data == null) return;
     if (this.#lastChunkPage == data.PageEnd) return;
     this.#lastChunkPage = data.PageEnd;
     this.onFetch(data.Buffer);
@@ -46,12 +47,12 @@ export class AudioStreamSocket {
       "fetchSyncedChunk",
       { bitrate: this.#bitrate },
       (response: { status: ReadCode }) => {
-        console.log("Status code:", response.status);
+        logger.info("Status code:", response.status);
       },
     );
 
     this.#socket.once("syncedChunk", async (data: AudioPacket) => {
-      console.log("syncing!", this.#lastChunkPage);
+      logger.info("syncing!", this.#lastChunkPage);
       if (!data) return;
       this.#needsResync = false;
       // save the play position of the sync chunk.
@@ -86,7 +87,7 @@ export class AudioStreamSocket {
 
     this.#socket.once("chunkFromPage", (data: AudioPacket) => {
       if (!data) return;
-      console.log(
+      logger.info(
         "Delay of:",
         (data.ServerTime - this.#timeKeeper.getCurrentPlayPosition()).toFixed(
           2,

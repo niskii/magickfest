@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import "./style.css";
+import logger from "./logger";
 
 import { DiscordSDK } from "@discord/embedded-app-sdk";
 
@@ -11,7 +12,7 @@ try {
   const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
   await setupDiscordSdk();
-  console.log('Discord SDK is ready');
+  logger.info("Discord SDK is ready");
 
   async function setupDiscordSdk() {
     await discordSdk.ready();
@@ -56,10 +57,10 @@ try {
       body: JSON.stringify({
         access_token,
       }),
-    })
+    });
   }
 } catch (err) {
-  console.log("Discord is not detected!");
+  logger.info("Discord is not detected!");
 }
 
 createApp(App).mount("#app");

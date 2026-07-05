@@ -16,6 +16,7 @@ import ColorInput from './ColorInput.vue';
 import StatusIndicator from './StatusIndicator.vue';
 import { PlaybackState } from '@shared/types/player-state'
 import Mute from './Mute.vue';
+import logger from '../logger';
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
@@ -181,8 +182,7 @@ function setVisualiser() {
 async function connect() {
     if (!socketStore.isConnected) {
         SocketManager.connect()
-        console.log("Joining audio!");
-
+        logger.info("Joining audio!");
     }
 }
 

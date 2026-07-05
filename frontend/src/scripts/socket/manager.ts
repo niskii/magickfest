@@ -1,16 +1,17 @@
+import logger from "../../logger";
 import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";
 import { socket } from "./socket";
-import { type PlayerState } from '@shared/types/player-state';
+import { type PlayerState } from "@shared/types/player-state";
 
 import { reactive, ref } from "vue";
 
 export const playerState = ref<PlayerState>(null);
 
 interface Store {
-  isConnected:boolean,
-  authToggle: boolean
-  alreadyConnected: boolean
-  setInformation: SetInfo
+  isConnected: boolean;
+  authToggle: boolean;
+  alreadyConnected: boolean;
+  setInformation: SetInfo;
 }
 
 const fetcher = new SetInfoFetcher(socket);
@@ -20,8 +21,7 @@ export const socketStore: Store = reactive({
   setInformation: {},
   authToggle: false,
   alreadyConnected: false,
-})
-
+});
 
 function onConnect() {
   socketStore.isConnected = true;
@@ -77,7 +77,7 @@ export function connect() {
   try {
     socket.connect();
   } catch (error) {
-    console.log("Error connecting to server!")
+    logger.warn("Error connecting to server!");
   }
 }
 
@@ -100,4 +100,3 @@ function newSetEvent() {
     fetchInfo();
   }
 }
-

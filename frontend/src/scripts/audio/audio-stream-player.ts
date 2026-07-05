@@ -4,6 +4,7 @@ import type { ChanneledAudioBuffer } from "./AudioTypes";
 import * as decoder from "./decoder-service";
 import { AudioStreamSocket } from "./audio-stream-socket";
 import { TimeKeeper } from "./time-keeper";
+import logger from "../../logger";
 
 export class AudioStreamPlayer {
   #stream: AudioStreamSocket;
@@ -16,7 +17,7 @@ export class AudioStreamPlayer {
   #bitrate: Bitrate;
   #volume: number;
   #analyzer: AnalyserNode;
-  #paused: boolean
+  #paused: boolean;
 
   constructor(socket: Socket, bitrate: Bitrate, volume: number) {
     decoder.handlers.onDecode = this.#onDecode.bind(this);
@@ -140,7 +141,7 @@ export class AudioStreamPlayer {
   #onDecode(event: any) {
     if (event.decoded.channelData) {
       if (!(this.#sessionId && this.#sessionId === event.sessionId)) {
-        console.log("race condition detected for closed session");
+        logger.warn("race condition detected for closed session");
         return;
       }
       if (!this.#paused) {

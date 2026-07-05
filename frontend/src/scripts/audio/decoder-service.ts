@@ -5,6 +5,7 @@ import {
 } from "ogg-opus-decoder";
 import { DecodedAudioPlaybackBuffer } from "./decoded-audio-playback-buffer";
 import type { ChanneledAudioBuffer, DecodedAudioBuffer } from "./AudioTypes";
+import logger from "../../logger";
 
 const decoder = new OggOpusDecoderWebWorker({
   forceStereo: true,
@@ -50,7 +51,7 @@ async function decodeAudio(
     .decode(buffer)
     .then((decodedAudio) => onDecodeInternal(toDecodedFormat(decodedAudio)))
     .catch((err) => {
-      console.log("decode error", err, buffer);
+      logger.warn("decode error", err, buffer);
     });
 }
 
@@ -59,7 +60,7 @@ function flushAudio() {
     .flush()
     .then((decodedAudio) => onDecodeInternal(toDecodedFormat(decodedAudio)))
     .catch((err) => {
-      console.log("decode error", err);
+      logger.warn("decode error", err);
     });
 }
 
