@@ -14,6 +14,8 @@ import { PlayerStateManager } from "./player/player-state-manager";
 import { socketSetup as setupSocket } from "./transport/socket";
 import { UserManager } from "./user/user-manager";
 
+console.log("starting server!");
+
 const commandLineOptions = readCommands();
 
 const httpsOptions = {

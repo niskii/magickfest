@@ -36,7 +36,7 @@
         "webpack": "^5.108.3"
     },
     "scripts": {
-        "dev": "tsx watch src/index.ts",
+        "dev": "tsx watch --clear-screen=false src/",
         "test": "bun test"
     }
 }
