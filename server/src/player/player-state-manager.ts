@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFile } from "fs";
 import { Player } from "./player";
+import logger from "src/logger";
 
 const playlistStateFilePath = "temp/playlist_state_";
 
@@ -27,7 +28,7 @@ export class PlayerStateManager {
             playlistStateFilePath + this.#player.getState().id + ".json";
         if (!existsSync(playlistStateFile)) return false;
         const state = JSON.parse(readFileSync(playlistStateFile).toString());
-        console.log("Loaded", state);
+        logger.info("Loaded", state);
         this.#player.setState(
             state["setIndex"],
             state["startTime"],
@@ -39,12 +40,12 @@ export class PlayerStateManager {
     saveState() {
         if (!this.enabled) return;
         const state = this.#player.getState();
-        console.log("Saving!", state);
+        logger.info("Saving!", state);
         writeFile(
             playlistStateFilePath + state.id + ".json",
             JSON.stringify(state),
             (err) => {
-                if (err) console.log("Saving error:", err);
+                if (err) logger.error("Saving error:", err);
             },
         );
     }

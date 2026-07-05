@@ -12,6 +12,7 @@ import { UserManager } from "src/user/user-manager";
 import authAPI, { isAuthorized } from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
+import logger from "src/logger";
 
 const limiter = rateLimit({
     windowMs: settings.rateWindowMs,
@@ -97,7 +98,7 @@ export function setupMiddleware(
     io.use((socket, next) => {
         const req = socket.request as Request;
         const user = req.session.user;
-        console.log("joining", req.session);
+        logger.info("socket connecting with session id", req.session.id);
         if (user) {
             if (!userManager.isConnected(user)) {
                 next();

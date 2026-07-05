@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { parseTime } from "../parsing/time-parser";
 import { Player } from "../player/player";
+import logger from "src/logger";
 
 export const serviceAPI = express.Router();
 export const publicAPI = express.Router();
@@ -9,7 +10,7 @@ export const publicAPI = express.Router();
 export function configureRouter(player: Player) {
     serviceAPI.route("/*splat").post((req, res, next) => {
         if (req.session.user?.IsAdmin) {
-            console.log("Admin request:", req.session.user);
+            logger.info("Admin request:", req.session.user);
             next();
         } else {
             next("No access!");

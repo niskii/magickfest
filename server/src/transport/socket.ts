@@ -8,6 +8,7 @@ import socketStream from "socket.io-stream";
 import { Player } from "../player/player";
 import { imageMimeTypes } from "../types/mime-map";
 import { UserManager } from "../user/user-manager";
+import logger from "src/logger";
 
 export function socketSetup(
     io: Server,
@@ -17,7 +18,7 @@ export function socketSetup(
     io.on("connection", (socket) => {
         const req = socket.request as Request;
         const user = req.session.user;
-        console.log("a user connected", user);
+        logger.info("a user connected", user);
         userManager.setUser(user!);
 
         const sendNewSetAlert = () => {
@@ -35,7 +36,7 @@ export function socketSetup(
          * Clean up when a user disconnects.
          */
         socket.on("disconnect", () => {
-            console.log("a user disconnected");
+            logger.info("a user disconnected");
             userManager.removeUser(user!);
             player.events.off("newSet", sendNewSetAlert);
             player.events.off("changedState", sendChangedStateAlert);

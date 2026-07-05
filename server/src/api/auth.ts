@@ -2,6 +2,7 @@ import axios from "axios";
 import express, { NextFunction, Request, Response } from "express";
 import { User } from "src/user/user";
 import { getDiscordEnvironment } from "../envs";
+import logger from "src/logger";
 
 const router = express.Router();
 const envs = getDiscordEnvironment();
@@ -19,7 +20,7 @@ function isUserAdmin(userRoles: string[]) {
 }
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
-    console.log(req.session.user);
+    logger.info(req.session.user);
     if (req.session.user) next();
     else next("Not Authorized");
 }
