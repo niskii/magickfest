@@ -64,24 +64,30 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     $basePath = "sets/$($_.BaseName)"
 
     $cover = ($using:covers)[$index]
-    $coverDimensions = (& mediainfo --Inform="Image;%Width%,%Height%" "$($cover.Fullname)") -split ","
+    $outputImage = ""
 
-    $inputRatio = $coverDimensions[0] / $coverDimensions[1]
-    $outputWidth = $coverDimensions[0]
-    $outputHeight = $coverDimensions[1]
-    $x = 0
-    $y = 0
+    if (![string]::IsNullOrEmpty($cover)) {
+        $coverDimensions = (& mediainfo --Inform="Image;%Width%,%Height%" "$($cover.Fullname)") -split ","
+    
+        $inputRatio = $coverDimensions[0] / $coverDimensions[1]
+        $outputWidth = $coverDimensions[0]
+        $outputHeight = $coverDimensions[1]
+        $x = 0
+        $y = 0
+    
+        if ($inputRatio -ge 1) {
+            $outputWidth = $coverDimensions[1]
+            $x = ($coverDimensions[0] - $outputWidth) / 2
+        }
+        else {
+            $outputHeight = $coverDimensions[0]
+            $y = ($coverDimensions[1] - $outputHeight) / 2
+        }
+    
+        cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -lossless -resize 512 512 "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
 
-    if ($inputRatio -ge 1) {
-        $outputWidth = $coverDimensions[1]
-        $x = ($coverDimensions[0] - $outputWidth) / 2
+        $outputImage = "$($cover.Basename).webp"
     }
-    else {
-        $outputHeight = $coverDimensions[0]
-        $y = ($coverDimensions[1] - $outputHeight) / 2
-    }
-
-    cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -lossless -resize 512 512 "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
 
     $bitratesCopy = $using:bitrates
 
@@ -119,7 +125,7 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
         Title      = ""
         Author     = ""
         Seconds    = $duration / 1000
-        CoverFile  = "$($output)"
+        CoverFile  = $outputImage
         AudioFiles = @(
             foreach ($bitrate in $($using:bitrates)) {
                 @{
