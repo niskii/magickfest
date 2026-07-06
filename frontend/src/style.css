@@ -20,29 +20,25 @@
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--main-bg-color);
     overflow: hidden;
+    padding: 0;
+    margin: 0;
+    background-color: var(--main-bg-color);
 }
 
 #body {
     display: flex;
     flex-direction: column;
-    height: 100vh;
     width: 100vw;
+    height: 100vh;
 }
 
 #main {
     z-index: 0;
-    background-color: var(--main-bg-color);
-    display: flex;
-    flex-direction: row;
     width: 100%;
-    padding: 4em 0em;
     height: calc(90vh - 8em);
-    justify-content: center;
-    align-items: center;
+    padding: 4em 0em;
+    background-color: var(--main-bg-color);
 }
 
 #main>* {
@@ -65,47 +61,60 @@ h3 {
 }
 
 input[type="checkbox"] {
-    -webkit-appearance: none;
-    appearance: none;
-    background-color: #fff;
-    height: 2vw !important;
+    display: grid;
     width: 2vw !important;
+    height: 2vw !important;
     margin: 0;
     border: 0.15em solid var(--dark-gray);
     border-radius: 0.15em;
+    background-color: #fff;
     transform: translateY(-0.075em);
-
-    display: grid;
+    -webkit-appearance: none;
+    appearance: none;
     place-content: center;
 }
 
 input[type="checkbox"]::before {
-    content: "";
     width: 1vw;
     height: 1vw;
-    clip-path: polygon(0% 0%, 0 100%, 100% 100%, 100% 0%, 0% 0%);
-    transform: scale(0);
     background-color: #000;
+    content: "";
+    transform: scale(0);
+    clip-path: polygon(0% 0%, 0 100%, 100% 100%, 100% 0%, 0% 0%);
 }
 
 input[type="checkbox"]:checked::before {
     transform: scale(1);
 }
 
+.flex {
+    display: flex;
+}
+
+.responsive-center {
+    align-items: center;
+}
+
+.flex-responsive {
+    flex-direction: row;
+}
+
+.center {
+    align-items: center;
+    justify-content: center;
+}
+
 #cover {
     min-width: 0;
-    object-fit: contain;
     height: 100%;
+    object-fit: contain;
 }
 
 #bottomBar {
     z-index: 1;
-    background-color: var(--darker-gray);
     width: 100%;
     height: 10%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+    background-color: var(--darker-gray);
 }
 
 #bottomBar>div {
@@ -131,57 +140,55 @@ input[type="checkbox"]:checked::before {
     position: relative;
     width: 100%;
     height: 1vh;
-    background-color: var(--mid-gray);
     margin-top: 1.5vh;
+    background-color: var(--mid-gray);
 }
 
 #filled {
     position: absolute;
+    z-index: 2;
     height: 100%;
     background-color: var(--off-white);
-    z-index: 2;
     transition-duration: 0.2s;
 }
 
 #buffered {
     position: absolute;
+    z-index: 2;
     height: 100%;
     background-color: var(--lighter-gray);
-    z-index: 1;
     transition-duration: 0.2s;
 }
 
 #volumeSlider {
+    position: relative;
     width: 100%;
     height: 1vh;
-    background-color: var(--light-gray);
     margin-left: 1vw;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: var(--light-gray);
 }
 
 #volumeSlider input {
-    -webkit-appearance: none;
-    background: transparent;
     position: absolute;
-    outline: none;
-    border: none;
-    height: 100%;
-    width: 100%;
-    border-radius: 0.2em;
     z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0.2em;
+    outline: none;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 #volumeSlider input::-webkit-slider-thumb {
-    -webkit-appearance: none;
     width: 2.15vh;
     height: 2.15vh;
-    cursor: pointer;
-    transition: box-shadow 0.5s;
     background: var(--off-white);
     box-shadow: 0 0 0 3px var(--darkest-gray);
+    cursor: pointer;
+    transition: box-shadow 0.5s;
+    -webkit-appearance: none;
 }
 
 #volumeSlider input:hover::-webkit-slider-thumb {
@@ -194,18 +201,18 @@ input[type="checkbox"]:checked::before {
 
 #volumeSlider div {
     position: absolute;
+    z-index: 1;
     left: 0;
     width: 50%;
     height: 100%;
     background: var(--off-white);
-    z-index: 1;
 }
 
 #settings-panel {
     display: flex;
-    padding: 0 2vw;
-    width: 25%;
     justify-content: center;
+    width: 25%;
+    padding: 0 2vw;
     gap: 1.85vw;
 }
 
@@ -216,11 +223,11 @@ input[type="checkbox"]:checked::before {
 }
 
 #quality-button {
-    order: 2;
-    cursor: pointer;
     position: relative;
     display: flex;
     align-items: center;
+    order: 2;
+    cursor: pointer;
 }
 
 #settings-button {
@@ -229,43 +236,42 @@ input[type="checkbox"]:checked::before {
     cursor: pointer;
 }
 
-#statusIndicator {
+.statusIndicator {
     position: absolute;
-    display: flex;
     top: 3.5vh;
     right: 1.5vw;
 }
 
-#statusIndicator #status {
-    box-sizing: content-box;
-    background-color: var(--light-gray);
-    border-radius: 50%;
-    height: 2.5vmax;
+.statusIndicator .status {
     width: 2.5vmax;
+    height: 2.5vmax;
+    box-sizing: content-box;
+    border-radius: 50%;
+    background-color: var(--light-gray);
 }
 
-#statusIndicator #statusText {
+.statusIndicator .statusText {
     display: flex;
+    align-items: center;
+    height: 2.27vmax;
+    padding: 0;
+    margin: 0;
+    margin-right: 1vw;
     color: var(--light-gray);
-    font-weight: bold;
     text-align: right;
     font-size: 1.2vmax;
-    margin: 0;
-    padding: 0;
-    height: 2.27vmax;
-    align-items: center;
-    margin-right: 1vw;
+    font-weight: bold;
 }
 
 .dropdown {
     position: absolute;
-    flex-direction: column;
     z-index: 3;
-    margin: 0;
-    margin-bottom: 2vh;
-    padding: 0;
     right: 0vw;
     bottom: 105%;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 2vh;
     text-align: center;
     font-size: 1.5vmax;
 }
@@ -281,12 +287,12 @@ input[type="checkbox"]:checked::before {
 
 .line {
     position: absolute;
+    z-index: 20;
+    right: 0;
+    bottom: 0.2vmax;
     width: 0.2vmax;
     height: 79%;
-    right: 0;
     background-color: var(--white-gray);
-    bottom: 0.2vmax;
-    z-index: 20;
 }
 
 .spaceFiller {
@@ -295,9 +301,9 @@ input[type="checkbox"]:checked::before {
 
 .dropdown div:not(.line):not(.horizontalLine) {
     position: relative;
+    padding: 0.5vh 0;
     margin: 0;
     margin-right: 1.5vmax;
-    padding: 0.5vh 0;
     text-align: right;
 }
 
@@ -305,11 +311,11 @@ input[type="checkbox"]:checked::before {
     position: absolute;
     right: -1.5vmax;
     bottom: 38%;
-    background-color: var(--white-gray);
-    height: 0.23vmax;
     width: 1vmax;
-    margin: 0 !important;
+    height: 0.23vmax;
     padding: 0 !important;
+    margin: 0 !important;
+    background-color: var(--white-gray);
 }
 
 .dropdownSelected {
@@ -324,17 +330,17 @@ input[type="checkbox"]:checked::before {
 
 .overlay {
     position: absolute;
+    z-index: 9999;
     top: 0;
     left: 0;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     margin: 0 !important;
+    background: rgba(0, 0, 0, 0.9);
     text-align: center;
 }
 
@@ -344,20 +350,21 @@ input[type="checkbox"]:checked::before {
 
 .visualiser {
     position: relative;
-    margin-top: 10vh;
+    overflow: hidden;
     width: 40vw;
     height: 30vh;
-    overflow: hidden;
+    margin-top: 10vh;
 }
 
 #setInfo h1,
 #setInfo h2 {
-    max-width: 40vw;
     overflow: hidden;
+    max-width: 40vw;
 }
 
 #visualiserBg {
     position: absolute;
+    z-index: 1;
     top: 0;
     left: -2%;
     width: 104%;
@@ -369,7 +376,6 @@ input[type="checkbox"]:checked::before {
             rgba(12, 12, 17, 0) 85%,
             var(--main-bg-color) 97%,
             var(--main-bg-color) 100%);
-    z-index: 1;
 }
 
 .overlay h2 {
@@ -404,9 +410,9 @@ input[type="checkbox"]:checked::before {
 
     .alwaysVisible {
         width: 95% !important;
+        margin-top: -2.25vh;
         font-size: min(6vmin, 5.65vh) !important;
         gap: 1.25vh;
-        margin-top: -2.25vh;
     }
 
     #progressbar {
@@ -418,23 +424,23 @@ input[type="checkbox"]:checked::before {
     }
 
     #main {
+        z-index: -2;
         justify-content: space-between;
         height: 78vh;
         padding: 0;
-        z-index: -2;
     }
 
     #bottomBar {
+        z-index: -1;
         justify-content: center !important;
         height: 22vh;
-        z-index: -1;
     }
 
     #setInfo {
-        width: 50vw;
-        margin: 0;
         flex-grow: 1;
+        width: 50vw;
         max-height: 78vh;
+        margin: 0;
         margin-left: 1.25vw;
     }
 
@@ -444,8 +450,8 @@ input[type="checkbox"]:checked::before {
     }
 
     #cover {
-        margin: 2.15vw 2vw 1.75vw 2.15vw;
         height: calc(78vh - 4vw);
+        margin: 2.15vw 2vw 1.75vw 2.15vw;
         object-position: left;
     }
 
@@ -454,18 +460,18 @@ input[type="checkbox"]:checked::before {
         outline-offset: -3px;
     }
 
-    #statusIndicator {
+    .statusIndicator {
         margin: 0.75vh 1vw;
     }
 
-    #statusIndicator #status {
-        height: 3.5vmax;
+    .statusIndicator .status {
         width: 3.5vmax;
+        height: 3.5vmax;
     }
 
-    #statusIndicator #statusText {
-        font-size: 2.15vmax;
+    .statusIndicator .statusText {
         height: 3vmax;
+        font-size: 2.15vmax;
     }
 
     .visualiser {
@@ -479,15 +485,19 @@ input[type="checkbox"]:checked::before {
         font-size: 2vmax !important;
     }
 
-    #statusText {
-        font-size: 1.5vmax !important;
+    .statusText {
         margin-top: -0.075vmax !important;
+        font-size: 1.5vmax !important;
     }
 }
 
 @media screen and (min-height: 401px) and (max-width: 500px) {
-    * {
-        flex-direction: column !important;
+    .flex-responsive {
+        flex-direction: column;
+    }
+
+    .responsive-center {
+        justify-items: center;
     }
 
     .fullOnly {
@@ -495,25 +505,25 @@ input[type="checkbox"]:checked::before {
     }
 
     #main {
+        justify-content: start;
         height: 80%;
         padding: 0;
-        justify-content: start;
     }
 
     #cover {
-        margin: 5vw 0;
         width: 90vw;
         height: auto;
+        margin: 5vw 0;
     }
 
     #bottomBar {
-        height: 20%;
         justify-content: center !important;
+        height: 20%;
     }
 
     #main>div {
-        text-align: center;
         width: 100%;
+        text-align: center;
     }
 
     .alwaysVisible {
@@ -522,17 +532,17 @@ input[type="checkbox"]:checked::before {
     }
 
     #progressbar {
-        height: 2vh !important;
         width: 95%;
+        height: 2vh !important;
         margin-top: 1.5vh;
     }
 
     #settings-panel {
-        width: 80%;
-        margin-top: 3.5vh;
         flex-direction: row !important;
         justify-content: space-around;
+        width: 80%;
         padding: 0;
+        margin-top: 3.5vh;
         gap: 0;
     }
 
@@ -559,8 +569,8 @@ input[type="checkbox"]:checked::before {
     #setInfo h1,
     #setInfo h2 {
         max-width: 90vw;
-        text-align: center;
         margin-left: 5vw;
+        text-align: center;
     }
 
     #setInfo {
@@ -569,24 +579,24 @@ input[type="checkbox"]:checked::before {
 
     .mobileOnly {
         display: flex;
-        height: 5vh;
-        margin-bottom: 1vh;
         align-items: center;
         width: 40vw;
+        height: 5vh;
+        margin-bottom: 1vh;
         font-size: 3vmax;
     }
 
     .visualiser {
-        margin-top: 6vh !important;
         width: 90%;
         height: 10vh;
         margin: 0 auto;
+        margin-top: 6vh !important;
     }
 
     .numberInput {
-        font-size: 3vmax;
         display: flex;
         flex-direction: row !important;
+        font-size: 3vmax;
     }
 
     .numberInput input {
@@ -610,23 +620,20 @@ input[type="checkbox"]:checked::before {
         padding-top: 3vh;
     }
 
-    #statusIndicator #status {
-        height: 2vmax;
+    .statusIndicator .status {
         width: 2vmax;
+        height: 2vmax;
         margin-top: 0.4vmax;
     }
 
-    #statusIndicator {
-        margin: 0 2vw;
-        top: 0;
-        display: flex;
-        flex-direction: row !important;
-        align-items: center;
-        justify-content: center;
+    .statusIndicator {
         position: relative;
+        top: 0;
+        flex-direction: row !important;
+        margin: 0 2vw;
     }
 
-    #statusText {
+    .statusText {
         display: none !important;
     }
 }

@@ -41,8 +41,8 @@ const getStatus = () => {
 </script>
 
 <template>
-    <div id="statusIndicator" :title="getStatus().text">
-        <div id="statusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
-        <div id="status" :style="{ backgroundColor: getStatus().color }"></div>
-    </div>
+<div class="statusIndicator" :title="getStatus().text">
+    <div class="statusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
+    <div class="status" :style="{ backgroundColor: getStatus().color }"></div>
+</div>
 </template>
