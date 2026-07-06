@@ -299,8 +299,8 @@ const renderStreamInfoPerStatus = (isRunningWithData: string, isRunningNoData: s
     </RadioInput>
     <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
 </div>
-<div id="main">
-    <StatusIndicator :status="playerState" v-show="!isMobile()"></StatusIndicator>
+<div class="flex center flex-responsive" id="main">
+    <StatusIndicator class="flex center" :status="playerState" v-show="!isMobile()"></StatusIndicator>
     <img id="cover"
         :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.png', '/src/assets/nostream.png')"
         alt="cover artwork for set" />
@@ -327,17 +327,17 @@ const renderStreamInfoPerStatus = (isRunningWithData: string, isRunningNoData: s
     </div>
 </div>
 
-<div id="bottomBar">
+<div class="flex flex-responsive responsive-center" id="bottomBar">
     <div style="min-width: 140px; width: 25%; padding: 0 2em" class="fullOnly">
         <Mute :muted="muted" :volume="parseInt(volume.toString())" :alt="altIcons" @click="mute()"></Mute>
-        <div id="volumeSlider">
+        <div class="flex center" id="volumeSlider">
             <input v-model="volume" type="range" min="0" max="100" />
             <div :style="{ width: volume + '%' }"></div>
         </div>
     </div>
     <div style="width: 100%; flex-direction: column" class="alwaysVisible">
         <div style="display: flex; flex-direction: row !important;">
-            <StatusIndicator :status="playerState" v-show="isMobile()"></StatusIndicator>
+            <StatusIndicator class="flex center" :status="playerState" v-show="isMobile()"></StatusIndicator>
             {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
         </div>
         <div id="progressbar">
