@@ -60,6 +60,10 @@ h3 {
     font-size: 1vmax;
 }
 
+#setInfo {
+    margin-left: 1vw;
+}
+
 input[type="checkbox"] {
     display: grid;
     width: 2vw !important;
@@ -354,6 +358,7 @@ input[type="checkbox"]:checked::before {
     width: 40vw;
     height: 30vh;
     margin-top: 10vh;
+    margin-left: -0.5vw;
 }
 
 #setInfo h1,
@@ -570,11 +575,13 @@ input[type="checkbox"]:checked::before {
     #setInfo h2 {
         max-width: 90vw;
         margin-left: 5vw;
+        margin-right: 5vw;
         text-align: center;
     }
 
     #setInfo {
         margin-top: -2vh;
+        margin-left: 0;
     }
 
     .mobileOnly {
