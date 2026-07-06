@@ -370,9 +370,6 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
                     renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, true, "by ")
                 }}
             </h2>
-            <!-- <h2>
-                {{ getTextWidth('000000000000000000000') }}
-            </h2> -->
             <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize="visualizerFFTSize"
                 :fpsLimit="visualizerFPSLimit" :lineWidth="visualizerWidth" :lineColor="visualizerColor"
                 backgroundColor="#0c0c11">

@@ -175,6 +175,7 @@ export function configureInteractions(
 
                     player.getPlaylistSets().forEach((set) => {
                         finalString +=
+                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title) ? "**" : "") +
                             "(<t:" +
                             lastSetTime +
                             ":t>-<t:" +
@@ -183,6 +184,7 @@ export function configureInteractions(
                             handleSetInfo(set.Author, '[unknown author]') +
                             " - " +
                             handleSetInfo(set.Title, '[untitled]') +
+                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title) ? " << NOW PLAYING**" : "") +
                             "\n";
                         lastSetTime += Math.round(set.Seconds as number);
                     });
@@ -285,7 +287,7 @@ export function configureInteractions(
 
             if (interaction.isRepliable()) {
                 await interaction.reply({
-                    content: "borked",
+                    content: "lol something broke go fix it",
                     flags: MessageFlags.Ephemeral,
                 });
             }
