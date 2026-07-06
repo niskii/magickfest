@@ -18,6 +18,8 @@ import { PlaybackState } from '@shared/types/player-state'
 import Mute from './Mute.vue';
 import logger from '../logger';
 
+import { Viewport } from '../scripts/enum/Viewport';
+
 type visualiserType = InstanceType<typeof Visualiser>;
 
 // other
@@ -45,12 +47,6 @@ const volume = ref<number>(75);
 const muted = ref<boolean>(false);
 const altIcons = ref<boolean>(false);
 
-// GUI
-// const isEmbedded = ref<boolean>(true);
-// const titleRender = ref(null);
-// const setInfo = ref(null);
-// const titleFontSize = ref<number>(null);
-
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
     (localStorage.getItem('visualizerFPSLimit')) ? visualizerFPSLimit.value = parseInt(localStorage.getItem('visualizerFPSLimit')) : null;
@@ -60,9 +56,9 @@ onMounted(() => {
     (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
     (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
     (localStorage.getItem('altIcons')) ? altIcons.value = (localStorage.getItem('altIcons') == 'true') : null;
-    (localStorage.getItem('visualiserOn')) ? visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : !isMobile();
+    (localStorage.getItem('visualiserOn')) ? visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : getScreenViewport() != Viewport.Mobile;
 
-    (isMobile()) ? volume.value = 100 : null;
+    (getScreenViewport() == Viewport.Mobile) ? volume.value = 100 : null;
 
     const player = new AudioStreamPlayer(
         socket,
@@ -81,7 +77,6 @@ onMounted(() => {
         ];
     }, config.UpdateInterval);
 
-    // isEmbedded.value = window.self !== window.top;
 
     SocketManager.setupSocket();
 
@@ -198,13 +193,13 @@ async function disconnect() {
     }
 }
 
-function isMobile() {
-    return (screen.width <= 760 && screen.height > 400);
-};
-
-function isMinimized() {
-    return (window.innerHeight <= 400);
-};
+function getScreenViewport() {
+    if (screen.width <= 760 && screen.height > 400) return Viewport.Mobile;
+    if (window.innerHeight <= 400) {
+        if (window.innerWidth / window.innerHeight >= 7 / 3) { return Viewport.WideMinimized } else { return Viewport.Minimized };
+    }
+    return Viewport.Desktop;
+}
 
 const timeConverter = (time: number) => {
     time = Math.round(time);
@@ -237,7 +232,7 @@ const getTextWidth = (text: String) => {
     const widths = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2796875, 0.2765625, 0.3546875, 0.5546875, 0.5546875, 0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.2765625, 0.2765625, 0.584375, 0.5828125, 0.584375, 0.5546875, 1.0140625, 0.665625, 0.665625, 0.721875, 0.721875, 0.665625, 0.609375, 0.7765625, 0.721875, 0.2765625, 0.5, 0.665625, 0.5546875, 0.8328125, 0.721875, 0.7765625, 0.665625, 0.7765625, 0.721875, 0.665625, 0.609375, 0.721875, 0.665625, 0.94375, 0.665625, 0.665625, 0.609375, 0.2765625, 0.3546875, 0.2765625, 0.4765625, 0.5546875, 0.3328125, 0.5546875, 0.5546875, 0.5, 0.5546875, 0.5546875, 0.2765625, 0.5546875, 0.5546875, 0.221875, 0.240625, 0.5, 0.221875, 0.8328125, 0.5546875, 0.5546875, 0.5546875, 0.5546875, 0.3328125, 0.5, 0.2765625, 0.5546875, 0.5, 0.721875, 0.5, 0.5, 0.5, 0.3546875, 0.259375, 0.353125, 0.5890625]
     const avg = 0.5279276315789471
 
-    if (text && playerState.value && playerState.value.state != PlaybackState.Stopped) {
+    if (text) {
         return Array.from(text).reduce((acc, cur) => acc + (widths[cur.charCodeAt(0)] ?? avg), 0)
     } else {
         return 99999999
@@ -245,135 +240,194 @@ const getTextWidth = (text: String) => {
 }
 
 const getViewportFontSize = (isAuthor: Boolean) => {
-    if (isMobile()) {
-        return (isAuthor) ? 2.5 : 5;
-    } else if (isMinimized()) {
-        return (isAuthor) ? 3 : 5;
-    } else {
-        return (isAuthor) ? 1.5 : 3;
+    switch (getScreenViewport()) {
+        case Viewport.Mobile:
+            return (isAuthor) ? 2.5 : 5;
+        case Viewport.Minimized:
+            return (isAuthor) ? 3 : 5;
+        default:
+            return (isAuthor) ? 1.5 : 3;
     }
 }
 
-const renderStreamInfoPerStatus = (isRunningWithData: string, isRunningNoData: string, isNotRunning: string, prefix: string = "") => {
+const renderStreamInfoPerStatus = (isRunningWithData: string, isRunningNoData: string, isNotRunning: string, isAuthor: boolean, prefix: string = "") => {
     if (playerState.value && playerState.value.state != PlaybackState.Stopped) {
-        return (isRunningWithData) ? prefix + isRunningWithData : prefix + isRunningNoData;
+        return (isRunningWithData) ? truncateSetInfo(prefix + isRunningWithData, isAuthor) : prefix + isRunningNoData;
     } else {
         return isNotRunning;
+    }
+}
+
+const adjustSizePerSetInfo = (setInfo: string, isAuthor: boolean) => {
+    let fullSizeThreshold = 30;
+
+    switch (getScreenViewport()) {
+        case Viewport.Mobile:
+            fullSizeThreshold = 30.75;
+            break;
+        case Viewport.Minimized:
+            fullSizeThreshold = 30.25;
+            break;
+        case Viewport.WideMinimized:
+            fullSizeThreshold = 20;
+            break;
+        default:
+            fullSizeThreshold = 30;
+            break;
+    }
+
+    return (getViewportFontSize(isAuthor) * getTextWidth(setInfo) > fullSizeThreshold) ? fullSizeThreshold / getTextWidth(setInfo) : getViewportFontSize(isAuthor);
+}
+
+const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
+    let maxWidth = 20;
+
+    if (!setInfo) return setInfo;
+
+    switch (getScreenViewport()) {
+        case Viewport.Mobile:
+            maxWidth = 11;
+            break;
+        case Viewport.Minimized:
+            maxWidth = 9;
+            break;
+        case Viewport.WideMinimized:
+            maxWidth = 6;
+            break;
+        default:
+            maxWidth = 20;
+            break;
+    }
+
+    if (getTextWidth(setInfo) > maxWidth) {
+        let truncatedString: string;
+        for (let i = 0; i < setInfo.length; i++) {
+            let testString = setInfo.substring(0, setInfo.length - i - 1) + '...';
+            if (getTextWidth(testString) <= maxWidth * (isAuthor ? 2 : 1)) { truncatedString = testString; break; };
+        }
+
+        return truncatedString
+    } else {
+        return setInfo;
     }
 }
 
 </script>
 
 <template>
-<div class="overlay" v-show="overlayToggle">
-    <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
-    <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
-        class="hoverBtn" @click="overlayClick" />
-</div>
-<div class="overlay" v-show="socketStore.authToggle">
-    <h1>browser mode - authenticate through discord</h1>
-    <a href="https://localhost:8080/api/auth/login">authenticate here</a>
-</div>
-<div class="overlay" v-show="socketStore.alreadyConnected">
-    <h1>you're already connected elsewhere</h1>
-</div>
-<div class="overlay" v-show="settingsShown">
-    <h1>settings</h1>
-    <h2>visualizer FFT size: </h2>
-    <NumberInput v-model="visualizerFFTSize" min="5" max="15"></NumberInput>
-    <h2>visualizer FPS limit: </h2>
-    <NumberInput v-model="visualizerFPSLimit" min="1" max="60"></NumberInput>
-    <h2>visualizer line width: </h2>
-    <NumberInput v-model="visualizerWidth" min="1" max="10" step="0.5"></NumberInput>
-    <h2>visualizer color: </h2>
-    <ColorInput v-model="visualizerColor"></ColorInput>
-    <h2>alternative volume icon: </h2>
-    <input type="checkbox" v-model="altIcons">
-    <br>
-    <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { settingsShown = false }" />
-</div>
-<div class="overlay" v-show="mobileBitratesShown">
-    <h1>select bitrate</h1>
-    <RadioInput :elements="['128kbps', '96kbps', '64kbps']" :funcs="[switchQuality, switchQuality, switchQuality]"
-        :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')">
-    </RadioInput>
-    <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
-</div>
-<div class="flex center flex-responsive" id="main">
-    <StatusIndicator class="flex center" :status="playerState" v-show="!isMobile()"></StatusIndicator>
-    <img id="cover"
-        :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.png', '/src/assets/nostream.png')"
-        alt="cover artwork for set" />
-    <div id="setInfo">
-        <h1 :style="{
-            fontSize: `min(${getViewportFontSize(false)}vmax, ${(getTextWidth(socketStore.setInformation.title) > 9.984375) ? getViewportFontSize(false) * (getTextWidth(socketStore.setInformation.title) / 20) : getViewportFontSize(false)}vmax)`
-        }">
-            {{
-                renderStreamInfoPerStatus(socketStore.setInformation.title, '[untitled]', 'no set available')
-            }}
-        </h1>
-        <h2 :style="{
-            fontSize: `min(${getViewportFontSize(true)}vmax, ${(getTextWidth(socketStore.setInformation.author) > 17.5) ? getViewportFontSize(true) * (getTextWidth(socketStore.setInformation.author) / 20) : getViewportFontSize(true)}vmax)`
-        }">
-            {{
-                renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, "by ")
-            }}
-        </h2>
-        <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize="visualizerFFTSize"
-            :fpsLimit="visualizerFPSLimit" :lineWidth="visualizerWidth" :lineColor="visualizerColor"
-            backgroundColor="#0c0c11">
-        </Visualiser>
-        <h3 v-show="!visualiserOn && isMobile()" class="visualiser">[visualizer is off]</h3>
+    <div class="overlay" v-show="overlayToggle">
+        <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
+        <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
+            class="hoverBtn" @click="overlayClick" />
     </div>
-</div>
-
-<div class="flex flex-responsive responsive-center" id="bottomBar">
-    <div style="min-width: 140px; width: 25%; padding: 0 2em" class="fullOnly">
-        <Mute :muted="muted" :volume="parseInt(volume.toString())" :alt="altIcons" @click="mute()"></Mute>
-        <div class="flex center" id="volumeSlider">
-            <input v-model="volume" type="range" min="0" max="100" />
-            <div :style="{ width: volume + '%' }"></div>
-        </div>
+    <div class="overlay" v-show="socketStore.authToggle">
+        <h1>browser mode - authenticate through discord</h1>
+        <a href="https://localhost:8080/api/auth/login">authenticate here</a>
     </div>
-    <div style="width: 100%; flex-direction: column" class="alwaysVisible">
-        <div style="display: flex; flex-direction: row !important;">
-            <StatusIndicator class="flex center" :status="playerState" v-show="isMobile()"></StatusIndicator>
-            {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
-        </div>
-        <div id="progressbar">
-            <div id="buffered" :style="{
-                width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
-            }"></div>
-            <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
+    <div class="overlay" v-show="socketStore.alreadyConnected">
+        <h1>you're already connected elsewhere</h1>
+    </div>
+    <div class="overlay" v-show="settingsShown">
+        <h1>settings</h1>
+        <h2>visualizer FFT size: </h2>
+        <NumberInput v-model="visualizerFFTSize" min="5" max="15"></NumberInput>
+        <h2>visualizer FPS limit: </h2>
+        <NumberInput v-model="visualizerFPSLimit" min="1" max="60"></NumberInput>
+        <h2>visualizer line width: </h2>
+        <NumberInput v-model="visualizerWidth" min="1" max="10" step="0.5"></NumberInput>
+        <h2>visualizer color: </h2>
+        <ColorInput v-model="visualizerColor"></ColorInput>
+        <h2>alternative volume icon: </h2>
+        <input type="checkbox" v-model="altIcons">
+        <br>
+        <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { settingsShown = false }" />
+    </div>
+    <div class="overlay" v-show="mobileBitratesShown">
+        <h1>select bitrate</h1>
+        <RadioInput :elements="['128kbps', '96kbps', '64kbps']" :funcs="[switchQuality, switchQuality, switchQuality]"
+            :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')">
+        </RadioInput>
+        <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
+    </div>
+    <div class="flex center flex-responsive" id="main">
+        <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
+        </StatusIndicator>
+        <img id="cover"
+            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.png', '/src/assets/nostream.png')"
+            alt="cover artwork for set" />
+        <div id="setInfo">
+            <h1 :style="{
+                fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`
+            }">
+                {{
+                    renderStreamInfoPerStatus(socketStore.setInformation.title, '[untitled]', 'no set available', false)
+                }}
+            </h1>
+            <h2 :style="{
+                fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author, true), true)}vmax)`
+            }">
+                {{
+                    renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, true, "by ")
+                }}
+            </h2>
+            <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize="visualizerFFTSize"
+                :fpsLimit="visualizerFPSLimit" :lineWidth="visualizerWidth" :lineColor="visualizerColor"
+                backgroundColor="#0c0c11">
+            </Visualiser>
+            <h3 v-show="!visualiserOn && getScreenViewport() == Viewport.Mobile" class="visualiser">[visualizer is off]
+            </h3>
         </div>
     </div>
 
-    <div id="settings-panel">
-        <img id="visualiser-button" :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'"
-            alt="visualizer icon" @click="
-                () => {
-                    visualiserOn = !visualiserOn;
-                }
-            " />
-        <div id="quality-button">
-            <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
-                style="height: 6vh;" @click="() => {
-                    if (isMobile()) {
-                        mobileBitratesShown = !mobileBitratesShown;
-                    } else {
-                        bitratesShown = !bitratesShown;
+    <div class="flex flex-responsive responsive-center" id="bottomBar">
+        <div style="min-width: 140px; width: 25%; padding: 0 2em" class="fullOnly">
+            <Mute :muted="muted" :volume="parseInt(volume.toString())" :alt="altIcons" @click="mute()"></Mute>
+            <div class="flex center" id="volumeSlider">
+                <input v-model="volume" type="range" min="0" max="100" />
+                <div :style="{ width: volume + '%' }"></div>
+            </div>
+        </div>
+        <div style="width: 100%; flex-direction: column" class="alwaysVisible">
+            <div style="display: flex; flex-direction: row !important;">
+                <StatusIndicator class="flex center" :status="playerState"
+                    v-show="getScreenViewport() == Viewport.Mobile"></StatusIndicator>
+                {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
+            </div>
+            <div id="progressbar">
+                <div id="buffered" :style="{
+                    width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
+                }"></div>
+                <div id="filled" :style="{ width: (playState[0] / playState[1]) * 100 + '%' }"></div>
+            </div>
+        </div>
+
+        <div id="settings-panel">
+            <img id="visualiser-button"
+                :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
+                @click="
+                    () => {
+                        visualiserOn = !visualiserOn;
                     }
-                }">
-            <img class="fullOnly" src="/src/assets/dropdown_arrow.png" alt=""
-                :style="{ height: '2vh', marginLeft: '0.3vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
-            <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
-                :funcs="[switchQuality, switchQuality, switchQuality]"
-                :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')"
-                :visible="bitratesShown">
-            </ListDropdown>
+                " />
+            <div id="quality-button">
+                <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
+                    style="height: 6vh;" @click="() => {
+                        if (getScreenViewport() == Viewport.Mobile) {
+                            mobileBitratesShown = !mobileBitratesShown;
+                        } else {
+                            bitratesShown = !bitratesShown;
+                        }
+                    }">
+                <img class="fullOnly" src="/src/assets/dropdown_arrow.png" alt=""
+                    :style="{ height: '2vh', marginLeft: '0.3vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
+                <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
+                    :funcs="[switchQuality, switchQuality, switchQuality]"
+                    :disabled-indices="['128kbps', '96kbps', '64kbps'].filter(e => e == bitrate.toString() + 'kbps')"
+                    :visible="bitratesShown">
+                </ListDropdown>
+            </div>
+            <img id="settings-button" src="/src/assets/settings_icon.png" alt="settings"
+                @click="() => { settingsShown = !settingsShown }">
         </div>
-        <img id="settings-button" src="/src/assets/settings_icon.png" alt="settings"
-            @click="() => { settingsShown = !settingsShown }">
     </div>
-</div>
 </template>
