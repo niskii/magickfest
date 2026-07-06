@@ -126,7 +126,7 @@ export class OpusReader {
     /**
      * Returns the nearest page to the position.
      *
-     * @param position target position for the search
+     * @param position the sample number to target for the search
      * @returns the found page number
      */
     searchPosition(position: number) {
@@ -178,6 +178,8 @@ export class OpusReader {
      * @returns an AudioPacket and a read code
      */
     getChunkAtTime(time: number, pageStartOverride?: number) {
+        // opus sample rate is 48000 and we multiply that by seconds
+        // to get a duration or the position in the sound.
         const currentPage = this.searchPosition(time * 48000);
         const pageStart =
             pageStartOverride !== undefined ? pageStartOverride : currentPage;

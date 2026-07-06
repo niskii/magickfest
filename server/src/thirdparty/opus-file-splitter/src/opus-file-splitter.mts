@@ -156,8 +156,10 @@ export class OpusFileSplitter {
         let tempGranulePosition = 0n;
 
         for (let i = 0; i < scanTo; i++) {
+            // skip bytes until 'OggS' is read.
             if (pageMarker !== view.getUint32(i)) continue;
 
+            // once we know the contents of the header, we can read the whole page.
             const pageHeader = new OggPageHeader(view, i);
 
             if (
@@ -165,6 +167,7 @@ export class OpusFileSplitter {
                 commentPageFound &&
                 pageHeader.type.continuedPage == 0
             ) {
+                // Set to false when we are no longer reading the comment pages
                 continuedCommentPages = false;
             }
 
@@ -183,6 +186,7 @@ export class OpusFileSplitter {
                     }
                 }
             } else if (!commentPageFound) {
+                // There is only one comment page header so we only enter this section once per file.
                 if (opusCommentHeaderMarker === view.getBigUint64(opusOffset)) {
                     pageHeader.isCommentPage = true;
                     commentPageFound = true;
@@ -196,11 +200,16 @@ export class OpusFileSplitter {
             } else if (continuedCommentPages) {
                 pageHeader.isCommentPage = true;
             } else {
+                // We don't want to mix different types of pages.
+                // It is is easier to play from the beginning of the file
+                // if the sound is indexed at 0.
                 pageHeader.isAudioPage = true;
                 if (this.#headerObject.firstAudioPageIndex === 0) {
                     this.#headerObject.firstAudioPageIndex = pageNumber;
                     tempGranulePosition = pageHeader.granulePosition;
                 }
+                // We calculate the length of a arbitrary page.
+                // The length should be constant for all pages.
                 if (pageNumber === this.#headerObject.firstAudioPageIndex + 1) {
                     this.#headerObject.audioPageDuration =
                         this.calculateDurationSeconds(
@@ -216,6 +225,7 @@ export class OpusFileSplitter {
             }
 
             if (pageHeader.isLastPage) {
+                // Set the full PCM length of the file
                 this.#headerObject.PCMLength =
                     pageHeader.granulePosition + BigInt(pageHeader.pageSize);
             }
