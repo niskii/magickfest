@@ -266,10 +266,10 @@ const adjustSizePerSetInfo = (setInfo: string, isAuthor: boolean) => {
             fullSizeThreshold = 30.75;
             break;
         case Viewport.Minimized:
-            fullSizeThreshold = 20;
+            fullSizeThreshold = 30.25;
             break;
         case Viewport.WideMinimized:
-            fullSizeThreshold = 30.25;
+            fullSizeThreshold = 20;
             break;
         default:
             fullSizeThreshold = 30;
@@ -357,14 +357,14 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
             alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
-                fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title), false)}vmax)`
+                fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`
             }">
                 {{
                     renderStreamInfoPerStatus(socketStore.setInformation.title, '[untitled]', 'no set available', false)
                 }}
             </h1>
             <h2 :style="{
-                fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author), true)}vmax)`
+                fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author, true), true)}vmax)`
             }">
                 {{
                     renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, true, "by ")
