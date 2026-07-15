@@ -235,7 +235,7 @@ const getTextWidth = (text: String) => {
     if (text) {
         return Array.from(text).reduce((acc, cur) => acc + (widths[cur.charCodeAt(0)] ?? avg), 0)
     } else {
-        return 99999999
+        return 0
     }
 }
 
@@ -317,7 +317,7 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
 <template>
     <div class="overlay" v-show="overlayToggle">
         <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
-        <img src="/src/assets/connect_icon.png" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
+        <img src="/src/assets/connect_icon.webp" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
             class="hoverBtn" @click="overlayClick" />
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
@@ -337,8 +337,8 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
         <NumberInput v-model="visualizerWidth" min="1" max="10" step="0.5"></NumberInput>
         <h2>visualizer color: </h2>
         <ColorInput v-model="visualizerColor"></ColorInput>
-        <h2>alternative volume icon: </h2>
-        <input type="checkbox" v-model="altIcons">
+        <h2 v-show="getScreenViewport() != Viewport.Mobile">alternative volume icon: </h2>
+        <input v-show="getScreenViewport() != Viewport.Mobile" type="checkbox" v-model="altIcons">
         <br>
         <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { settingsShown = false }" />
     </div>
@@ -353,7 +353,7 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
         <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
         </StatusIndicator>
         <img id="cover"
-            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.png', '/src/assets/nostream.png')"
+            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.webp', '/src/assets/nostream.webp')"
             alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
@@ -403,14 +403,14 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
 
         <div id="settings-panel">
             <img id="visualiser-button"
-                :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.png'" alt="visualizer icon"
+                :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.webp'" alt="visualizer icon"
                 @click="
                     () => {
                         visualiserOn = !visualiserOn;
                     }
                 " />
             <div id="quality-button">
-                <img :src="'/src/assets/quality_' + bitrate + '.png'" :alt="'quality: ' + bitrate + 'kbps'"
+                <img :src="'/src/assets/quality_' + bitrate + '.webp'" :alt="'quality: ' + bitrate + 'kbps'"
                     style="height: 6vh;" @click="() => {
                         if (getScreenViewport() == Viewport.Mobile) {
                             mobileBitratesShown = !mobileBitratesShown;
@@ -418,7 +418,7 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
                             bitratesShown = !bitratesShown;
                         }
                     }">
-                <img class="fullOnly" src="/src/assets/dropdown_arrow.png" alt=""
+                <img class="fullOnly" src="/src/assets/dropdown_arrow.webp" alt=""
                     :style="{ height: '2vh', marginLeft: '0.3vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                     :funcs="[switchQuality, switchQuality, switchQuality]"
@@ -426,7 +426,7 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
                     :visible="bitratesShown">
                 </ListDropdown>
             </div>
-            <img id="settings-button" src="/src/assets/settings_icon.png" alt="settings"
+            <img id="settings-button" src="/src/assets/settings_icon.webp" alt="settings"
                 @click="() => { settingsShown = !settingsShown }">
         </div>
     </div>

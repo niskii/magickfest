@@ -7,7 +7,7 @@ import {
     InteractionReplyOptions,
     MessageFlags,
 } from "discord.js";
-import { existsSync } from "fs";
+import { existsSync, PathLike } from "fs";
 import * as path from "path";
 import { getDiscordEnvironment } from "../envs";
 import { parseTime } from "../parsing/time-parser";
@@ -135,10 +135,19 @@ export function configureInteractions(
         try {
             switch (commandName) {
                 case "np":
-                    if (!player.isPlayerRunning()) return;
+                    if (!player.isPlayerRunning()) {
+                        replyPlaybackState(player, interaction);
+                        return
+                    };
 
                     const currentSet = player.getCurrentSet();
-                    const coverPath = path.resolve(currentSet.CoverFile!);
+                    let coverPath: PathLike;
+                    if (currentSet.CoverFile) {
+                        coverPath = path.resolve(currentSet.CoverFile!);
+                    } else {
+                        coverPath = path.resolve(__dirname, "noartwork.webp");
+                    }
+                    
                     let attachment: AttachmentBuilder;
 
                     let reply: InteractionReplyOptions = {
@@ -167,7 +176,6 @@ export function configureInteractions(
                     break;
 
                 case "setlist":
-                    if (!player.isPlayerRunning()) return;
                     let finalString = "";
                     let lastSetTime = Math.round(
                         player.getState().startTime / 1000,
@@ -175,7 +183,7 @@ export function configureInteractions(
 
                     player.getPlaylistSets().forEach((set) => {
                         finalString +=
-                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title) ? "**" : "") +
+                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title && player.isPlayerRunning()) ? "**" : "") +
                             "(<t:" +
                             lastSetTime +
                             ":t>-<t:" +
@@ -184,7 +192,7 @@ export function configureInteractions(
                             handleSetInfo(set.Author, '[unknown author]') +
                             " - " +
                             handleSetInfo(set.Title, '[untitled]') +
-                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title) ? " << NOW PLAYING**" : "") +
+                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title && player.isPlayerRunning()) ? " << NOW PLAYING**" : "") +
                             "\n";
                         lastSetTime += Math.round(set.Seconds as number);
                     });
