@@ -142,3 +142,5 @@ vite.config.ts.timestamp-*
 discord-example-app
 server/.editorconfig
 server/public/playlist.json
+server/tools/deployment/registerCommands.js
+server/tools/deployment/deleteCommands.js

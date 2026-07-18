@@ -28,3 +28,29 @@ export function parseTime(time: any) {
         return totaltime;
     }
 }
+
+// time in UTC, HH:MM
+export function parseTimeOfDay(time: any) {
+    const asNumber = Number(time);
+    if (!Number.isNaN(asNumber) && Number.isInteger(asNumber)) return asNumber;
+    else {
+        const now = new Date();
+        const result = re.exec(String(time));
+
+        if (result !== null) {
+            const targetTime = Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate(),
+                Number(result[1]),
+                Number(result[2]),
+                0,
+                0
+            )
+
+            return Math.round((targetTime - Date.now()) / 1000);
+        } else {
+            return null;
+        }
+    }
+}
