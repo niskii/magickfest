@@ -20,6 +20,8 @@ const envs = getDiscordEnvironment();
 
 const publicCommands = ["np", "setlist"];
 
+let scheduledStartTimeout: NodeJS.Timeout;
+
 async function isAdmin(interaction: ChatInputCommandInteraction) {
     const member = interaction.member as GuildMember;
     const hasRole = member.roles.cache.has(envs.AdminRoleID);
@@ -112,7 +114,9 @@ function handleSetInfo(info: String, noInfo: String) {
 async function scheduledStart(parsedTime: number, playerStateManager: PlayerStateManager, player: Player) {
     player.setState(null, Date.now() + parsedTime, null);
 
-    setTimeout(
+    if (scheduledStartTimeout) clearTimeout(scheduledStartTimeout);
+
+    scheduledStartTimeout = setTimeout(
         async () => {
             if (playerStateManager.hasLoaded) {
                 player.playAtState();
@@ -320,6 +324,39 @@ export function configureInteractions(
                     });
 
                     break;
+                
+                case "manage-schedule":
+                    if (!scheduledStartTimeout) {
+                        await interaction.reply({
+                            content: `there is no schedule to manage`,
+                        });
+                        return;
+                    }
+                    const type = interaction.options.getString("type");
+
+                    if (type == 'reschedule') {
+                        const parsedTime = await handleTimeParsing(interaction, true);
+
+                        if (parsedTime > 0) {
+                            await scheduledStart(parsedTime, playerStateManager, player);
+
+                            await interaction.reply({
+                                content: `magickfest will now start at: <t:${Math.round((Date.now() + parsedTime) / 1000)}:t>!`,
+                            });
+                        } else {
+                            await interaction.reply({
+                                content: `please specify the time to use this mode!`,
+                                flags: MessageFlags.Ephemeral,
+                            });
+                        }
+                    } else {
+                        clearTimeout(scheduledStartTimeout);
+                        player.setState(null, 0, null);
+
+                        await interaction.reply({
+                            content: `unscheduled a planned start!`,
+                        });
+                    }
 
                 default:
                     break;

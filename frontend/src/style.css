@@ -112,7 +112,7 @@ input[type="checkbox"]:checked::before {
 
 #cover {
     min-width: 0;
-    height: 100%;
+    height: 70vh;
     object-fit: contain;
 }
 
@@ -402,6 +402,17 @@ input[type="checkbox"]:checked::before {
     font-size: 1.2vmax;
 }
 
+#versionIndicator {
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    top: 1.5vh;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.15vmax;
+    text-align: center;
+}
+
 @media screen and (max-height: 400px) {
     .fullOnly {
         display: none !important;
@@ -484,6 +495,10 @@ input[type="checkbox"]:checked::before {
     .visualiser {
         width: 45vw;
         margin-left: -0.5vw;
+    }
+
+    #versionIndicator {
+        font-size: 1.75vmax;
     }
 }
 
@@ -644,6 +659,12 @@ input[type="checkbox"]:checked::before {
 
     .statusText {
         display: none !important;
+    }
+
+    #versionIndicator {
+        top: 77vh;
+        font-size: 1.85vmax;
+        text-wrap: nowrap;
     }
 }
 

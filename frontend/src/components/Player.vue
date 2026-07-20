@@ -47,6 +47,8 @@ const volume = ref<number>(75);
 const muted = ref<boolean>(false);
 const altIcons = ref<boolean>(false);
 
+const showVersionIndicator = ref<boolean>(false);
+
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
     (localStorage.getItem('visualizerFPSLimit')) ? visualizerFPSLimit.value = parseInt(localStorage.getItem('visualizerFPSLimit')) : null;
@@ -250,8 +252,13 @@ const getViewportFontSize = (isAuthor: Boolean) => {
     }
 }
 
-const renderStreamInfoPerStatus = (isRunningWithData: string, isRunningNoData: string, isNotRunning: string, isAuthor: boolean, prefix: string = "") => {
-    if (playerState.value && playerState.value.state != PlaybackState.Stopped) {
+const renderStreamInfoPerStatus = (isRunningWithData: string, isRunningNoData: string, isNotRunning: string, isRunningSoon: string, isAuthor: boolean, prefix: string = "") => {
+    if (playerState.value && playerState.value.startTime != 0) {
+        if (playerState.value.state == PlaybackState.Stopped && Date.now() < playerState.value.startTime) {
+            let finalString: string;
+            if (isRunningSoon) finalString = isRunningSoon.replace('%time%', String(timeConverter((playerState.value.startTime - Date.now()) / 1000)));
+            return finalString;
+        }
         return (isRunningWithData) ? truncateSetInfo(prefix + isRunningWithData, isAuthor) : prefix + isRunningNoData;
     } else {
         return isNotRunning;
@@ -352,22 +359,23 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
     <div class="flex center flex-responsive" id="main">
         <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
         </StatusIndicator>
+        <p id="versionIndicator" v-show="showVersionIndicator">MAGICKFEST beta test 2</p>
         <img id="cover"
-            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.webp', '/src/assets/nostream.webp')"
+            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.webp', '/src/assets/nostream.webp', '/src/assets/nostream.webp')"
             alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
                 fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`
             }">
                 {{
-                    renderStreamInfoPerStatus(socketStore.setInformation.title, '[untitled]', 'no set available', false)
+                    renderStreamInfoPerStatus(socketStore.setInformation.title, '[untitled]', 'no set available', `starting in %time%`, false)
                 }}
             </h1>
             <h2 :style="{
                 fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author, true), true)}vmax)`
             }">
                 {{
-                    renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, true, "by ")
+                    renderStreamInfoPerStatus(socketStore.setInformation.author, '[unknown author]', null, null, true, "by ")
                 }}
             </h2>
             <Visualiser v-show="visualiserOn" ref="visualiser" class="visualiser" :fftSize="visualizerFFTSize"
