@@ -206,6 +206,8 @@ export class Player {
         if (forwarded !== null) {
             this.#forwarded = forwarded;
         }
+
+        this.events.emit("changedState");
     }
 
     /**
