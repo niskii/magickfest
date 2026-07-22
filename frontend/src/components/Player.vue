@@ -275,7 +275,7 @@ const adjustSizePerSetInfo = (setInfo: string, isAuthor: boolean) => {
             fullSizeThreshold = 30.75;
             break;
         case Viewport.Minimized:
-            fullSizeThreshold = 30.25;
+            fullSizeThreshold = 35;
             break;
         case Viewport.WideMinimized:
             fullSizeThreshold = 20;
