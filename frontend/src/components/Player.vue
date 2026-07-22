@@ -82,6 +82,8 @@ onMounted(() => {
 
     SocketManager.setupSocket();
 
+    window.addEventListener('beforeunload', () => { SocketManager.shutdownSocket(); disconnect(); });
+
     onUnmounted(() => {
         SocketManager.shutdownSocket()
         disconnect();
