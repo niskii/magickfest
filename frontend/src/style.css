@@ -526,6 +526,10 @@ input[type="checkbox"]:checked::before {
         display: none !important;
     }
 
+    #body {
+        height: 100dvh;
+    }
+
     #main {
         justify-content: start;
         height: 80%;
