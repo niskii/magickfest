@@ -22,7 +22,7 @@ const { width, height } = useElementSize(container)
 const seed1 = ref(0)
 const seed2 = ref(0)
 const scale1 = ref(10)
-const scale2 = ref(10)
+// const scale2 = ref(10)
 
 function setAnalyser(analyser: AnalyserNode) {
     visualiser.value.setAnalyzer(analyser, props.fftSize)
