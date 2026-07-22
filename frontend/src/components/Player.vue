@@ -361,7 +361,7 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
         </StatusIndicator>
         <p id="versionIndicator" v-show="showVersionIndicator">MAGICKFEST beta test 2</p>
         <img id="cover"
-            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.webp', '/src/assets/nostream.webp', '/src/assets/nostream.webp')"
+            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.webp', '/src/assets/nostream.webp', '/src/assets/nostream.webp', false)"
             alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
