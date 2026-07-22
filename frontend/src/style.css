@@ -360,7 +360,7 @@ input[type="checkbox"]:checked::before {
     width: 40vw;
     height: 30vh;
     margin-top: 10vh;
-    margin-left: -0.5vw;
+    margin-left: -0.75vw;
 }
 
 #setInfo h1,
@@ -494,7 +494,7 @@ input[type="checkbox"]:checked::before {
 
     .visualiser {
         width: 45vw;
-        margin-left: -0.5vw;
+        margin-left: -1.25vw;
     }
 
     #versionIndicator {

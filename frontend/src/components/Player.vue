@@ -319,6 +319,26 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
     }
 }
 
+const renderCoverImage = (coverImage: string) => {
+    if (playerState.value) {
+        if (playerState.value.state != PlaybackState.Stopped) {
+            if (coverImage) {
+                return coverImage;
+            } else {
+                return '/src/assets/noartwork.webp';
+            }
+        } else {
+            if (playerState.value.startTime > 0) {
+                return '/src/assets/nostream.webp'; //todo add a graphic for this
+            } else {
+                return '/src/assets/nostream.webp';
+            }
+        }
+    } else {
+        return '/src/assets/nostream.webp';
+    }
+}
+
 </script>
 
 <template>
@@ -360,9 +380,7 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
         <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
         </StatusIndicator>
         <p id="versionIndicator" v-show="showVersionIndicator">MAGICKFEST beta test 2</p>
-        <img id="cover"
-            :src="renderStreamInfoPerStatus(socketStore.setInformation.coverURL, '/src/assets/noartwork.webp', '/src/assets/nostream.webp', '/src/assets/nostream.webp', false)"
-            alt="cover artwork for set" />
+        <img id="cover" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
                 fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`
