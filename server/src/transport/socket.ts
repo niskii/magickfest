@@ -5,10 +5,10 @@ import fs from "fs";
 import path from "path";
 import { Server } from "socket.io";
 import socketStream from "socket.io-stream";
+import logger from "src/logger";
 import { Player } from "../player/player";
 import { imageMimeTypes } from "../types/mime-map";
 import { UserManager } from "../user/user-manager";
-import logger from "src/logger";
 
 export function socketSetup(
     io: Server,
@@ -19,7 +19,7 @@ export function socketSetup(
         const req = socket.request as Request;
         const user = req.session.user;
         logger.info("a user connected", user);
-        userManager.setUser(user!);
+        userManager.setUser(user!, socket);
 
         const sendNewSetAlert = () => {
             socket.emit("newSet");

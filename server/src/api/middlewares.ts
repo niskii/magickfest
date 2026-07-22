@@ -8,11 +8,11 @@ import session from "express-session";
 import helmet from "helmet";
 import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
+import logger from "src/logger";
 import { UserManager } from "src/user/user-manager";
 import authAPI, { isAuthorized } from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
-import logger from "src/logger";
 
 const limiter = rateLimit({
     windowMs: settings.rateWindowMs,
@@ -103,7 +103,8 @@ export function setupMiddleware(
             if (!userManager.isConnected(user)) {
                 next();
             } else {
-                next(new Error("already_connected"));
+                userManager.getSocket(user.Id)?.disconnect()
+                next()
             }
         } else {
             next(new Error("unauthorized"));
