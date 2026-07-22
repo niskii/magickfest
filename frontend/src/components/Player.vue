@@ -285,7 +285,7 @@ const adjustSizePerSetInfo = (setInfo: string, isAuthor: boolean) => {
             break;
     }
 
-    return (getViewportFontSize(isAuthor) * getTextWidth(setInfo) > fullSizeThreshold) ? fullSizeThreshold / getTextWidth(setInfo) : getViewportFontSize(isAuthor);
+    return (getViewportFontSize(isAuthor) * getTextWidth(setInfo) > fullSizeThreshold && playerState.value && playerState.value.state != PlaybackState.Stopped) ? fullSizeThreshold / getTextWidth(setInfo) : getViewportFontSize(isAuthor);
 }
 
 const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {

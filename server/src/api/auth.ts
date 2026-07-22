@@ -81,6 +81,7 @@ function saveUserSession(user: User, req: Request) {
                 req.session.cookie.sameSite = "none";
                 // @ts-ignore
                 req.session.cookie.partitioned = true;
+                req.session.cookie.domain = undefined;
             }
 
             req.session.user = user;
