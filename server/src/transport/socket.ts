@@ -17,7 +17,7 @@ export function socketSetup(
 ) {
     io.on("connection", (socket) => {
         const req = socket.request as Request;
-        const user = req.session.user;
+        const user = req.session.user!;
         logger.info("a user connected", user);
         userManager.setUser(user!, socket);
 
@@ -53,8 +53,10 @@ export function socketSetup(
             "fetchSyncedChunk",
             (data: { bitrate: Bitrate }, callback) => {
                 const result = player.getCurrentChunk(data.bitrate);
-                if (result !== undefined)
+                if (result !== undefined) {
+                    userManager.getUser(user)?.getBufferingBalancer().reset();
                     socket.emit("syncedChunk", result.data);
+                }
                 callback({
                     status: result?.status,
                 });
@@ -69,6 +71,10 @@ export function socketSetup(
             (data: { bitrate: Bitrate; pageStart: number }, callback) => {
                 const result = player.getNextChunk(
                     data.pageStart,
+                    userManager
+                        .getUser(user)!
+                        .getBufferingBalancer()
+                        .getPageSize(),
                     data.bitrate,
                 );
                 if (result !== undefined)

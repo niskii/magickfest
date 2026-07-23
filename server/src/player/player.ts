@@ -166,7 +166,7 @@ export class Player {
     getCurrentChunk(bitrate: Bitrate) {
         const reader = this.getCurrentReader(bitrate);
         if (reader)
-            return reader.getChunkAtTime(this.getCurrentPositionSeconds());
+            return reader.getChunkAtTime(this.getCurrentPositionSeconds(), 1);
     }
 
     /**
@@ -175,11 +175,12 @@ export class Player {
      * @param bitrate
      * @returns an AudioPacket and a read code
      */
-    getNextChunk(pageStart: number, bitrate: Bitrate) {
+    getNextChunk(pageStart: number, numberOfPages: number, bitrate: Bitrate) {
         const reader = this.getCurrentReader(bitrate);
         if (reader)
             return reader.getChunkAtTime(
                 this.getCurrentPositionSeconds(),
+                numberOfPages,
                 pageStart,
             );
     }

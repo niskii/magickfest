@@ -1,13 +1,13 @@
 import axios from "axios";
 import express, { NextFunction, Request, Response } from "express";
-import { User } from "src/user/user";
-import { getDiscordEnvironment } from "../envs";
 import logger from "src/logger";
+import { UserType } from "src/user/user";
+import { getDiscordEnvironment } from "../envs";
 
 const router = express.Router();
 const envs = getDiscordEnvironment();
 
-function createUserFromGuildMemberObject(guildUserData: any): User {
+function createUserFromGuildMemberObject(guildUserData: any): UserType {
     return {
         Id: guildUserData.user.id,
         Name: guildUserData.user.username,
@@ -69,7 +69,7 @@ async function getGuildMember(accessToken: string): Promise<any> {
     }
 }
 
-function saveUserSession(user: User, req: Request) {
+function saveUserSession(user: UserType, req: Request) {
     return new Promise<void>((resolve, reject) => {
         req.session.regenerate(function (err) {
             if (err) reject(err);
@@ -115,6 +115,12 @@ router.post("/token", async (req, res) => {
 router.post("/startsession", async (req, res) => {
     const guildUserData = await getGuildMember(req.body.access_token);
     const user = createUserFromGuildMemberObject(guildUserData);
+    await saveUserSession(user, req);
+    res.sendStatus(200);
+});
+
+router.get("/fakeuser", async (req, res) => {
+    const user: UserType = {Id: 1, IsAdmin: true, Name: "Me"}
     await saveUserSession(user, req);
     res.sendStatus(200);
 });

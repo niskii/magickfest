@@ -1,10 +1,10 @@
-import { User } from "src/user/user";
+import { UserType } from "src/user/user";
 
 declare module "express-session" {
     interface SessionData {
-        user: User;
+        user: UserType;
     }
 }
 
-export {};
+export { };
 //# sourceMappingURL=index.d.ts.map

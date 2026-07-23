@@ -140,10 +140,17 @@ export class OpusReader {
      * @returns number of the page ending the range
      */
     getPageRangeEnd(pageStart: number) {
-        return Math.min(
-            pageStart + this.#minPagesForChunk,
-            this.#numberOfPages,
-        );
+        return this.addPages(pageStart, this.#minPagesForChunk);
+    }
+
+    /**
+     *
+     * @param a positive page number 1
+     * @param b positive page number 2
+     * @returns page number within the limit of all pages.
+     */
+    addPages(a: number, b: number) {
+        return Math.min(a + b, this.#numberOfPages);
     }
 
     /**
@@ -173,17 +180,22 @@ export class OpusReader {
     /**
      * Validates the requested play position and page number and creates an AudioPacket.
      *
-     * @param time play position
+     * @param start start position
+     * @param numberOfPages number of pages for the chunk
      * @param pageStartOverride start of the range
      * @returns an AudioPacket and a read code
      */
-    getChunkAtTime(time: number, pageStartOverride?: number) {
+    getChunkAtTime(
+        start: number,
+        numberOfPages: number,
+        pageStartOverride?: number,
+    ) {
         // opus sample rate is 48000 and we multiply that by seconds
         // to get a duration or the position in the sound.
-        const currentPage = this.searchPosition(time * 48000);
+        const currentPage = this.searchPosition(start * 48000);
         const pageStart =
             pageStartOverride !== undefined ? pageStartOverride : currentPage;
-        const pageEnd = this.getPageRangeEnd(pageStart);
+        const pageEnd = this.addPages(pageStart, numberOfPages);
 
         if (pageStart == pageEnd) return { data: null, status: ReadCode.EOF };
 
@@ -196,7 +208,7 @@ export class OpusReader {
             return { data: null, status: ReadCode.INVALID };
 
         return {
-            data: this.makeChunkFromRange(pageStart, pageEnd, time),
+            data: this.makeChunkFromRange(pageStart, pageEnd, start),
             status: ReadCode.CONTINUATION,
         };
     }

@@ -103,8 +103,8 @@ export function setupMiddleware(
             if (!userManager.isConnected(user)) {
                 next();
             } else {
-                userManager.getSocket(user.Id)?.disconnect()
-                next()
+                userManager.getUser(user)!.getSocket().disconnect();
+                next();
             }
         } else {
             next(new Error("unauthorized"));
