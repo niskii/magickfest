@@ -1,7 +1,7 @@
+import { type PlayerState } from "@shared/types/player-state";
 import logger from "../../logger";
 import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";
 import { socket } from "./socket";
-import { type PlayerState } from "@shared/types/player-state";
 
 import { reactive, ref } from "vue";
 
@@ -12,6 +12,7 @@ interface Store {
   authToggle: boolean;
   alreadyConnected: boolean;
   setInformation: SetInfo;
+  numberOfUsers: number;
 }
 
 const fetcher = new SetInfoFetcher(socket);
@@ -21,6 +22,7 @@ export const socketStore: Store = reactive({
   setInformation: {},
   authToggle: false,
   alreadyConnected: false,
+  numberOfUsers: 0,
 });
 
 function onConnect() {
@@ -30,11 +32,13 @@ function onConnect() {
 
   socket.on("newSet", newSetEvent);
   socket.on("currentPlayerState", currentPlayerState);
+  socket.on("numberOfUsers", numberOfUsers)
 }
 
 function onDisconnect() {
   socket.off("newSet", newSetEvent);
   socket.off("currentPlayerState", currentPlayerState);
+  socket.off("numberOfUsers", numberOfUsers)
   playerState.value = null;
   socketStore.authToggle = false;
   socketStore.alreadyConnected = false;
@@ -99,4 +103,8 @@ function newSetEvent() {
   if (socketStore.isConnected) {
     fetchInfo();
   }
+}
+
+function numberOfUsers(size: number) {
+  socketStore.numberOfUsers = size;
 }

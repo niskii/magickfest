@@ -4,19 +4,19 @@ import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { socket } from "../scripts/socket/socket";
-import ListDropdown from './ListDropdown.vue';
 import Button from './Button.vue';
+import ListDropdown from './ListDropdown.vue';
 import RadioInput from './RadioInput.vue';
 
-import Visualiser from "./Visualiser.vue";
+import { PlaybackState } from '@shared/types/player-state';
+import logger from '../logger';
 import * as SocketManager from '../scripts/socket/manager';
 import { playerState, socketStore } from '../scripts/socket/manager';
-import NumberInput from './NumberInput.vue';
 import ColorInput from './ColorInput.vue';
-import StatusIndicator from './StatusIndicator.vue';
-import { PlaybackState } from '@shared/types/player-state'
 import Mute from './Mute.vue';
-import logger from '../logger';
+import NumberInput from './NumberInput.vue';
+import StatusIndicator from './StatusIndicator.vue';
+import Visualiser from "./Visualiser.vue";
 
 import { Viewport } from '../scripts/enum/Viewport';
 
@@ -381,6 +381,7 @@ const renderCoverImage = (coverImage: string) => {
     <div class="flex center flex-responsive" id="main">
         <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
         </StatusIndicator>
+        <h3>Connected users: {{ socketStore.numberOfUsers }}</h3>
         <p id="versionIndicator" v-show="showVersionIndicator">MAGICKFEST beta test 2</p>
         <img id="cover" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
         <div id="setInfo">

@@ -21,6 +21,8 @@ export function socketSetup(
         logger.info("a user connected", user);
         userManager.setUser(user!, socket);
 
+        io.emit("numberOfUsers", userManager.getSize())
+
         const sendNewSetAlert = () => {
             socket.emit("newSet");
         };
@@ -40,6 +42,7 @@ export function socketSetup(
             userManager.removeUser(user!);
             player.events.off("newSet", sendNewSetAlert);
             player.events.off("changedState", sendChangedStateAlert);
+            io.emit("numberOfUsers", userManager.getSize())
         });
 
         socket.on("getPlayerState", () => {

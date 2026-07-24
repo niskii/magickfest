@@ -38,4 +38,8 @@ export class UserManager {
     getUser(user: UserType) {
         return this.#connectedUsers.get(user.Id);
     }
+
+    getSize() {
+        return this.#connectedUsers.size
+    }
 }
