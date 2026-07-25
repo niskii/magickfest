@@ -1,16 +1,17 @@
-// import { OpusStreamDecoder } from 'opus-stream-decoder';
 import {
   type OggOpusDecodedAudio,
   OggOpusDecoderWebWorker,
 } from "ogg-opus-decoder";
-import { DecodedAudioPlaybackBuffer } from "./decoded-audio-playback-buffer";
-import type { ChanneledAudioBuffer, DecodedAudioBuffer } from "./AudioTypes";
 import logger from "../../logger";
+import type { ChanneledAudioBuffer, DecodedAudioBuffer } from "./AudioTypes";
+import { DecodedAudioPlaybackBuffer } from "./decoded-audio-playback-buffer";
 
 const decoder = new OggOpusDecoderWebWorker({
   forceStereo: true,
   speechQualityEnhancement: "none",
 });
+
+await decoder.ready;
 
 // Mutable handlers object that consumers can import and reassign properties on.
 // Example usage from another module:
@@ -27,7 +28,7 @@ export const handlers: {
 const playbackBuffer = new DecodedAudioPlaybackBuffer(onFlush);
 let sessionId: number, flushTimeoutId: NodeJS.Timeout;
 
-export { decodeAudio, flushAudio, clear };
+export { clear, decodeAudio, flushAudio };
 
 function evalSessionId(newSessionId: number) {
   // detect new session and reset decoder
@@ -45,7 +46,6 @@ async function decodeAudio(
   sessionId: number,
 ) {
   evalSessionId(sessionId);
-  await decoder.ready;
   const buffer = new Uint8Array(arrayBuffer);
   decoder
     .decode(buffer)
