@@ -72,7 +72,7 @@ async function getGuildMember(accessToken: string): Promise<any> {
 function saveUserSession(user: UserType, req: Request) {
     return new Promise<void>((resolve, reject) => {
         req.session.regenerate(function (err) {
-            if (err) reject(err);
+            if (err) reject(`could not regenerate session ${err}`);
 
             // Discord embed cookie options
             // as referenced https://discord.com/developers/docs/activities/development-guides/networking
@@ -101,8 +101,13 @@ router.get("/redirect", async (req, res) => {
         const guildUserData = await getGuildMember(accessToken);
 
         const user = createUserFromGuildMemberObject(guildUserData);
-        await saveUserSession(user, req);
-        res.redirect(process.env.ClientRedirectUrl!);
+        saveUserSession(user, req)
+            .then(() => {
+                res.redirect(process.env.ClientRedirectUrl!);
+            })
+            .catch((err) => {
+                throw new Error(err);
+            });
     }
 });
 
@@ -115,14 +120,13 @@ router.post("/token", async (req, res) => {
 router.post("/startsession", async (req, res) => {
     const guildUserData = await getGuildMember(req.body.access_token);
     const user = createUserFromGuildMemberObject(guildUserData);
-    await saveUserSession(user, req);
-    res.sendStatus(200);
-});
-
-router.get("/fakeuser", async (req, res) => {
-    const user: UserType = {Id: 1, IsAdmin: true, Name: "Me"}
-    await saveUserSession(user, req);
-    res.sendStatus(200);
+    saveUserSession(user, req)
+        .then(() => {
+            res.sendStatus(200);
+        })
+        .catch((err) => {
+            throw new Error(err);
+        });
 });
 
 router.get("/login", (req, res, next) => {
