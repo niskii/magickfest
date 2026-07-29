@@ -12,6 +12,7 @@ import { Player } from "./player/player";
 import { PlayerStateManager } from "./player/player-state-manager";
 import { socketSetup as setupSocket } from "./transport/socket";
 import { UserManager } from "./user/user-manager";
+import { configureInteractions } from "./bot/interactions";
 
 console.log("starting server!");
 
@@ -65,18 +66,18 @@ const playerStateManager = new PlayerStateManager(
 );
 
 playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
-// configureInteractions(player, playerStateManager);
+configureInteractions(player, playerStateManager);
 
 // TODO rework this in the command, for now use /start and i'll deal with scheduling soon
 
-setTimeout(
-    () => {
-        if (playerStateManager.hasLoaded) {
-            player.playAtState();
-        } else {
-            player.playAtForwarded();
-            playerStateManager.saveState();
-        }
-    },
-    Math.max(1, commandLineOptions.scheduledStart - Date.now()),
-);
+// setTimeout(
+//     () => {
+//         if (playerStateManager.hasLoaded) {
+//             player.playAtState();
+//         } else {
+//             player.playAtForwarded();
+//             playerStateManager.saveState();
+//         }
+//     },
+//     Math.max(1, commandLineOptions.scheduledStart - Date.now()),
+// );

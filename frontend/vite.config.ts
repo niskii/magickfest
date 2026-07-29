@@ -11,13 +11,13 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://localhost:8080",
+        target: process.env.VITE_SERVER_HOSTNAME,
         changeOrigin: true,
         secure: false,
         ws: true,
       },
       "/socket.io": {
-        target: "https://localhost:8080",
+        target: process.env.VITE_SERVER_HOSTNAME,
         changeOrigin: true,
         secure: false,
         ws: true,

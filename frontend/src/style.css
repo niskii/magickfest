@@ -413,6 +413,13 @@ input[type="checkbox"]:checked::before {
     text-align: center;
 }
 
+#connectedInfo {
+    position: absolute;
+    top: 11vh;
+    right: 1.5vw;
+    text-align: right;
+}
+
 @media screen and (max-height: 400px) {
     .fullOnly {
         display: none !important;
@@ -424,6 +431,10 @@ input[type="checkbox"]:checked::before {
 
     h2 {
         font-size: 3vmax;
+    }
+
+    h3 {
+        font-size: 1.2vmax;
     }
 
     .alwaysVisible {
@@ -669,6 +680,10 @@ input[type="checkbox"]:checked::before {
         top: 77vh;
         font-size: 1.85vmax;
         text-wrap: nowrap;
+    }
+
+    #connectedInfo {
+        display: none;
     }
 }
 

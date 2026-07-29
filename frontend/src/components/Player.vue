@@ -22,6 +22,8 @@ import { Viewport } from '../scripts/enum/Viewport';
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
+const serverHostname = import.meta.env.VITE_SERVER_HOSTNAME;
+
 // other
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
@@ -47,7 +49,7 @@ const volume = ref<number>(75);
 const muted = ref<boolean>(false);
 const altIcons = ref<boolean>(false);
 
-const showVersionIndicator = ref<boolean>(false);
+const versionName = (import.meta.env.VITE_SHOW_VERSION == "true") ? import.meta.env.VITE_VERSION_NAME : null;
 
 onMounted(() => {
     (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
@@ -298,10 +300,10 @@ const truncateSetInfo = (setInfo: string, isAuthor: boolean) => {
             maxWidth = 11;
             break;
         case Viewport.Minimized:
-            maxWidth = 9;
+            maxWidth = 12;
             break;
         case Viewport.WideMinimized:
-            maxWidth = 6;
+            maxWidth = 10;
             break;
         default:
             maxWidth = 20;
@@ -331,7 +333,7 @@ const renderCoverImage = (coverImage: string) => {
             }
         } else {
             if (playerState.value.startTime > 0) {
-                return '/src/assets/nostream.webp'; //todo add a graphic for this
+                return '/src/assets/startingsoon.webp';
             } else {
                 return '/src/assets/nostream.webp';
             }
@@ -351,7 +353,7 @@ const renderCoverImage = (coverImage: string) => {
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
-        <a href="https://localhost:8080/api/auth/login">authenticate here</a>
+        <a :href="`${serverHostname}/api/auth/login`">authenticate here</a>
     </div>
     <div class="overlay" v-show="socketStore.alreadyConnected">
         <h1>you're already connected elsewhere</h1>
@@ -381,8 +383,8 @@ const renderCoverImage = (coverImage: string) => {
     <div class="flex center flex-responsive" id="main">
         <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
         </StatusIndicator>
-        <h3>Connected users: {{ socketStore.numberOfUsers }}</h3>
-        <p id="versionIndicator" v-show="showVersionIndicator">MAGICKFEST beta test 2</p>
+        <h3 id="connectedInfo">connected users: {{ socketStore.numberOfUsers }}</h3>
+        <p id="versionIndicator">{{ versionName }}</p>
         <img id="cover" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
         <div id="setInfo">
             <h1 :style="{
