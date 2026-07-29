@@ -1,9 +1,9 @@
-import { Socket } from "socket.io-client";
 import { type AudioPacket, Bitrate } from "@shared/types/audio-transfer";
-import { TimeKeeper } from "./time-keeper";
 import { ReadCode } from "@shared/types/read-codes";
+import { Socket } from "socket.io-client";
 import config from "../../config/client.json";
 import logger from "../../logger";
+import { TimeKeeper } from "./time-keeper";
 
 export class AudioStreamSocket {
   #socket: Socket;
@@ -34,7 +34,6 @@ export class AudioStreamSocket {
   }
 
   handleChunk(data: AudioPacket) {
-    this.#isFetching = false;
     if (data == null) return;
     if (this.#lastChunkPage == data.PageEnd) return;
     this.#lastChunkPage = data.PageEnd;
@@ -53,6 +52,7 @@ export class AudioStreamSocket {
 
     this.#socket.once("syncedChunk", async (data: AudioPacket) => {
       logger.info("syncing!", this.#lastChunkPage);
+      this.#isFetching = false;
       if (!data) return;
       this.#needsResync = false;
       // save the play position of the sync chunk.
@@ -82,10 +82,13 @@ export class AudioStreamSocket {
           this.reset();
           return;
         }
+        if (response.status == ReadCode.INVALID)
+          logger.info("Going too far!")
       },
     );
 
     this.#socket.once("chunkFromPage", (data: AudioPacket) => {
+      this.#isFetching = false;
       if (!data) return;
       logger.info(
         "Delay of:",
