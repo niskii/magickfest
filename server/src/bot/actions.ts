@@ -1,6 +1,6 @@
 import { client, ready } from "./setup";
 
-const CHANNEL_ID = "1431036238474776708";
+const CHANNEL_ID = process.env.DiscordChannelID;
 
 const sendMessage = async (message: string) => {
     await ready;

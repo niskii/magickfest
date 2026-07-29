@@ -131,7 +131,7 @@ router.post("/startsession", async (req, res) => {
 
 router.get("/login", (req, res, next) => {
     res.redirect(
-        `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
+        `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=${process.env.ServerHostname}%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
     );
 });
 

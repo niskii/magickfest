@@ -62,6 +62,7 @@ const sessionMiddleware = session({
         sameSite: "lax",
         secure: true,
         httpOnly: true,
+        domain: process.env.CookieDomain
     },
 });
 
