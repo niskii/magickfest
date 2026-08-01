@@ -1,0 +1,11 @@
+@startuml
+Client -> Server: Request a synced chunk of audio
+Server -> Server: Convert clock time \nto a chunk number
+Server -> Client: Numbered chunks of audio
+
+loop While there are chunks to request
+  Client -> Client: Check if buffered duration is long enough
+  Client -> Server: Request chunks at the point \nof the last chunk number
+  Server -> Client: Numbered chunks of audio
+end
+@enduml

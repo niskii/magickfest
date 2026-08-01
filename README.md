@@ -2,6 +2,8 @@
 
 Opus streaming server and client.
 
+![alt text](stream-overview.png "Stream overview")
+
 Has parts built on top of [fetch-stream-audio](https://github.com/anthumchris/fetch-stream-audio/tree/master)
 
 To install the separate packages use Yarn 4
