@@ -1,0 +1,60 @@
+@startuml player
+
+class Player {
+    -starttime: int
+    -forwarded: int
+    -state: PlaybackState
+    +play()
+    +stop()
+    +pause()
+    +resume()
+    +nextSet()
+    +getCurrentChunk(bitrate: int)
+    +getNextChunk(pageStart: int, numberOfPages: int, bitrate: int)
+    +getRemainingTimeSeconds()
+    +getCurrentPositionMilliseconds()
+    +getCurrentSet()
+    +getState()
+    +setState()
+}
+
+enum PlaybackState {
+    Stopped
+    Running
+    Paused
+}
+
+struct AudioFile {
+    +file: string
+    +bitrate: int
+}
+
+struct Set {
+    +title: string
+    +author: string
+} 
+
+class Playlist {
+    -currentSet: int
+
+    +getCurrentSet()
+    +nextSet()
+}
+
+class OpusReader {
+    +getTotalDuration()
+    +calculateRangeDuration()
+    +getChunkAtTime()
+    +getTotalDuration()
+}
+
+class OpusSplitter {
+    -audioPages : Object
+}
+
+Player --> "1..m" OpusReader : -readers
+Player *--> Playlist : -playlist
+Playlist --> "1..m" Set : -sets
+Set *--> "1..m" AudioFile : +audiofiles
+OpusReader *--> "1..1" OpusSplitter: -filesplitter
+@enduml

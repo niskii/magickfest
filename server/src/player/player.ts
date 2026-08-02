@@ -120,7 +120,7 @@ export class Player {
      * @returns reamining time in seconds
      */
     getRemainingTimeSeconds() {
-        const currentReader = this.getCurrentReader(Bitrate.High);
+        const currentReader = this.#getCurrentReader(Bitrate.High);
         if (currentReader === undefined) return 0;
         return (
             currentReader.getTotalDuration() - this.getCurrentPositionSeconds()
@@ -153,7 +153,7 @@ export class Player {
      * @param bitrate the desired bitrate
      * @returns an opus reader
      */
-    getCurrentReader(bitrate: Bitrate) {
+    #getCurrentReader(bitrate: Bitrate) {
         return this.#readerCollection.get(bitrate);
     }
 
@@ -164,7 +164,7 @@ export class Player {
      * @returns an AudioPacket and a read code
      */
     getCurrentChunk(bitrate: Bitrate) {
-        const reader = this.getCurrentReader(bitrate);
+        const reader = this.#getCurrentReader(bitrate);
         if (reader)
             return reader.getChunkAtTime(this.getCurrentPositionSeconds(), 1);
     }
@@ -176,7 +176,7 @@ export class Player {
      * @returns an AudioPacket and a read code
      */
     getNextChunk(pageStart: number, numberOfPages: number, bitrate: Bitrate) {
-        const reader = this.getCurrentReader(bitrate);
+        const reader = this.#getCurrentReader(bitrate);
         if (reader)
             return reader.getChunkAtTime(
                 this.getCurrentPositionSeconds(),

@@ -1,6 +1,10 @@
 # server
 
-more to be writen here
+Opus file player overview:
+
+![player overview](./player.png)
+
+Various methods related to the concrete implementation has been omitted.
 
 configuration file [./config/settings.json](config/settings.json) to set cors origin and port
 
