@@ -424,7 +424,8 @@ input[type="checkbox"]:checked::before {
     top: 11vh;
     right: 1.5vw; */
     text-align: right;
-    margin-right: 0.5vw;
+    margin-right: 0.25vw;
+    margin-top: 1.5vh;
 }
 
 @media screen and (max-height: 400px) {
