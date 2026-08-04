@@ -381,9 +381,11 @@ const renderCoverImage = (coverImage: string) => {
         <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => { mobileBitratesShown = false }" />
     </div>
     <div class="flex center flex-responsive" id="main">
-        <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
-        </StatusIndicator>
-        <h3 id="connectedInfo">connected users: {{ socketStore.numberOfUsers }}</h3>
+        <div id="statusInfo">
+            <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
+            </StatusIndicator>
+            <h3 id="connectedInfo">{{ socketStore.numberOfUsers }} connected</h3>
+        </div>
         <p id="versionIndicator">{{ versionName }}</p>
         <img id="cover" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
         <div id="setInfo">

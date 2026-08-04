@@ -242,10 +242,16 @@ input[type="checkbox"]:checked::before {
     cursor: pointer;
 }
 
-.statusIndicator {
+/* .statusIndicator {
     position: absolute;
     top: 3.5vh;
     right: 1.5vw;
+} */
+
+#statusInfo {
+    position: absolute;
+    top: 3.5vh;
+    right: 1vw;
 }
 
 .statusIndicator .status {
@@ -414,10 +420,11 @@ input[type="checkbox"]:checked::before {
 }
 
 #connectedInfo {
-    position: absolute;
+    /* position: absolute;
     top: 11vh;
-    right: 1.5vw;
+    right: 1.5vw; */
     text-align: right;
+    margin-right: 0.5vw;
 }
 
 @media screen and (max-height: 400px) {
@@ -489,8 +496,13 @@ input[type="checkbox"]:checked::before {
         outline-offset: -3px;
     }
 
-    .statusIndicator {
-        margin: 0.75vh 1vw;
+    #statusInfo {
+        margin: -0.5vh 1vw;
+    }
+
+    #connectedInfo {
+        margin-top: 1.5vh;
+        margin-right: 0.5vw;
     }
 
     .statusIndicator .status {
