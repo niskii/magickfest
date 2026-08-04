@@ -31,6 +31,7 @@ const playState = ref<[number, number, number]>([0, 0, 0]);
 const isPaused = ref(false)
 const setIndex = ref(0)
 const startPaused = ref(true)
+const wasDisconnected = ref(false)
 
 const overlayToggle = ref<boolean>(true);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
@@ -164,6 +165,10 @@ watch(playerState, () => {
         }
 
         startPaused.value = false
+    } else {
+        logger.log('disconnected');
+        wasDisconnected.value = true;
+        overlayToggle.value = true;
     }
 })
 
@@ -182,7 +187,8 @@ function setVisualiser() {
 
 async function connect() {
     if (!socketStore.isConnected) {
-        SocketManager.connect()
+        SocketManager.connect();
+        wasDisconnected.value = false;
         logger.info("Joining audio!");
     }
 }
@@ -347,6 +353,7 @@ const renderCoverImage = (coverImage: string) => {
 
 <template>
     <div class="overlay" v-show="overlayToggle">
+        <h2 v-show="wasDisconnected">you have been disconnected</h2>
         <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
         <img src="/src/assets/connect_icon.webp" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
             class="hoverBtn" @click="overlayClick" />
