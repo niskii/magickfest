@@ -166,7 +166,7 @@ watch(playerState, () => {
 
         startPaused.value = false
     } else {
-        logger.log('disconnected');
+        logger.info('disconnected');
         wasDisconnected.value = true;
         overlayToggle.value = true;
     }
