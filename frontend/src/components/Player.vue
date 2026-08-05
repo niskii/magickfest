@@ -43,7 +43,7 @@ const mobileBitratesShown = ref<boolean>(false);
 // SETTINGS VARS (should autosave)
 const visualizerFFTSize = ref<number>(12);
 const visualizerFPSLimit = ref<number>(60);
-const visualizerColor = ref<string>("#bb7755");
+const visualizerColor = ref<string>("#E0861F");
 const visualizerWidth = ref<number>(1.5);
 const bitrate = ref(Bitrate.High);
 const volume = ref<number>(75);
@@ -360,7 +360,8 @@ const renderCoverImage = (coverImage: string) => {
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
-        <a :href="`${serverHostname}/api/auth/login`">authenticate here</a>
+        <a :href="`${serverHostname}/api/auth/login`"><img src="/src/assets/authorize_icon.webp" style="width: 250px;"
+                class="hoverBtn"></a>
     </div>
     <div class="overlay" v-show="socketStore.alreadyConnected">
         <h1>you're already connected elsewhere</h1>
