@@ -78,6 +78,13 @@ export async function bootstrapDiscord() {
       throw('error');
     });
 
+    if (response && !response.ok) {
+        const text = await response.text()
+        bootstrap.status = "error";
+        bootstrap.error = `the backend server could not authenticate the user with the provided code: ${text}`;
+        throw('error');
+    }
+
     const { access_token } = await response.json().catch((err: Error) => {
       // TODO: could not parse the token provided from the server
       bootstrap.status = "error";
