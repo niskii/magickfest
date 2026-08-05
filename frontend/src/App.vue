@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import Player from "./components/Player.vue";
 
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import { bootstrap, bootstrapDiscord } from "./bootstrap";
-import LoadingScreen from "./screens/LoadingScreen.vue";
 import ErrorScreen from "./screens/ErrorScreen.vue";
+import LoadingScreen from "./screens/LoadingScreen.vue";
 
 onMounted(() => {
     bootstrapDiscord();

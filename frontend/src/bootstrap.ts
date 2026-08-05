@@ -1,10 +1,10 @@
-import logger from "./logger";
 import { reactive } from "vue";
+import logger from "./logger";
 
 export const bootstrap = reactive({
   status: "loading" as "loading" | "ready" | "error",
   step: "starting...",
-  error: null as Error | null,
+  error: null as string | null,
   auth: null as any,
 });
 
@@ -24,6 +24,7 @@ export async function bootstrapDiscord() {
     // TODO: Could not load the sdk dynamically
     bootstrap.status = "error";
     bootstrap.error = `could not load the SDK dynamically: ${err}`;
+    throw('error')
   });
   // Instantiate the SDK
   bootstrap.step = "connecting to Discord...";

@@ -129,6 +129,26 @@ router.post("/startsession", async (req, res) => {
         });
 });
 
+function endUserSession(req: Request) {
+    return new Promise<void>((resolve, reject) => {
+        req.session.destroy((err) => {
+            if (err) reject(`could not destroy session ${err}`);
+            resolve();
+        });
+    });
+}
+
+router.post("/endsession", async (req, res) => {
+    endUserSession(req)
+        .then(() => {
+            res.clearCookie("sid");
+            res.sendStatus(200);
+        })
+        .catch((err) => {
+            throw new Error(err);
+        });
+});
+
 router.get("/login", (req, res, next) => {
     res.redirect(
         `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=${process.env.ServerHostname}%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
