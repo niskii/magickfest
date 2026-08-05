@@ -20,7 +20,7 @@ const envs = getDiscordEnvironment();
 
 const publicCommands = ["np", "setlist"];
 
-let scheduledStartTimeout: NodeJS.Timeout;
+let scheduledStartTimeout: NodeJS.Timeout | undefined;
 
 async function isAdmin(interaction: ChatInputCommandInteraction) {
     const member = interaction.member as GuildMember;
@@ -169,7 +169,7 @@ export function configureInteractions(
                         coverPath = path.resolve(__dirname, "noartwork.webp");
                     }
                     
-                    let attachment: AttachmentBuilder;
+                    // let attachment: AttachmentBuilder;
 
                     let reply: InteractionReplyOptions = {
                         content: "",
@@ -180,18 +180,18 @@ export function configureInteractions(
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
-                                    url: "attachment://cover.png",
+                                    url: `${process.env.ServerHostname}/api/public/cover`,
                                 },
                             },
                         ],
                     };
 
-                    if (existsSync(coverPath)) {
-                        attachment = new AttachmentBuilder(coverPath, {
-                            name: "cover.png",
-                        });
-                        reply.files = [attachment];
-                    }
+                    // if (existsSync(coverPath)) {
+                    //     attachment = new AttachmentBuilder(coverPath, {
+                    //         name: "cover.png",
+                    //     });
+                    //     reply.files = [attachment];
+                    // }
 
                     await interaction.reply(reply);
                     break;
@@ -206,7 +206,7 @@ export function configureInteractions(
 
                     let finalString = "";
                     let lastSetTime = Math.round(
-                        player.getState().startTime / 1000,
+                        player.getState().initialStartTime / 1000,
                     );
 
                     player.getPlaylistSets().forEach((set) => {
@@ -233,23 +233,29 @@ export function configureInteractions(
 
                 case "start":
                     if (!player.isPlayerRunning()) {
-                        const parsedTime = await handleTimeParsing(interaction, true);
+                        if (!scheduledStartTimeout) {
+                            const parsedTime = await handleTimeParsing(interaction, true);
 
-                        if (parsedTime > 0) {
-                            await interaction.reply({
-                                content: `magickfest scheduled to start at: <t:${Math.round((Date.now() + parsedTime) / 1000)}:t>!`,
-                            });
+                            if (parsedTime > 0) {
+                                await interaction.reply({
+                                    content: `magickfest scheduled to start at: <t:${Math.round((Date.now() + parsedTime) / 1000)}:t>!`,
+                                });
 
-                            await scheduledStart(parsedTime, playerStateManager, player);
-                        } else {
-                            if (playerStateManager.hasLoaded) {
-                                player.playAtState();
+                                await scheduledStart(parsedTime, playerStateManager, player);
                             } else {
-                                player.playAtForwarded();
-                            }
+                                if (playerStateManager.hasLoaded) {
+                                    player.playAtState();
+                                } else {
+                                    player.playAtForwarded();
+                                }
 
+                                await interaction.reply({
+                                    content: `starting magickfest!`,
+                                });
+                            }
+                        } else {
                             await interaction.reply({
-                                content: `starting magickfest!`,
+                                content: `scheduled start already exists`,
                             });
                         }
                     } else {
@@ -351,6 +357,7 @@ export function configureInteractions(
                         }
                     } else {
                         clearTimeout(scheduledStartTimeout);
+                        scheduledStartTimeout = undefined;
                         player.setState(null, 0, null);
 
                         await interaction.reply({
