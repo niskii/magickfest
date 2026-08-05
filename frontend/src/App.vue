@@ -6,8 +6,13 @@ import { bootstrap, bootstrapDiscord } from "./bootstrap";
 import ErrorScreen from "./screens/ErrorScreen.vue";
 import LoadingScreen from "./screens/LoadingScreen.vue";
 
+
+
 onMounted(() => {
-    bootstrapDiscord();
+    bootstrapDiscord().catch((err) => {
+        bootstrap.status = 'error'
+        bootstrap.error = err
+    });
 });
 </script>
 
