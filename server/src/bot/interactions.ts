@@ -7,7 +7,7 @@ import {
     InteractionReplyOptions,
     MessageFlags,
 } from "discord.js";
-import { existsSync, PathLike } from "fs";
+import { PathLike } from "fs";
 import * as path from "path";
 import { getDiscordEnvironment } from "../envs";
 import { parseTime, parseTimeOfDay } from "../parsing/time-parser";
@@ -180,18 +180,11 @@ export function configureInteractions(
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
-                                    url: "attachment://cover.png",
+                                    url: `${process.env.ServerHostname}/api/public/cover`,
                                 },
                             },
                         ],
                     };
-
-                    if (existsSync(coverPath)) {
-                        attachment = new AttachmentBuilder(coverPath, {
-                            name: "cover.png",
-                        });
-                        reply.files = [attachment];
-                    }
 
                     await interaction.reply(reply);
                     break;
