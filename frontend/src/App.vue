@@ -9,10 +9,14 @@ import LoadingScreen from "./screens/LoadingScreen.vue";
 
 
 onMounted(() => {
-    bootstrapDiscord().catch((err) => {
+    bootstrapDiscord().catch(async (err) => {
         bootstrap.status = 'error'
         bootstrap.error = err
-    });
+        await fetch("/api/auth/endsession", {
+            method: "POST",
+            credentials: "include",
+        });
+    })
 });
 </script>
 
