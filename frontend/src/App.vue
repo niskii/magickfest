@@ -1,9 +1,22 @@
 <script setup lang="ts">
 import Player from "./components/Player.vue";
+
+import { onMounted, ref } from "vue";
+import { bootstrap, bootstrapDiscord } from "./bootstrap";
+import LoadingScreen from "./screens/LoadingScreen.vue";
+import ErrorScreen from "./screens/ErrorScreen.vue";
+
+onMounted(() => {
+    bootstrapDiscord();
+});
 </script>
 
 <template>
     <div id="body">
-        <Player></Player>
+        <LoadingScreen v-if="bootstrap.status == 'loading'" :step="bootstrap.step" />
+
+        <ErrorScreen v-else-if="bootstrap.status == 'error'" :error="bootstrap.error" />
+
+        <Player v-else></Player>
     </div>
 </template>
