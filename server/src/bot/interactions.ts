@@ -1,13 +1,12 @@
 import { PlaybackState } from "@shared/types/player-state";
 import {
-    AttachmentBuilder,
     ChatInputCommandInteraction,
     GuildMember,
     Interaction,
     InteractionReplyOptions,
-    MessageFlags,
+    MessageFlags
 } from "discord.js";
-import { existsSync, PathLike } from "fs";
+import { PathLike } from "fs";
 import * as path from "path";
 import { getDiscordEnvironment } from "../envs";
 import { parseTime, parseTimeOfDay } from "../parsing/time-parser";
@@ -168,8 +167,6 @@ export function configureInteractions(
                     } else {
                         coverPath = path.resolve(__dirname, "noartwork.webp");
                     }
-                    
-                    // let attachment: AttachmentBuilder;
 
                     let reply: InteractionReplyOptions = {
                         content: "",
@@ -185,13 +182,6 @@ export function configureInteractions(
                             },
                         ],
                     };
-
-                    // if (existsSync(coverPath)) {
-                    //     attachment = new AttachmentBuilder(coverPath, {
-                    //         name: "cover.png",
-                    //     });
-                    //     reply.files = [attachment];
-                    // }
 
                     await interaction.reply(reply);
                     break;
