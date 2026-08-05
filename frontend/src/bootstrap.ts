@@ -16,6 +16,7 @@ export async function bootstrapDiscord() {
   if (!isOnDiscord) {
     bootstrap.status = "ready";
     bootstrap.auth = null;
+    return;
   }
 
   bootstrap.step = "loading Discord SDK...";
@@ -36,10 +37,11 @@ export async function bootstrapDiscord() {
 
   async function setupDiscordSdk() {
     bootstrap.step = "setting up Discord SDK...";
-    await discordSdk.ready().catch((err) => {
+    await discordSdk.ready().catch((err: Error) => {
       // TODO: The sdk could not setup
       bootstrap.status = "error";
       bootstrap.error = `the sdk could not setup: ${err}`;
+      throw('error');
     });
 
     // Authorize with Discord Client
@@ -52,15 +54,16 @@ export async function bootstrapDiscord() {
         prompt: "none",
         scope: ["identify", "guilds", "guilds.members.read"],
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         // TODO: could not authorize at Discord's end (most likely wrong activity id)
         bootstrap.status = "error";
         bootstrap.error = `could not authorize at Discord's end: ${err}`;
+        throw('error');
       });
 
     // Retrieve an access_token from your activity's server
     bootstrap.step = "retrieving access token...";
-    const response = await fetch("/api/auth/token", {
+    let response = await fetch("/api/auth/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,12 +75,14 @@ export async function bootstrapDiscord() {
       // TODO: the backend server could not authenticate the user with the provided code.
       bootstrap.status = "error";
       bootstrap.error = `the backend server could not authenticate the user with the provided code: ${err}`;
+      throw('error');
     });
 
-    const { access_token } = await response.json().catch((err) => {
+    const { access_token } = await response.json().catch((err: Error) => {
       // TODO: could not parse the token provided from the server
       bootstrap.status = "error";
       bootstrap.error = `could not parse the token provided from the server: ${err}`;
+      throw('error');
     });
 
     // Authenticate with Discord client (using the access_token)
@@ -86,34 +91,44 @@ export async function bootstrapDiscord() {
       .authenticate({
         access_token,
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         // TODO: the token provided from the server isn't accepted by Discord.
         // throw new Error(err);
         bootstrap.status = "error";
         bootstrap.error = `the token provided from the server isn't accepted by Discord: ${err}`;
+        throw('error');
       });
 
     if (auth == null) {
     //   throw new Error("Authenticate command failed");
         bootstrap.status = "error";
         bootstrap.error = `Authenticate command failed`;
+        throw('error');
     }
 
     bootstrap.step = "starting session...";
-    await fetch("/api/auth/startsession", {
-      method: "POST",
-      credentials: "include",
-      headers: {
+    response = await fetch("/api/auth/startsession", {
+    method: "POST",
+    credentials: "include",
+    headers: {
         "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    },
+    body: JSON.stringify({
         access_token,
-      }),
+    }),
     }).catch((err) => {
-      // TODO: Not member of group, discord error or couldn't save cookie!
-      // throw new Error(err);
-      bootstrap.status = "error";
-      bootstrap.error = `Not member of group, discord error or couldn't save cookie: ${err}`;
+        // throw new Error(err);
+        bootstrap.status = "error";
+        bootstrap.error = err
+        throw('error');
     });
+
+    if (response && !response.ok) {
+        // TODO: Not member of group, discord error or couldn't save cookie!
+        const text = await response.text()
+        bootstrap.status = "error";
+        bootstrap.error = `Not member of group, discord error or couldn't save cookie: ${text}`;
+        throw('error');
+    }
   }
 }
