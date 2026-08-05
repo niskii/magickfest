@@ -12,9 +12,14 @@ export class Player {
     #readerCollection: Map<Bitrate, OpusReader>;
 
     /**
-     * Timestamp for when the player started.
+     * Timestamp for when the player started. Resets every set.
      */
     #startTime: number;
+
+    /**
+     * Timestamp for when the player initially started. Does not reset.
+     */
+    #initialStartTime: number;
 
     /**
      * Time in milliseconds the sound is forwarded.
@@ -68,6 +73,7 @@ export class Player {
     constructor(playlistFile: string, loop: boolean) {
         this.#playlist = new Playlist(playlistFile);
         this.#startTime = 0;
+        this.#initialStartTime = 0;
         this.#forwarded = 0;
         this.#state = PlaybackState.Stopped;
         this.#readerCollection = new Map();
@@ -109,6 +115,7 @@ export class Player {
             id: this.#playlist.getHash(),
             setIndex: this.#playlist.getCurrentIndex(),
             startTime: this.#startTime,
+            initialStartTime: this.#initialStartTime,
             forwarded: this.#forwarded,
             state: this.#state,
         };
@@ -203,6 +210,7 @@ export class Player {
         }
         if (startTime !== null) {
             this.#startTime = startTime;
+            this.#initialStartTime = startTime;
         }
         if (forwarded !== null) {
             this.#forwarded = forwarded;
@@ -256,6 +264,8 @@ export class Player {
         this.#forwarded = forwarded;
         if (startTime !== undefined) this.#startTime = startTime;
         else this.#startTime = Date.now();
+
+        if (this.#initialStartTime == 0) this.#initialStartTime = this.#startTime;
 
         this.#state = PlaybackState.Running;
         this.#playbackTimer?.close();
