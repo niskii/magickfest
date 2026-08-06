@@ -392,7 +392,10 @@ const renderCoverImage = (coverImage: string) => {
         <div id="statusInfo">
             <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
             </StatusIndicator>
-            <h3 id="connectedInfo">{{ socketStore.numberOfUsers }} connected</h3>
+            <div id="connectedInfo" v-show="getScreenViewport() != Viewport.Mobile">
+                <h4>{{ socketStore.numberOfUsers }}</h4>
+                <img src="/src/assets/originals/viewers_icon.png">
+            </div>
         </div>
         <p id="versionIndicator">{{ versionName }}</p>
         <img id="cover" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
@@ -430,6 +433,10 @@ const renderCoverImage = (coverImage: string) => {
         </div>
         <div style="width: 100%; flex-direction: column" class="alwaysVisible">
             <div style="display: flex; flex-direction: row !important;">
+                <div id="connectedInfo" v-show="getScreenViewport() == Viewport.Mobile">
+                    <h4>{{ socketStore.numberOfUsers }}</h4>
+                    <img src="/src/assets/originals/viewers_icon.png">
+                </div>
                 <StatusIndicator class="flex center" :status="playerState"
                     v-show="getScreenViewport() == Viewport.Mobile"></StatusIndicator>
                 {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}

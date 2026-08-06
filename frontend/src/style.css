@@ -62,6 +62,15 @@ h3 {
     font-size: 1vmax;
 }
 
+h4 {
+    color: var(--light-gray);
+    font-size: 1.25vmax;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    margin-right: 1.05vw;
+}
+
 #setInfo {
     margin-left: 1vw;
 }
@@ -414,9 +423,18 @@ input[type="checkbox"]:checked::before {
 }
 
 #connectedInfo {
-    text-align: right;
-    margin-right: 0.25vw;
+    display: flex;
+    flex-direction: row;
+    height: 2vmax;
+    align-items: center;
+    float: right;
     margin-top: 1.5vh;
+    margin-right: 0.125vw;
+}
+
+#connectedInfo img {
+    height: 2.25vmax;
+    width: 2.25vmax;
 }
 
 @media screen and (max-height: 400px) {
@@ -434,6 +452,10 @@ input[type="checkbox"]:checked::before {
 
     h3 {
         font-size: 1.2vmax;
+    }
+
+    h4 {
+        font-size: 2.15vmax;
     }
 
     .alwaysVisible {
@@ -493,8 +515,13 @@ input[type="checkbox"]:checked::before {
     }
 
     #connectedInfo {
-        margin-top: 1.5vh;
-        margin-right: 0.5vw;
+        margin-top: 2vh;
+    }
+
+    #connectedInfo img {
+        width: 3vmax;
+        height: 3vmax;
+        margin-left: 0.25vw;
     }
 
     .statusIndicator .status {
@@ -687,7 +714,23 @@ input[type="checkbox"]:checked::before {
     }
 
     #connectedInfo {
-        display: none;
+        flex-direction: row-reverse;
+        margin: 0;
+        height: 3.15vmax;
+    }
+
+    #connectedInfo img {
+        width: 2.5vmax;
+        height: 2.5vmax;
+        margin-top: 0.25vh;
+        margin-bottom: -0.25vh;
+    }
+
+    h4 {
+        font-size: 2vmax;
+        margin-left: 1vw;
+        margin-right: 0.5vw;
+        margin-bottom: -0.5vh;
     }
 }
 
@@ -714,5 +757,9 @@ input[type="checkbox"]:checked::before {
 
     h2 {
         font-size: 8vmin;
+    }
+
+    #connectedInfo {
+        margin-top: 2.5vh;
     }
 }
