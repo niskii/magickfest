@@ -7,7 +7,7 @@ import { getDiscordEnvironment } from "../envs";
 const router = express.Router();
 const envs = getDiscordEnvironment();
 
-function createUserFromGuildMemberObject(guildUserData: any): UserType {
+export function createUserFromGuildMemberObject(guildUserData: any): UserType {
     return {
         Id: guildUserData.user.id,
         Name: guildUserData.user.username,
@@ -35,8 +35,8 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
 
     if (redirect) formData.set("redirect_uri", envs.DiscordRedirectUrl);
 
-    try {
-        const authResponse = await axios.post(
+    return new Promise<string>(async (resolve, reject) => {
+        axios.post(
             "https://discord.com/api/v10/oauth2/token",
             formData,
             {
@@ -44,29 +44,35 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
             },
-        );
-
-        return authResponse.data.access_token;
-    } catch {
-        throw new Error("Something went wrong with the authorization!");
-    }
+        ).then(authResponse => {
+            if (authResponse.data) {}
+                resolve (authResponse.data.access_token)
+            reject("Something went wrong with the authorization!")
+        }).catch(reason => {
+            reject(reason)
+        })
+    });
 }
 
-async function getGuildMember(accessToken: string): Promise<any> {
-    try {
-        const userResponse = await axios.get(
-            `https://discord.com/api/v10/users/@me/guilds/${envs.DiscordGuildID}/member`,
-            {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
+export async function getGuildMember(accessToken: string): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+        axios
+            .get(
+                `https://discord.com/api/v10/users/@me/guilds/${envs.DiscordGuildID}/member`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
                 },
-            },
-        );
-
-        return userResponse.data;
-    } catch {
-        throw new Error("You are not an exclusive member!");
-    }
+            )
+            .then((userResponse) => {
+                if (userResponse.data) resolve(userResponse.data);
+                reject("You are not an exclusive member!");
+            })
+            .catch((reason) => {
+                reject(reason);
+            });
+    });
 }
 
 function saveUserSession(user: UserType, req: Request) {

@@ -4,6 +4,7 @@ import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";
 import { socket } from "./socket";
 
 import { reactive, ref } from "vue";
+import { bootstrap } from "../../bootstrap";
 
 export const playerState = ref<PlayerState>(null);
 
@@ -46,6 +47,7 @@ function onDisconnect() {
 }
 
 function onConnectError(err: Error) {
+  logger.info(err)
   socket.disconnect();
   socketStore.isConnected = false;
   switch (err.message) {
@@ -79,9 +81,10 @@ export function shutdownSocket() {
 
 export function connect() {
   try {
+    socket.io.opts.extraHeaders.authorization = `Bearer ${bootstrap.auth?.access_token}`
     socket.connect();
   } catch (error) {
-    logger.warn("Error connecting to server!");
+    logger.warn("Error connecting to server!", error);
   }
 }
 

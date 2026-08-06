@@ -10,7 +10,7 @@ import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
 import logger from "src/logger";
 import { UserManager } from "src/user/user-manager";
-import authAPI, { isAuthorized } from "../api/auth";
+import authAPI, { createUserFromGuildMemberObject, getGuildMember, isAuthorized } from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
 
@@ -62,7 +62,7 @@ const sessionMiddleware = session({
         sameSite: "lax",
         secure: true,
         httpOnly: true,
-        domain: process.env.CookieDomain
+        domain: process.env.CookieDomain,
     },
 });
 
@@ -96,9 +96,10 @@ export function setupMiddleware(
 
     io.engine.use(helmet());
     io.engine.use(sessionMiddleware);
-    io.use((socket, next) => {
+    io.use(async (socket, next) => {        
         const req = socket.request as Request;
         const user = req.session.user;
+        
         logger.info("socket connecting with session id", req.session.id);
         if (user) {
             if (!userManager.isConnected(user)) {
@@ -108,7 +109,26 @@ export function setupMiddleware(
                 next();
             }
         } else {
-            next(new Error("unauthorized"));
+            const header = req.headers["authorization"];
+
+            if (!header) {
+                return next(new Error("no token"));
+            }
+
+            if (!header.startsWith("Bearer ")) {
+                return next(new Error("invalid token"));
+            }
+
+            const accessToken = header.substring(7);
+
+            getGuildMember(accessToken).then(guildUserData => {
+                const validUser = createUserFromGuildMemberObject(guildUserData)
+                req.session.user = validUser
+                next();
+            }).catch(reason => {
+                next(new Error("unauthorized"));
+            });
+
         }
     });
 }
