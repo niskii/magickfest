@@ -368,7 +368,7 @@ input[type="checkbox"]:checked::before {
     overflow: hidden;
     width: 40vw;
     height: 30vh;
-    margin-top: 10vh;
+    margin-top: 2vh;
     margin-left: -0.75vw;
 }
 

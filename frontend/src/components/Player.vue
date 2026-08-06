@@ -206,7 +206,7 @@ async function disconnect() {
 }
 
 function getScreenViewport() {
-    if (screen.width <= 760 && screen.height > 400) return Viewport.Mobile;
+    if (window.innerWidth <= 500 && window.innerHeight > 400) return Viewport.Mobile;
     if (window.innerHeight <= 400) {
         if (window.innerWidth / window.innerHeight >= 7 / 3) { return Viewport.WideMinimized } else { return Viewport.Minimized };
     }
@@ -438,7 +438,7 @@ const renderCoverImage = (coverImage: string) => {
                     <img src="/src/assets/originals/viewers_icon.png">
                 </div>
                 <StatusIndicator class="flex center" :status="playerState"
-                    v-show="getScreenViewport() == Viewport.Mobile"></StatusIndicator>
+                    v-show="getScreenViewport() == Viewport.Mobile" :hide-status-text="true"></StatusIndicator>
                 {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
             </div>
             <div id="progressbar">
