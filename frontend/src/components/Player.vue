@@ -383,7 +383,7 @@ const displayBitrate = (q: Bitrate) => {
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
-        <a :href="`${serverHostname}/api/auth/login`"><img src="/src/assets/authorize_icon.webp" style="width: 250px;"
+        <a :href="`/api/auth/login`"><img src="/src/assets/authorize_icon.webp" style="width: 250px;"
                 class="hoverBtn"></a>
     </div>
     <div class="overlay" v-show="socketStore.alreadyConnected">
