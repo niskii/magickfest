@@ -7,6 +7,9 @@ import "dotenv/config";
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    assetsInlineLimit: 0
+  },
   plugins: [vue(), nodePolyfills()],
   server: {
     proxy: {

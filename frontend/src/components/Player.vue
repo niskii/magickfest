@@ -20,6 +20,17 @@ import Visualiser from "./Visualiser.vue";
 
 import { Viewport } from '../scripts/enum/Viewport';
 
+import nostream from '../assets/nostream.webp';
+import noartwork from '../assets/noartwork.webp';
+import startingsoon from '../assets/startingsoon.webp';
+
+import quality_64 from '../assets/quality_64.webp';
+import quality_96 from '../assets/quality_96.webp';
+import quality_128 from '../assets/quality_128.webp';
+
+import visualizer_icon from '../assets/visualizer_icon.webp';
+import visualizer_icon_disabled from '../assets/visualizer_icon_disabled.webp';
+
 type visualiserType = InstanceType<typeof Visualiser>;
 
 const serverHostname = import.meta.env.VITE_SERVER_HOSTNAME;
@@ -335,17 +346,29 @@ const renderCoverImage = (coverImage: string) => {
             if (coverImage) {
                 return coverImage;
             } else {
-                return '/src/assets/noartwork.webp';
+                return noartwork;
             }
         } else {
             if (playerState.value.startTime > 0) {
-                return '/src/assets/startingsoon.webp';
+                return startingsoon;
             } else {
-                return '/src/assets/nostream.webp';
+                return nostream;
             }
         }
     } else {
-        return '/src/assets/nostream.webp';
+        return nostream;
+    }
+}
+
+const displayBitrate = (q: Bitrate) => {
+    switch (q) {
+        case Bitrate.High:
+            return quality_128;
+        case Bitrate.Medium:
+            return quality_96;
+        case Bitrate.Low:
+        default:
+            return quality_64
     }
 }
 
@@ -450,22 +473,20 @@ const renderCoverImage = (coverImage: string) => {
         </div>
 
         <div id="settings-panel">
-            <img id="visualiser-button"
-                :src="'/src/assets/visualizer_icon' + (visualiserOn ? '' : '_disabled') + '.webp'" alt="visualizer icon"
-                @click="
+            <img id="visualiser-button" :src="(visualiserOn ? visualizer_icon : visualizer_icon_disabled)"
+                alt="visualizer icon" @click="
                     () => {
                         visualiserOn = !visualiserOn;
                     }
                 " />
             <div id="quality-button">
-                <img :src="'/src/assets/quality_' + bitrate + '.webp'" :alt="'quality: ' + bitrate + 'kbps'"
-                    style="height: 6vh;" @click="() => {
-                        if (getScreenViewport() == Viewport.Mobile) {
-                            mobileBitratesShown = !mobileBitratesShown;
-                        } else {
-                            bitratesShown = !bitratesShown;
-                        }
-                    }">
+                <img :src="displayBitrate(bitrate)" :alt="'quality: ' + bitrate + 'kbps'" style="height: 6vh;" @click="() => {
+                    if (getScreenViewport() == Viewport.Mobile) {
+                        mobileBitratesShown = !mobileBitratesShown;
+                    } else {
+                        bitratesShown = !bitratesShown;
+                    }
+                }">
                 <img class="fullOnly" src="/src/assets/dropdown_arrow.webp" alt=""
                     :style="{ height: '2vh', marginLeft: '0.3vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
