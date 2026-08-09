@@ -126,7 +126,7 @@ export function setupMiddleware(
 
             const accessToken = header.substring(7);
             if (accessToken == "undefined")
-                return next(new Error("invalid token"));
+                return next(new Error("unauthorized"));
 
             getGuildMember(accessToken)
                 .then((guildUserData) => {
