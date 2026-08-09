@@ -33,8 +33,6 @@ import visualizer_icon_disabled from '../assets/visualizer_icon_disabled.webp';
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
-// const serverHostname = import.meta.env.VITE_SERVER_HOSTNAME;
-
 // other
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
@@ -43,6 +41,7 @@ const isPaused = ref(false)
 const setIndex = ref(0)
 const startPaused = ref(true)
 const wasDisconnected = ref(false)
+const isConnecting = ref(false)
 
 const overlayToggle = ref<boolean>(true);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
@@ -150,14 +149,16 @@ watch(playerState, () => {
             case PlaybackState.Stopped:
                 audioStreamPlayer.value.reset();
                 visualiserRef.value.pause();
+                isConnecting.value = false;
                 break;
 
             case PlaybackState.Running:
                 if (isPaused.value && setIndex.value == playerState.value.setIndex) {
                     audioStreamPlayer.value.resume();
                 } else {
-                    playerStart()
-                    setIndex.value = playerState.value.setIndex
+                    playerStart();
+                    setIndex.value = playerState.value.setIndex;
+                    isConnecting.value = false;
                 }
                 isPaused.value = false
                 break;
@@ -167,7 +168,8 @@ watch(playerState, () => {
                     playerStart();
                 }
                 audioStreamPlayer.value.pause();
-                isPaused.value = true
+                isPaused.value = true;
+                isConnecting.value = false;
                 break;
 
 
@@ -178,6 +180,9 @@ watch(playerState, () => {
         startPaused.value = false
     } else {
         logger.info('disconnected');
+
+        audioStreamPlayer.value.pause();
+
         wasDisconnected.value = true;
         overlayToggle.value = true;
     }
@@ -199,7 +204,9 @@ function setVisualiser() {
 async function connect() {
     if (!socketStore.isConnected) {
         SocketManager.connect();
+        if (wasDisconnected) { playerStart(); audioStreamPlayer.value.resume() };
         wasDisconnected.value = false;
+        isConnecting.value = true;
         logger.info("Joining audio!");
     }
 }
@@ -388,6 +395,9 @@ const displayBitrate = (q: Bitrate) => {
     </div>
     <div class="overlay" v-show="socketStore.alreadyConnected">
         <h1>you're already connected elsewhere</h1>
+    </div>
+    <div class="overlay" v-show="isConnecting">
+        <h1>connecting...</h1>
     </div>
     <div class="overlay" v-show="settingsShown">
         <h1>settings</h1>
