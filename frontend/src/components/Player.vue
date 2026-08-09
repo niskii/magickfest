@@ -41,6 +41,7 @@ const isPaused = ref(false)
 const setIndex = ref(0)
 const startPaused = ref(true)
 const wasDisconnected = ref(false)
+const isConnecting = ref(false)
 
 const overlayToggle = ref<boolean>(true);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
@@ -148,6 +149,7 @@ watch(playerState, () => {
             case PlaybackState.Stopped:
                 audioStreamPlayer.value.reset();
                 visualiserRef.value.pause();
+                isConnecting.value = false;
                 break;
 
             case PlaybackState.Running:
@@ -156,7 +158,7 @@ watch(playerState, () => {
                 } else {
                     playerStart();
                     setIndex.value = playerState.value.setIndex;
-                    logger.info('now the player is running too so it fully connected and obviously it is Ok to stop displaying a "Loading" screen')
+                    isConnecting.value = false;
                 }
                 isPaused.value = false
                 break;
@@ -166,7 +168,8 @@ watch(playerState, () => {
                     playerStart();
                 }
                 audioStreamPlayer.value.pause();
-                isPaused.value = true
+                isPaused.value = true;
+                isConnecting.value = false;
                 break;
 
 
@@ -203,6 +206,7 @@ async function connect() {
         SocketManager.connect();
         if (wasDisconnected) { playerStart(); audioStreamPlayer.value.resume() };
         wasDisconnected.value = false;
+        isConnecting.value = true;
         logger.info("Joining audio!");
     }
 }
@@ -391,6 +395,9 @@ const displayBitrate = (q: Bitrate) => {
     </div>
     <div class="overlay" v-show="socketStore.alreadyConnected">
         <h1>you're already connected elsewhere</h1>
+    </div>
+    <div class="overlay" v-show="isConnecting">
+        <h1>connecting...</h1>
     </div>
     <div class="overlay" v-show="settingsShown">
         <h1>settings</h1>
