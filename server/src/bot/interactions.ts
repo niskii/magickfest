@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { PathLike } from "fs";
 import * as path from "path";
+import config from "../../config/config";
 import { getDiscordEnvironment } from "../envs";
 import { parseTime, parseTimeOfDay } from "../parsing/time-parser";
 import { Player } from "../player/player";
@@ -177,7 +178,7 @@ export function configureInteractions(
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
-                                    url: `${process.env.ServerHostname}/api/public/cover`,
+                                    url: `https://${config.externalHost}/api/public/cover`,
                                 },
                             },
                         ],
