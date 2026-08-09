@@ -21,7 +21,6 @@ DiscordChannelID= ID of the Discord channel the bot will post messages.
 DiscordGuildID= Discord server ID
 AdminRoleID = ID of the role needed for discord interactions
 
-DiscordRedirectUrl= Endpoint where discord redirects after oauth.
 ClientRedirectUrl= URL for the client of this application / service.
 
 PfxPath= Path to pfx key
@@ -30,7 +29,7 @@ PfxSecret= Password of the pfx key
 SessionSecret= Secret of the sessions
 
 ClientHostname= Domain of the client
-ServerHostname= Domain of the server
+ServerHostname= Domain of the server exclusive protocol
 CookieDomain= Domain for the session cookie.
 ```
 

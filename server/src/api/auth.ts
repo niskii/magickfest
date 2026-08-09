@@ -2,6 +2,7 @@ import axios from "axios";
 import express, { NextFunction, Request, Response } from "express";
 import logger from "src/logger";
 import { UserType } from "src/user/user";
+import config from "../../config/config";
 import { getDiscordEnvironment } from "../envs";
 
 const router = express.Router();
@@ -33,29 +34,27 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
         code: code.toString(),
     });
 
-    if (redirect) formData.set("redirect_uri", envs.DiscordRedirectUrl);
+    if (redirect) formData.set("redirect_uri", `https://${config.externalHost}/api/auth/redirect`);
 
-    return new Promise<string>(async (resolve, reject) => {
-        axios.post(
-            "https://discord.com/api/v10/oauth2/token",
-            formData,
-            {
+    return new Promise<string>((resolve, reject) => {
+        axios
+            .post("https://discord.com/api/v10/oauth2/token", formData, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
-            },
-        ).then(authResponse => {
-            if (authResponse.data) {}
-                resolve (authResponse.data.access_token)
-            reject("Something went wrong with the authorization!")
-        }).catch(reason => {
-            reject(reason)
-        })
+            })
+            .then((authResponse) => {
+                if (authResponse.data) resolve(authResponse.data.access_token);
+                reject("Something went wrong with the authorization!");
+            })
+            .catch((reason) => {
+                reject(reason);
+            });
     });
 }
 
 export async function getGuildMember(accessToken: string): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
         axios
             .get(
                 `https://discord.com/api/v10/users/@me/guilds/${envs.DiscordGuildID}/member`,
@@ -105,7 +104,6 @@ router.get("/redirect", async (req, res) => {
     if (code) {
         const accessToken = await authenticate(code.toString(), true);
         const guildUserData = await getGuildMember(accessToken);
-
         const user = createUserFromGuildMemberObject(guildUserData);
         saveUserSession(user, req)
             .then(() => {
@@ -157,7 +155,7 @@ router.post("/endsession", async (req, res) => {
 
 router.get("/login", (req, res, next) => {
     res.redirect(
-        `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=${process.env.ServerHostname}%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
+        `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=https://${config.externalHost}%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
     );
 });
 

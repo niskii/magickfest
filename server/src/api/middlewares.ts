@@ -10,7 +10,12 @@ import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
 import logger from "src/logger";
 import { UserManager } from "src/user/user-manager";
-import authAPI, { createUserFromGuildMemberObject, getGuildMember, isAuthorized } from "../api/auth";
+import config from "../../config/config";
+import authAPI, {
+    createUserFromGuildMemberObject,
+    getGuildMember,
+    isAuthorized,
+} from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
 
@@ -80,7 +85,7 @@ export function setupMiddleware(
     app.disable("x-powered-by");
     app.use(
         cors({
-            origin: globalThis.settings.origins,
+            origin: config.origin,
             credentials: true,
             allowedHeaders: ["Access-Control-Allow-Origin"],
         }),
@@ -96,10 +101,10 @@ export function setupMiddleware(
 
     io.engine.use(helmet());
     io.engine.use(sessionMiddleware);
-    io.use(async (socket, next) => {        
+    io.use(async (socket, next) => {
         const req = socket.request as Request;
         const user = req.session.user;
-        
+
         logger.info("socket connecting with session id", req.session.id);
         if (user) {
             if (!userManager.isConnected(user)) {
@@ -120,15 +125,19 @@ export function setupMiddleware(
             }
 
             const accessToken = header.substring(7);
+            if (accessToken == "undefined")
+                return next(new Error("unauthorized"));
 
-            getGuildMember(accessToken).then(guildUserData => {
-                const validUser = createUserFromGuildMemberObject(guildUserData)
-                req.session.user = validUser
-                next();
-            }).catch(reason => {
-                next(new Error("unauthorized"));
-            });
-
+            getGuildMember(accessToken)
+                .then((guildUserData) => {
+                    const validUser =
+                        createUserFromGuildMemberObject(guildUserData);
+                    req.session.user = validUser;
+                    next();
+                })
+                .catch((reason) => {
+                    next(new Error("unauthorized"));
+                });
         }
     });
 }

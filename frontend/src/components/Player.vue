@@ -20,13 +20,13 @@ import Visualiser from "./Visualiser.vue";
 
 import { Viewport } from '../scripts/enum/Viewport';
 
-import nostream from '../assets/nostream.webp';
 import noartwork from '../assets/noartwork.webp';
+import nostream from '../assets/nostream.webp';
 import startingsoon from '../assets/startingsoon.webp';
 
+import quality_128 from '../assets/quality_128.webp';
 import quality_64 from '../assets/quality_64.webp';
 import quality_96 from '../assets/quality_96.webp';
-import quality_128 from '../assets/quality_128.webp';
 
 import visualizer_icon from '../assets/visualizer_icon.webp';
 import visualizer_icon_disabled from '../assets/visualizer_icon_disabled.webp';
