@@ -396,7 +396,7 @@ const displayBitrate = (q: Bitrate) => {
     <div class="overlay" v-show="socketStore.alreadyConnected">
         <h1>you're already connected elsewhere</h1>
     </div>
-    <div class="overlay" v-show="isConnecting">
+    <div class="overlay" style="z-index: 9998" v-show="isConnecting">
         <h1>connecting...</h1>
     </div>
     <div class="overlay" v-show="settingsShown">
