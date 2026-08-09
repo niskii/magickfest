@@ -10,7 +10,7 @@ const config = {
     hostname: hostname,
     port: port,
     protocol: isDev ? "https" : "http",
-    origin: process.env.origin || settings.origin,
+    origin: process.env.ClientHostname || settings.origin,
     externalHost: externalHost
 };
 
