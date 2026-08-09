@@ -2,6 +2,7 @@ import axios from "axios";
 import express, { NextFunction, Request, Response } from "express";
 import logger from "src/logger";
 import { UserType } from "src/user/user";
+import config from "../../config/config";
 import { getDiscordEnvironment } from "../envs";
 
 const router = express.Router();
@@ -33,7 +34,7 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
         code: code.toString(),
     });
 
-    if (redirect) formData.set("redirect_uri", envs.DiscordRedirectUrl);
+    if (redirect) formData.set("redirect_uri", `https://${config.externalHost}/api/auth/redirect`);
 
     return new Promise<string>((resolve, reject) => {
         axios
@@ -154,7 +155,7 @@ router.post("/endsession", async (req, res) => {
 
 router.get("/login", (req, res, next) => {
     res.redirect(
-        `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=${process.env.ServerHostname}%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
+        `https://discord.com/oauth2/authorize?client_id=${envs.DiscordClientID}&response_type=code&redirect_uri=https://${config.externalHost}%2Fapi%2Fauth%2Fredirect&scope=identify+guilds.members.read`,
     );
 });
 

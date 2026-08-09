@@ -37,6 +37,7 @@
     },
     "scripts": {
         "dev": "tsx watch --clear-screen=false src/",
+        "serve": "tsx src/index.ts",
         "test": "bun test"
     }
 }

@@ -4,24 +4,21 @@ globalThis.settings = settings;
 import "dotenv/config";
 import express from "express";
 import { readFileSync } from "fs";
+import http from "http";
 import https from "https";
 import { Server } from "socket.io";
+import config from "../config/config";
 import { setupMiddleware } from "./api/middlewares";
+import { configureInteractions } from "./bot/interactions";
 import { readCommands } from "./commandline";
 import { Player } from "./player/player";
 import { PlayerStateManager } from "./player/player-state-manager";
 import { socketSetup as setupSocket } from "./transport/socket";
 import { UserManager } from "./user/user-manager";
-import { configureInteractions } from "./bot/interactions";
 
 console.log("starting server!");
 
 const commandLineOptions = readCommands();
-
-const httpsOptions = {
-    pfx: readFileSync(process.env.PfxPath!),
-    passphrase: process.env.PfxSecret,
-};
 
 const player = new Player(
     commandLineOptions.playlistFile,
@@ -30,12 +27,27 @@ const player = new Player(
 
 const app = express();
 
-const server = https.createServer(httpsOptions, app);
+let server;
+
+if (config.env == 'development') {
+    const httpsOptions = {
+        pfx: readFileSync(process.env.PfxPath!),
+        passphrase: process.env.PfxSecret,
+    };
+
+    server = https.createServer(httpsOptions, app);
+
+} else {
+    app.set("trust proxy", 1)
+    server = http.createServer(app)
+}
+
 const io = new Server(server, {
     cors: {
-        origin: globalThis.settings.origins,
+        origin: config.origin,
         credentials: true,
     },
+    
     connectTimeout: 20000,
 });
 
@@ -44,9 +56,9 @@ const userManager = new UserManager();
 setupMiddleware(app, io, userManager, player);
 setupSocket(io, player, userManager);
 
-server.listen(globalThis.settings.port, () => {
+server.listen(config.port, () => {
     console.log(
-        `server running at https://localhost:${globalThis.settings.port}`,
+        `server running at ${config.protocol}://localhost:${config.port}`,
     );
 });
 

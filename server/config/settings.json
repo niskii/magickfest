@@ -10,5 +10,5 @@
     "expireCheckMs": 900000,
     "rateLimit": 20,
     "port": 8080,
-    "origins": ["https://localhost:5173"]
+    "origin": "https://localhost:5173"
 }

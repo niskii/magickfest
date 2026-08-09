@@ -10,6 +10,7 @@ import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
 import logger from "src/logger";
 import { UserManager } from "src/user/user-manager";
+import config from "../../config/config";
 import authAPI, {
     createUserFromGuildMemberObject,
     getGuildMember,
@@ -84,7 +85,7 @@ export function setupMiddleware(
     app.disable("x-powered-by");
     app.use(
         cors({
-            origin: globalThis.settings.origins,
+            origin: config.origin,
             credentials: true,
             allowedHeaders: ["Access-Control-Allow-Origin"],
         }),
