@@ -17,7 +17,7 @@ export class BufferingBalancer {
         if (Date.now() - this.#latestGet < this.#size * 1000 + 2000) {
             this.#size = Math.min(this.#size * 2, 20);
         } else {
-            this.#size = Math.max(this.#size / 2, 2);
+            this.#size = Math.floor(Math.max(this.#size / 2, 2));
         }
 
 

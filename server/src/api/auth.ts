@@ -35,27 +35,25 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
 
     if (redirect) formData.set("redirect_uri", envs.DiscordRedirectUrl);
 
-    return new Promise<string>(async (resolve, reject) => {
-        axios.post(
-            "https://discord.com/api/v10/oauth2/token",
-            formData,
-            {
+    return new Promise<string>((resolve, reject) => {
+        axios
+            .post("https://discord.com/api/v10/oauth2/token", formData, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
-            },
-        ).then(authResponse => {
-            if (authResponse.data) {}
-                resolve (authResponse.data.access_token)
-            reject("Something went wrong with the authorization!")
-        }).catch(reason => {
-            reject(reason)
-        })
+            })
+            .then((authResponse) => {
+                if (authResponse.data) resolve(authResponse.data.access_token);
+                reject("Something went wrong with the authorization!");
+            })
+            .catch((reason) => {
+                reject(reason);
+            });
     });
 }
 
 export async function getGuildMember(accessToken: string): Promise<any> {
-    return new Promise<any>(async (resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
         axios
             .get(
                 `https://discord.com/api/v10/users/@me/guilds/${envs.DiscordGuildID}/member`,
@@ -105,7 +103,6 @@ router.get("/redirect", async (req, res) => {
     if (code) {
         const accessToken = await authenticate(code.toString(), true);
         const guildUserData = await getGuildMember(accessToken);
-
         const user = createUserFromGuildMemberObject(guildUserData);
         saveUserSession(user, req)
             .then(() => {

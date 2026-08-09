@@ -55,6 +55,7 @@ export function socketSetup(
         socket.on(
             "fetchSyncedChunk",
             (data: { bitrate: Bitrate }, callback) => {
+                if (!Number.isInteger(data.bitrate)) return;
                 const result = player.getCurrentChunk(data.bitrate);
                 if (result !== undefined) {
                     userManager.getUser(user)?.getBufferingBalancer().reset();
@@ -72,6 +73,7 @@ export function socketSetup(
         socket.on(
             "fetchChunkFromPage",
             (data: { bitrate: Bitrate; pageStart: number }, callback) => {
+                if (!Number.isInteger(data.bitrate) || !Number.isInteger(data.pageStart)) return;
                 const result = player.getNextChunk(
                     data.pageStart,
                     userManager
