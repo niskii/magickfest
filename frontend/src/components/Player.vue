@@ -154,8 +154,9 @@ watch(playerState, () => {
                 if (isPaused.value && setIndex.value == playerState.value.setIndex) {
                     audioStreamPlayer.value.resume();
                 } else {
-                    playerStart()
-                    setIndex.value = playerState.value.setIndex
+                    playerStart();
+                    setIndex.value = playerState.value.setIndex;
+                    logger.info('now the player is running too so it fully connected and obviously it is Ok to stop displaying a "Loading" screen')
                 }
                 isPaused.value = false
                 break;
@@ -177,8 +178,6 @@ watch(playerState, () => {
     } else {
         logger.info('disconnected');
 
-        // SocketManager.shutdownSocket();
-        // disconnect();
         audioStreamPlayer.value.pause();
 
         wasDisconnected.value = true;
