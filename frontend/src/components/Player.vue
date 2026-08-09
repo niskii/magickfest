@@ -33,8 +33,6 @@ import visualizer_icon_disabled from '../assets/visualizer_icon_disabled.webp';
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
-const serverHostname = import.meta.env.VITE_SERVER_HOSTNAME;
-
 // other
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
 const stateInterval = ref<NodeJS.Timeout>(null);
@@ -178,6 +176,11 @@ watch(playerState, () => {
         startPaused.value = false
     } else {
         logger.info('disconnected');
+
+        // SocketManager.shutdownSocket();
+        // disconnect();
+        audioStreamPlayer.value.pause();
+
         wasDisconnected.value = true;
         overlayToggle.value = true;
     }
@@ -199,6 +202,7 @@ function setVisualiser() {
 async function connect() {
     if (!socketStore.isConnected) {
         SocketManager.connect();
+        if (wasDisconnected) { playerStart(); audioStreamPlayer.value.resume() };
         wasDisconnected.value = false;
         logger.info("Joining audio!");
     }
