@@ -7,6 +7,7 @@ export const bootstrap = reactive({
   error: null as string,
   auth: null as any,
   layout: 0 as number,
+  platform: null as string
 });
 
 export async function bootstrapDiscord() {
@@ -122,6 +123,7 @@ export async function bootstrapDiscord() {
       );
     }
 
+    bootstrap.platform = discordSdk.platform
     discordSdk.subscribe("ACTIVITY_LAYOUT_MODE_UPDATE", (event) => {
       bootstrap.layout = event.layout_mode
     })
