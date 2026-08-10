@@ -8,8 +8,7 @@ export const getDiscordEnvironment = () => {
         !env.DiscordBotToken ||
         !env.DiscordGuildID ||
         !env.DiscordAdminRole ||
-        !env.AdminRoleID ||
-        !env.DiscordRedirectUrl
+        !env.AdminRoleID
     ) {
         throw new Error("You must set all the environment variables!");
     }
@@ -22,7 +21,6 @@ export const getDiscordEnvironment = () => {
         DiscordGuildID: env.DiscordGuildID,
         DiscordAdminRole: env.DiscordAdminRole,
         AdminRoleID: env.AdminRoleID,
-        DiscordRedirectUrl: env.DiscordRedirectUrl,
         DiscordURL: new URL(`https://${env.DiscordClientID}.discordsays.com`),
     };
 };

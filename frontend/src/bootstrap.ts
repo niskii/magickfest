@@ -6,6 +6,7 @@ export const bootstrap = reactive({
   step: "starting...",
   error: null as string,
   auth: null as any,
+  layout: 0 as number,
 });
 
 export async function bootstrapDiscord() {
@@ -120,5 +121,9 @@ export async function bootstrapDiscord() {
         `Not member of group, discord error or couldn't save cookie: ${text}`,
       );
     }
+
+    discordSdk.subscribe("ACTIVITY_LAYOUT_MODE_UPDATE", (event) => {
+      bootstrap.layout = event.layout_mode
+    })
   }
 }

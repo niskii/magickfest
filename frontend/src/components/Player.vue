@@ -30,6 +30,7 @@ import quality_96 from '../assets/quality_96.webp';
 
 import visualizer_icon from '../assets/visualizer_icon.webp';
 import visualizer_icon_disabled from '../assets/visualizer_icon_disabled.webp';
+import { bootstrap } from '../bootstrap';
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
@@ -102,6 +103,20 @@ onMounted(() => {
         disconnect();
     });
 });
+
+watch(() => bootstrap.layout, (layout) => {
+    const body = document.body
+    switch (layout) {
+        case 1:
+            body.style.borderRadius = "1.5em"
+            break;
+        case 2:
+            body.style.borderRadius = "10px"
+            break;
+        default:
+            body.style.borderRadius = "0"
+    }
+})
 
 watch(altIcons, () => {
     localStorage.setItem('altIcons', altIcons.value.toString());

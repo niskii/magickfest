@@ -40,9 +40,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discord/embedded-app-sdk@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@discord/embedded-app-sdk@npm:2.4.0"
+"@discord/embedded-app-sdk@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@discord/embedded-app-sdk@npm:2.5.0"
   dependencies:
     "@types/lodash.transform": "npm:^4.6.6"
     "@types/uuid": "npm:^10.0.0"
@@ -52,7 +52,7 @@ __metadata:
     lodash.transform: "npm:^4.6.0"
     uuid: "npm:^11.0.0"
     zod: "npm:^3.9.8"
-  checksum: 10c0/de1d74e786a047c9f00c0db04db53d75b17cfec3a6360f0c55383eb6b3364140e7213f0a39ab529cfb04f7c39fbfd9633132f63f3d98c6ff556b75a102906440
+  checksum: 10c0/d789b8e0061480b2958694a2c4d9600055a877aeabf5a3784c9fa064f5476ea803700523fb507bf57b4c55a0e4292c5ddae0eae4597139f8492a97ff2cda8cb3
   languageName: node
   linkType: hard
 
@@ -1286,7 +1286,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "frontend@workspace:."
   dependencies:
-    "@discord/embedded-app-sdk": "npm:^2.4.0"
+    "@discord/embedded-app-sdk": "npm:^2.5.0"
     "@types/node": "npm:^24.6.0"
     "@vitejs/plugin-vue": "npm:^6.0.8"
     "@vue/tsconfig": "npm:^0.8.1"
