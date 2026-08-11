@@ -6,7 +6,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 // https://vite.dev/config/
 export default defineConfig(async ({mode}) => {
-   const env = loadEnv(mode, process.cwd())
+  const env = loadEnv(mode, process.cwd())
   const userConfig: UserConfig = {
     build: {
       assetsInlineLimit: 0

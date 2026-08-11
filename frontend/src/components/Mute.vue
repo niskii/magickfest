@@ -1,18 +1,5 @@
 <script setup lang="ts">
 
-import muted_speaker from "/src/assets/speaker_icons/muted.webp";
-import nothing_speaker from "/src/assets/speaker_icons/nothing.webp";
-import low_speaker from "/src/assets/speaker_icons/low.webp";
-import normal_speaker from "/src/assets/speaker_icons/normal.webp";
-import loud_speaker from "/src/assets/speaker_icons/loud.webp";
-
-import muted_volume from "/src/assets/volume_icons/muted.webp";
-import nosound_volume from "/src/assets/volume_icons/nosound.webp";
-import quieter_volume from "/src/assets/volume_icons/quieter.webp";
-import quiet_volume from "/src/assets/volume_icons/quiet.webp";
-import kindaloud_volume from "/src/assets/volume_icons/kindaloud.webp";
-import loud_volume from "/src/assets/volume_icons/loud.webp";
-
 const props = defineProps<{
     volume: number
     muted: boolean
@@ -22,29 +9,29 @@ const props = defineProps<{
 const getVolumeIcon = () => {
     if (props.alt) {
         if (props.muted) {
-            return muted_speaker
+            return "/speaker_icons/muted.webp"
         } else if (props.volume <= 5) {
-            return nothing_speaker
+            return "/speaker_icons/nothing.webp"
         } else if (props.volume < 35) {
-            return low_speaker
+            return "/speaker_icons/low.webp"
         } else if (props.volume < 85) {
-            return normal_speaker
+            return "/speaker_icons/normal.webp"
         } else {
-            return loud_speaker
+            return "/speaker_icons/loud.webp"
         }
     } else {
         if (props.muted) {
-            return muted_volume
+            return "/volume_icons/muted.webp"
         } else if (props.volume < 5) {
-            return nosound_volume
+            return "/volume_icons/nosound.webp"
         } else if (props.volume < 25) {
-            return quieter_volume
+            return "/volume_icons/quieter.webp"
         } else if (props.volume < 50) {
-            return quiet_volume
+            return "/volume_icons/quiet.webp"
         } else if (props.volume < 75) {
-            return kindaloud_volume
+            return "/volume_icons/kindaloud.webp"
         } else {
-            return loud_volume
+            return "/volume_icons/loud.webp"
         }
     }
 

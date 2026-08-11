@@ -19,18 +19,8 @@ import StatusIndicator from './StatusIndicator.vue';
 import Visualiser from "./Visualiser.vue";
 
 import { Viewport } from '../scripts/enum/Viewport';
-
-import noartwork from '../assets/noartwork.webp';
-import nostream from '../assets/nostream.webp';
-import startingsoon from '../assets/startingsoon.webp';
-
-import quality_128 from '../assets/quality_128.webp';
-import quality_64 from '../assets/quality_64.webp';
-import quality_96 from '../assets/quality_96.webp';
-
-import visualizer_icon from '../assets/visualizer_icon.webp';
-import visualizer_icon_disabled from '../assets/visualizer_icon_disabled.webp';
-import { bootstrap } from '../bootstrap';
+import watchers from '../scripts/watchers';
+watchers()
 
 type visualiserType = InstanceType<typeof Visualiser>;
 
@@ -104,24 +94,7 @@ onMounted(() => {
     });
 });
 
-// TODO: refactor to somewhere else.
-watch(() => bootstrap.layout, (layout) => {
-    const body = document.body
-    switch (layout) {
-        case 1: // pip
-            if (bootstrap.platform == "desktop") {
-                body.style.borderRadius = "8px"
-            } else {
-                body.style.borderRadius = "1.5em"
-            }
-            break;
-        case 2: // grid
-            body.style.borderRadius = "10px"
-            break;
-        default: // unhandled / focused
-            body.style.borderRadius = "0"
-    }
-})
+
 
 watch(altIcons, () => {
     localStorage.setItem('altIcons', altIcons.value.toString());
@@ -373,29 +346,29 @@ const renderCoverImage = (coverImage: string) => {
             if (coverImage) {
                 return coverImage;
             } else {
-                return noartwork;
+                return '/noartwork.webp';
             }
         } else {
             if (playerState.value.startTime > 0) {
-                return startingsoon;
+                return '/startingsoon.webp';
             } else {
-                return nostream;
+                return "/nostream.webp";
             }
         }
     } else {
-        return nostream;
+        return "/nostream.webp";
     }
 }
 
 const displayBitrate = (q: Bitrate) => {
     switch (q) {
         case Bitrate.High:
-            return quality_128;
+            return "/quality_128.webp";
         case Bitrate.Medium:
-            return quality_96;
+            return "/quality_96.webp";
         case Bitrate.Low:
         default:
-            return quality_64
+            return "/quality_64.webp"
     }
 }
 
@@ -404,13 +377,13 @@ const displayBitrate = (q: Bitrate) => {
 <template>
     <div class="overlay" v-show="overlayToggle">
         <h2 v-show="wasDisconnected">you have been disconnected</h2>
-        <img src="/src/assets/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
-        <img src="/src/assets/connect_icon.webp" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
+        <img src="/magickfestlogo.gif" style="width: 100%; max-width: 700px;">
+        <img src="/connect_icon.webp" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer;"
             class="hoverBtn" @click="overlayClick" />
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
-        <a :href="`/api/auth/login`"><img src="/src/assets/authorize_icon.webp" style="width: 250px;"
+        <a :href="`/api/auth/login`"><img src="/authorize_icon.webp" style="width: 250px;"
                 class="hoverBtn"></a>
     </div>
     <div class="overlay" v-show="socketStore.alreadyConnected">
@@ -447,7 +420,7 @@ const displayBitrate = (q: Bitrate) => {
             </StatusIndicator>
             <div id="connectedInfo" v-show="getScreenViewport() != Viewport.Mobile">
                 <h4>{{ socketStore.numberOfUsers }}</h4>
-                <img src="/src/assets/originals/viewers_icon.png">
+                <img src="/originals/viewers_icon.png">
             </div>
         </div>
         <p id="versionIndicator">{{ versionName }}</p>
@@ -488,8 +461,8 @@ const displayBitrate = (q: Bitrate) => {
             <div style="display: flex; flex-direction: row !important;">
                 <div id="connectedInfo" v-show="getScreenViewport() == Viewport.Mobile">
                     <h4>{{ socketStore.numberOfUsers }}</h4>
-                    <img src="/src/assets/originals/viewers_icon.png">
-                </div>
+                    <img src="/originals/viewers_icon.png">
+                </div>f
                 <StatusIndicator class="flex center" :status="playerState"
                     v-show="getScreenViewport() == Viewport.Mobile" :hide-status-text="true"></StatusIndicator>
                 {{ timeConverter(playState[0]) }} / {{ timeConverter(playState[1]) }}
@@ -503,7 +476,7 @@ const displayBitrate = (q: Bitrate) => {
         </div>
 
         <div id="settings-panel">
-            <img id="visualiser-button" :src="(visualiserOn ? visualizer_icon : visualizer_icon_disabled)"
+            <img id="visualiser-button" :src="(visualiserOn ? '/visualizer_icon.webp' : '/visualizer_disabled_icon.webp')"
                 alt="visualizer icon" @click="
                     () => {
                         visualiserOn = !visualiserOn;
@@ -517,7 +490,7 @@ const displayBitrate = (q: Bitrate) => {
                         bitratesShown = !bitratesShown;
                     }
                 }">
-                <img class="fullOnly" src="/src/assets/dropdown_arrow.webp" alt=""
+                <img class="fullOnly" src="/dropdown_arrow.webp" alt=""
                     :style="{ height: '2vh', marginLeft: '0.3vw', transform: (bitratesShown) ? 'rotate(180deg)' : '' }" />
                 <ListDropdown :elements="['128kbps', '96kbps', '64kbps']"
                     :funcs="[switchQuality, switchQuality, switchQuality]"
@@ -525,7 +498,7 @@ const displayBitrate = (q: Bitrate) => {
                     :visible="bitratesShown">
                 </ListDropdown>
             </div>
-            <img id="settings-button" src="/src/assets/settings_icon.webp" alt="settings"
+            <img id="settings-button" src="/settings_icon.webp" alt="settings"
                 @click="() => { settingsShown = !settingsShown }">
         </div>
     </div>
