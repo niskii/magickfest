@@ -112,7 +112,7 @@ watch(playerState, () => {
         logger.info("disconnected");
 
         audioStreamPlayer.value.pause();
-
+        
         wasDisconnected.value = true;
         overlayToggle.value = true;
     }
@@ -134,7 +134,7 @@ function setVisualiser() {
 async function connect() {
     if (!socketStore.isConnected) {
         SocketManager.connect();
-        if (wasDisconnected) {
+        if (wasDisconnected.value) {
             playerStart();
             audioStreamPlayer.value.resume();
         }
@@ -449,7 +449,6 @@ const displayBitrate = (q: Bitrate) => {
                     <h4>{{ socketStore.numberOfUsers }}</h4>
                     <img src="/originals/viewers_icon.png" />
                 </div>
-                f
                 <StatusIndicator
                     class="flex center"
                     :status="playerState"
