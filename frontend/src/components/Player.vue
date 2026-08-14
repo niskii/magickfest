@@ -220,8 +220,8 @@ const displayBitrate = (q: Bitrate) => {
 <template>
     <div class="overlay" v-show="overlayToggle">
         <h2 v-show="wasDisconnected">you have been disconnected</h2>
-        <img src="/magickfestlogo.gif" style="width: 100%; max-width: 700px" />
-        <img src="/connect_icon.webp" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer" class="hoverBtn" @click="overlayClick" />
+        <img src="/magickfestlogo.gif" fetchpriority="high" style="width: 100%; max-width: 700px" />
+        <img src="/connect_icon.webp" fetchpriority="high" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer" class="hoverBtn" @click="overlayClick" />
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
