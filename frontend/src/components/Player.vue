@@ -343,7 +343,7 @@ const displayBitrate = (q: Bitrate) => {
         <div id="settings-panel">
             <img
                 id="visualiser-button"
-                :src="storage.visualiserOn.value ? '/visualizer_icon.webp' : '/visualizer_disabled_icon.webp'"
+                :src="storage.visualiserOn.value ? '/visualizer_icon.webp' : '/visualizer_icon_disabled.webp'"
                 alt="visualizer icon"
                 @click="
                     () => {

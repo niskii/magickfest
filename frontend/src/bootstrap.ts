@@ -42,9 +42,6 @@ export async function bootstrapDiscord() {
             throw new Error(`the sdk could not setup: ${err}`);
         });
 
-        bootstrap.step = "Encouraging Hardware Acceleration";
-        await discordSdk.commands.encourageHardwareAcceleration();
-
         // Authorize with Discord Client
         bootstrap.step = "authorizing...";
         const { code } = await discordSdk.commands
