@@ -22,6 +22,9 @@ export class Oscilloscope {
       willReadFrequently: true,
     });
 
+    this.#canvascontext.lineCap = "round"
+    this.#canvascontext.lineJoin = "bevel"
+
     if (analyser) this.setAnalyzer(analyser, fftSize);
   }
 
@@ -68,9 +71,9 @@ export class Oscilloscope {
       const y = v * inverseHeight;
 
       if (i === 0) {
-        this.#canvascontext.moveTo(x, y);
+        this.#canvascontext.moveTo(Math.floor(x), Math.floor(y));
       } else {
-        this.#canvascontext.lineTo(x, y);
+        this.#canvascontext.lineTo(Math.floor(x), Math.floor(y));
       }
 
       x += sliceWidth;
