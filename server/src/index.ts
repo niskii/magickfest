@@ -30,6 +30,7 @@ const app = express();
 let server;
 
 if (config.env == 'development') {
+    app.set("X-Forwarded-For", false)
     const httpsOptions = {
         pfx: readFileSync(process.env.PfxPath!),
         passphrase: process.env.PfxSecret,
@@ -58,7 +59,7 @@ setupSocket(io, player, userManager);
 
 server.listen(config.port, () => {
     console.log(
-        `server running at ${config.protocol}://localhost:${config.port}`,
+        `server running at ${config.protocol}://${config.externalHost}`,
     );
 });
 
