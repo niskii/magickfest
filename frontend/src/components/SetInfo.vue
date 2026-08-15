@@ -1,16 +1,29 @@
 <script setup lang="ts">
 import { type PlayerState, PlaybackState } from "@shared/types/player-state";
-import { Viewport } from '../scripts/enum/Viewport';
+import { onMounted, onUnmounted, ref } from "vue";
+import { Viewport } from "../scripts/enum/Viewport";
 import { socketStore } from "../scripts/socket/manager";
-import { timeConverter } from '../scripts/time-converter';
+import { timeConverter } from "../scripts/time-converter";
 
+const currentTime = ref(0);
+let timer:NodeJS.Timeout = null
 
 const props = defineProps<{
-    viewport: Viewport
-    playerState?: PlayerState
-}>()
+    viewport: Viewport;
+    playerState?: PlayerState;
+}>();
 
-function getTextWidth (text: String) {
+onMounted(() => {
+    timer = setInterval(() => {
+        currentTime.value = Date.now();
+    }, 1000);
+});
+
+onUnmounted(() => {
+    clearInterval(timer)
+})
+
+function getTextWidth(text: String) {
     const widths = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.2796875, 0.2765625, 0.3546875, 0.5546875, 0.5546875,
         0.8890625, 0.665625, 0.190625, 0.3328125, 0.3328125, 0.3890625, 0.5828125, 0.2765625, 0.3328125, 0.2765625, 0.3015625, 0.5546875, 0.5546875, 0.5546875,
@@ -28,9 +41,9 @@ function getTextWidth (text: String) {
     } else {
         return 0;
     }
-};
+}
 
-function truncateSetInfo (setInfo: string, isAuthor: boolean) {
+function truncateSetInfo(setInfo: string, isAuthor: boolean) {
     let maxWidth = 20;
 
     if (!setInfo) return setInfo;
@@ -64,9 +77,9 @@ function truncateSetInfo (setInfo: string, isAuthor: boolean) {
     } else {
         return setInfo;
     }
-};
+}
 
-function getViewportFontSize (isAuthor: Boolean) {
+function getViewportFontSize(isAuthor: Boolean) {
     switch (props.viewport) {
         case Viewport.Mobile:
             return isAuthor ? 2.5 : 5;
@@ -75,9 +88,9 @@ function getViewportFontSize (isAuthor: Boolean) {
         default:
             return isAuthor ? 1.5 : 3;
     }
-};
+}
 
-function adjustSizePerSetInfo (setInfo: string, isAuthor: boolean) {
+function adjustSizePerSetInfo(setInfo: string, isAuthor: boolean) {
     let fullSizeThreshold = 30;
 
     switch (props.viewport) {
@@ -98,7 +111,7 @@ function adjustSizePerSetInfo (setInfo: string, isAuthor: boolean) {
     return getViewportFontSize(isAuthor) * getTextWidth(setInfo) > fullSizeThreshold && props.playerState && props.playerState.state != PlaybackState.Stopped
         ? fullSizeThreshold / getTextWidth(setInfo)
         : getViewportFontSize(isAuthor);
-};
+}
 
 const renderStreamInfoPerStatus = (
     isRunningWithData: string,
@@ -107,11 +120,12 @@ const renderStreamInfoPerStatus = (
     isRunningSoon: string,
     isAuthor: boolean,
     prefix: string = "",
+    date: number,
 ) => {
     if (props.playerState && props.playerState.startTime != 0) {
-        if (props.playerState.state == PlaybackState.Stopped && Date.now() < props.playerState.startTime) {
+        if (props.playerState.state == PlaybackState.Stopped && date < props.playerState.startTime) {
             let finalString: string;
-            if (isRunningSoon) finalString = isRunningSoon.replace("%time%", String(timeConverter((props.playerState.startTime - Date.now()) / 1000)));
+            if (isRunningSoon) finalString = isRunningSoon.replace("%time%", String(timeConverter((props.playerState.startTime - currentTime.value) / 1000)));
             return finalString;
         }
         return isRunningWithData ? truncateSetInfo(prefix + isRunningWithData, isAuthor) : prefix + isRunningNoData;
@@ -126,13 +140,13 @@ const renderStreamInfoPerStatus = (
             fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`,
         }"
     >
-        {{ renderStreamInfoPerStatus(socketStore.setInformation.title, "[untitled]", "no set available", `starting in %time%`, false) }}
+        {{ renderStreamInfoPerStatus(socketStore.setInformation.title, "[untitled]", "no set available", `starting in %time%`, false, "", currentTime) }}
     </h1>
     <h2
         :style="{
             fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author, true), true)}vmax)`,
         }"
     >
-        {{ renderStreamInfoPerStatus(socketStore.setInformation.author, "[unknown author]", null, null, true, "by ") }}
+        {{ renderStreamInfoPerStatus(socketStore.setInformation.author, "[unknown author]", null, null, true, "by ", Date.now()) }}
     </h2>
 </template>
