@@ -48,33 +48,45 @@ const versionName = import.meta.env.VITE_SHOW_VERSION == "true" ? import.meta.en
 onBeforeMount(() => {
     const player = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
     audioStreamPlayer.value = player;
-    
+
     clearInterval(stateInterval.value);
     stateInterval.value = setInterval(() => {
         playState.value = [player.getCurrentPlayPosition(), player.getTotalDuration(), player.getDownloadedAudioTime()];
     }, config.UpdateInterval);
-})
+});
 
 onMounted(() => {
     getScreenViewport() == Viewport.Mobile ? (storage.volume.value = 100) : null;
 
-    (localStorage.getItem('visualiserOn')) ? storage.visualiserOn.value = (localStorage.getItem('visualiserOn') == 'true') : getScreenViewport() != Viewport.Mobile;
+    localStorage.getItem("visualiserOn")
+        ? (storage.visualiserOn.value = localStorage.getItem("visualiserOn") == "true")
+        : getScreenViewport() != Viewport.Mobile;
 
-    storage.load()
+    storage.load();
     watchers(audioStreamPlayer, visualiserRef);
+
+    document.addEventListener("freeze", handleFreeze);
+    window.addEventListener("beforeunload", handleUnload);
 
     SocketManager.setupSocket();
 
-    window.addEventListener("beforeunload", () => {
-        SocketManager.shutdownSocket();
-        disconnect();
-    });
-
     onUnmounted(() => {
+        document.removeEventListener("freeze", handleFreeze);
+        window.removeEventListener("beforeunload", handleUnload);
         SocketManager.shutdownSocket();
         disconnect();
     });
 });
+
+function handleUnload() {
+    console.log("getting unloaded!");
+    SocketManager.shutdownSocket();
+    disconnect();
+}
+
+function handleFreeze() {
+    disconnect();
+}
 
 watch(playerState, () => {
     if (socketStore.isConnected) {
@@ -221,7 +233,13 @@ const displayBitrate = (q: Bitrate) => {
     <div class="overlay" v-show="overlayToggle">
         <h2 v-show="wasDisconnected">you have been disconnected</h2>
         <img src="/magickfestlogo.gif" fetchpriority="high" style="width: 100%; max-width: 700px" />
-        <img src="/connect_icon.webp" fetchpriority="high" style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer" class="hoverBtn" @click="overlayClick" />
+        <img
+            src="/connect_icon.webp"
+            fetchpriority="high"
+            style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer"
+            class="hoverBtn"
+            @click="overlayClick"
+        />
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
