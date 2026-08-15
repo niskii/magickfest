@@ -10,7 +10,7 @@ $playlist = [System.Collections.ArrayList]::new()
 foreach ($file in $audioFiles) {
     $path = $file.Directory.BaseName
     $index = $audioFiles.IndexOf($file)
-    $setfile = (Join-Path -Path "sets" -ChildPath "$($file.BaseName)/set.json")
+    $setfile = (Join-Path -Path "sets" -ChildPath "$($file.BaseName)/set.json").Replace('\', '/')
     if (!$playlist.Contains($setfile)) {
         $playlist.Add($setfile) > $null
         $sub = $file.Directory
