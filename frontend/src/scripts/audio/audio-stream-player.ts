@@ -1,10 +1,10 @@
 import { Bitrate } from "@shared/types/audio-transfer";
 import { Socket } from "socket.io-client";
+import logger from "../../logger";
+import { AudioStreamSocket } from "./audio-stream-socket";
 import type { ChanneledAudioBuffer } from "./AudioTypes";
 import * as decoder from "./decoder-service";
-import { AudioStreamSocket } from "./audio-stream-socket";
 import { TimeKeeper } from "./time-keeper";
-import logger from "../../logger";
 
 export class AudioStreamPlayer {
   #stream: AudioStreamSocket;
@@ -101,13 +101,17 @@ export class AudioStreamPlayer {
   }
 
   pause() {
-    this.#paused = true;
-    this.#audioCtx.suspend();
+    if (this.#audioCtx) {
+      this.#paused = true;
+      this.#audioCtx.suspend();
+    }
   }
 
   resume() {
-    this.#paused = false;
-    this.#audioCtx.resume();
+    if (this.#audioCtx) {
+      this.#paused = false;
+      this.#audioCtx.resume();
+    }
   }
 
   getCurrentPlayPosition() {
