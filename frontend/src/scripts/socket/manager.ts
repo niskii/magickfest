@@ -10,6 +10,7 @@ export const playerState = ref<PlayerState>(null);
 
 interface Store {
   isConnected: boolean;
+  isReconnecting: boolean;
   authToggle: boolean;
   alreadyConnected: boolean;
   setInformation: SetInfo;
@@ -20,6 +21,7 @@ const fetcher = new SetInfoFetcher(socket);
 
 export const socketStore: Store = reactive({
   isConnected: socket.connected,
+  isReconnecting: false,
   setInformation: {},
   authToggle: false,
   alreadyConnected: false,
@@ -28,6 +30,7 @@ export const socketStore: Store = reactive({
 
 function onConnect() {
   socketStore.isConnected = true;
+  socketStore.isReconnecting = false;
   fetchInfo();
   socket.emit("getPlayerState");
 
@@ -36,33 +39,44 @@ function onConnect() {
   socket.on("numberOfUsers", numberOfUsers)
 }
 
-function onDisconnect() {
-  socket.off("newSet", newSetEvent);
-  socket.off("currentPlayerState", currentPlayerState);
-  socket.off("numberOfUsers", numberOfUsers)
-  playerState.value = null;
-  socketStore.authToggle = false;
-  socketStore.alreadyConnected = false;
-  socketStore.isConnected = false;
+function onDisconnect(reason: string) {
+  logger.info("onDisconnect", reason)
+  if (socket.active) {
+    // temporary disconnection, the socket will automatically try to reconnect
+    socketStore.isReconnecting = true;
+  } else {
+    // the connection was forcefully closed by the server or the client itself
+    // in that case, `socket.connect()` must be manually called in order to reconnect
+    socket.off("newSet", newSetEvent);
+    socket.off("currentPlayerState", currentPlayerState);
+    socket.off("numberOfUsers", numberOfUsers)
+    socketStore.isConnected = false;
+    socketStore.isReconnecting = false;
+    playerState.value = null;
+    socketStore.authToggle = false;
+    socketStore.alreadyConnected = false;
+  }
 }
 
 function onConnectError(err: Error) {
   logger.info(err)
-  socket.disconnect();
-  socketStore.isConnected = false;
-  switch (err.message) {
-    case "unauthorized": {
-      socketStore.authToggle = true;
-      break;
-    }
-    case "already_connected": {
-      socketStore.alreadyConnected = true;
-      break;
-    }
-    default: {
-      setTimeout(() => {
-        connect();
-      }, 10000);
+  if (socket.active) {
+    // socket.io will try to reconnect
+    socketStore.isReconnecting = true;
+    logger.info("Will attempt to reconnect")
+  } else {
+    logger.info("big ewwor")
+    // forced
+    socketStore.isConnected = false
+    switch (err.message) {
+      case "unauthorized": {
+        socketStore.authToggle = true;
+        break;
+      }
+      case "already_connected": {
+        socketStore.alreadyConnected = true;
+        break;
+      }
     }
   }
 }

@@ -79,7 +79,6 @@ onMounted(() => {
 });
 
 function handleUnload() {
-    console.log("getting unloaded!");
     SocketManager.shutdownSocket();
     disconnect();
 }
@@ -90,11 +89,12 @@ function handleFreeze() {
 
 watch(playerState, () => {
     if (socketStore.isConnected) {
+        isConnecting.value = false;
+        
         switch (playerState.value.state) {
             case PlaybackState.Stopped:
                 audioStreamPlayer.value.reset();
                 visualiserRef.value.pause();
-                isConnecting.value = false;
                 break;
 
             case PlaybackState.Running:
@@ -103,7 +103,7 @@ watch(playerState, () => {
                 } else {
                     playerStart();
                     setIndex.value = playerState.value.setIndex;
-                    isConnecting.value = false;
+                    
                 }
                 isPaused.value = false;
                 break;
@@ -114,21 +114,13 @@ watch(playerState, () => {
                 }
                 audioStreamPlayer.value.pause();
                 isPaused.value = true;
-                isConnecting.value = false;
                 break;
 
             default:
                 break;
         }
-
+        
         startPaused.value = false;
-    } else {
-        logger.info("disconnected");
-
-        audioStreamPlayer.value.pause();
-
-        wasDisconnected.value = true;
-        overlayToggle.value = true;
     }
 });
 
@@ -250,6 +242,9 @@ const displayBitrate = (q: Bitrate) => {
     </div>
     <div class="overlay" style="z-index: 9998" v-show="isConnecting">
         <h1>connecting...</h1>
+    </div>
+    <div class="overlay" style="z-index: 9998" v-show="socketStore.isReconnecting">
+        <h1>reconnecting...</h1>
     </div>
     <div class="overlay" v-show="settingsShown">
         <h1>settings</h1>
