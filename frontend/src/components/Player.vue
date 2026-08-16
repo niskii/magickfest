@@ -263,7 +263,7 @@ const displayBitrate = (q: Bitrate) => {
         <h2>visualizer FFT size:</h2>
         <NumberInput v-model="storage.visualizerFFTSize.value" min="5" max="15"></NumberInput>
         <h2>visualizer FPS limit:</h2>
-        <NumberInput v-model="storage.visualizerFPSLimit.value" min="1" max="60"></NumberInput>
+        <NumberInput v-model="storage.visualizerFPSLimit.value" min="1" max="120"></NumberInput>
         <h2>visualizer line width:</h2>
         <NumberInput v-model="storage.visualizerWidth.value" min="1" max="10" step="0.5"></NumberInput>
         <h2>visualizer color:</h2>
