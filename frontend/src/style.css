@@ -572,17 +572,18 @@ input[type="checkbox"]:checked::before {
     }
 
     #body {
+        /* height: calc(100dvh - var(--sait) - var(--saib));
+        margin-top: var(--sait); */
+        /* width: calc(100dvw - var(--sail) - var(--sair)); */
+        /* is this ^ needed? let's find out! */
         height: 100dvh;
-        padding-left: var(--sail);
-        padding-right: var(--sair);
-        padding-top: var(--sait);
-        padding-bottom: var(--saib);
     }
 
     #main {
         justify-content: start;
-        height: 80%;
+        height: calc(80% - var(--saib));
         padding: 0;
+        margin-top: var(--sait);
     }
 
     #cover {
@@ -593,7 +594,8 @@ input[type="checkbox"]:checked::before {
 
     #bottomBar {
         justify-content: center !important;
-        height: 20%;
+        height: calc(20% + var(--saib));
+        padding-bottom: var(--saib);
     }
 
     #main>div {
