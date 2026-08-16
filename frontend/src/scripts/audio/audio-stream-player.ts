@@ -71,12 +71,11 @@ export class AudioStreamPlayer {
   }
 
   close() {
-    this.#flush();
-
     this.#stream.reset();
     this.#stream = null;
 
     if (this.#audioCtx) {
+      this.#audioCtx.suspend();
       this.#audioCtx.close();
     }
 

@@ -36,7 +36,6 @@ const isPaused = ref(false);
 const setIndex = ref(0);
 const startPaused = ref(true);
 const wasDisconnected = ref(false);
-const isConnecting = ref(false);
 
 const overlayToggle = ref<boolean>(true);
 const bitratesShown = ref<boolean>(false);
@@ -73,14 +72,15 @@ onMounted(() => {
     onUnmounted(() => {
         document.removeEventListener("freeze", handleFreeze);
         window.removeEventListener("beforeunload", handleUnload);
-        SocketManager.shutdownSocket();
+        SocketManager.removeAllListeners();
         disconnect();
     });
 });
 
 function handleUnload() {
-    SocketManager.shutdownSocket();
+    SocketManager.removeAllListeners();
     disconnect();
+    playerClose();
 }
 
 function handleFreeze() {
@@ -89,8 +89,6 @@ function handleFreeze() {
 
 watch(playerState, () => {
     if (socketStore.isConnected) {
-        isConnecting.value = false;
-        
         switch (playerState.value.state) {
             case PlaybackState.Stopped:
                 audioStreamPlayer.value.reset();
@@ -103,7 +101,6 @@ watch(playerState, () => {
                 } else {
                     playerStart();
                     setIndex.value = playerState.value.setIndex;
-                    
                 }
                 isPaused.value = false;
                 break;
@@ -119,15 +116,36 @@ watch(playerState, () => {
             default:
                 break;
         }
-        
+
         startPaused.value = false;
     }
 });
+
+watch(
+    () => socketStore.isConnected,
+    (isConnected) => {
+        if (!isConnected) {
+            playerStop();
+        }
+    },
+);
 
 function playerStart() {
     audioStreamPlayer.value.reset();
     audioStreamPlayer.value.start();
     setVisualiser();
+}
+
+function playerStop() {
+    clearInterval(stateInterval.value);
+    stateInterval.value = null;
+
+    audioStreamPlayer.value.reset();
+}
+
+function playerClose() {
+    audioStreamPlayer.value.close();
+    audioStreamPlayer.value = null;
 }
 
 function setVisualiser() {
@@ -145,20 +163,14 @@ async function connect() {
             audioStreamPlayer.value.resume();
         }
         wasDisconnected.value = false;
-        isConnecting.value = true;
         logger.info("Joining audio!");
     }
 }
 
 async function disconnect() {
     if (socketStore.isConnected) {
-        clearInterval(stateInterval.value);
-        stateInterval.value = null;
-
-        audioStreamPlayer.value.close();
-        audioStreamPlayer.value = null;
-
         SocketManager.disconnect();
+        playerStop();
     }
 }
 
@@ -222,7 +234,7 @@ const displayBitrate = (q: Bitrate) => {
 </script>
 
 <template>
-    <div class="overlay" v-show="overlayToggle">
+    <div class="overlay" v-show="!socketStore.isConnecting && !socketStore.isConnected">
         <h2 v-show="wasDisconnected">you have been disconnected</h2>
         <img src="/magickfestlogo.gif" fetchpriority="high" style="width: 100%; max-width: 700px" />
         <img
@@ -240,7 +252,7 @@ const displayBitrate = (q: Bitrate) => {
     <div class="overlay" v-show="socketStore.alreadyConnected">
         <h1>you're already connected elsewhere</h1>
     </div>
-    <div class="overlay" style="z-index: 9998" v-show="isConnecting">
+    <div class="overlay" style="z-index: 9998" v-show="socketStore.isConnecting">
         <h1>connecting...</h1>
     </div>
     <div class="overlay" style="z-index: 9998" v-show="socketStore.isReconnecting">

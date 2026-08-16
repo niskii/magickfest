@@ -9,119 +9,126 @@ import { bootstrap } from "../../bootstrap";
 export const playerState = ref<PlayerState>(null);
 
 interface Store {
-  isConnected: boolean;
-  isReconnecting: boolean;
-  authToggle: boolean;
-  alreadyConnected: boolean;
-  setInformation: SetInfo;
-  numberOfUsers: number;
+    isConnected: boolean;
+    isConnecting: boolean;
+    isReconnecting: boolean;
+    authToggle: boolean;
+    alreadyConnected: boolean;
+    setInformation: SetInfo;
+    numberOfUsers: number;
 }
 
 const fetcher = new SetInfoFetcher(socket);
 
 export const socketStore: Store = reactive({
-  isConnected: socket.connected,
-  isReconnecting: false,
-  setInformation: {},
-  authToggle: false,
-  alreadyConnected: false,
-  numberOfUsers: 0,
+    isConnected: socket.connected,
+    isConnecting: false,
+    isReconnecting: false,
+    setInformation: {},
+    authToggle: false,
+    alreadyConnected: false,
+    numberOfUsers: 0,
 });
 
 function onConnect() {
-  socketStore.isConnected = true;
-  socketStore.isReconnecting = false;
-  fetchInfo();
-  socket.emit("getPlayerState");
+    socketStore.isConnected = true;
+    socketStore.isConnecting = false;
+    socketStore.isReconnecting = false;
+    fetchInfo();
+    socket.emit("getPlayerState");
 
-  socket.on("newSet", newSetEvent);
-  socket.on("currentPlayerState", currentPlayerState);
-  socket.on("numberOfUsers", numberOfUsers)
+    socket.on("newSet", newSetEvent);
+    socket.on("currentPlayerState", currentPlayerState);
+    socket.on("numberOfUsers", numberOfUsers);
 }
 
 function onDisconnect(reason: string) {
-  logger.info("onDisconnect", reason)
-  if (socket.active) {
-    // temporary disconnection, the socket will automatically try to reconnect
-    socketStore.isReconnecting = true;
-  } else {
-    // the connection was forcefully closed by the server or the client itself
-    // in that case, `socket.connect()` must be manually called in order to reconnect
-    socket.off("newSet", newSetEvent);
-    socket.off("currentPlayerState", currentPlayerState);
-    socket.off("numberOfUsers", numberOfUsers)
-    socketStore.isConnected = false;
-    socketStore.isReconnecting = false;
-    playerState.value = null;
-    socketStore.authToggle = false;
-    socketStore.alreadyConnected = false;
-  }
+    logger.info("onDisconnect", reason, socket.active);
+    if (socket.active) {
+        // temporary disconnection, the socket will automatically try to reconnect
+        socketStore.isReconnecting = true;
+    } else {
+        // the connection was forcefully closed by the server or the client itself
+        // in that case, `socket.connect()` must be manually called in order to reconnect
+        socket.off("newSet", newSetEvent);
+        socket.off("currentPlayerState", currentPlayerState);
+        socket.off("numberOfUsers", numberOfUsers);
+        socketStore.isConnected = false;
+        socketStore.isReconnecting = false;
+        playerState.value = null;
+        socketStore.authToggle = false;
+        socketStore.alreadyConnected = false;
+    }
 }
 
 function onConnectError(err: Error) {
-  logger.info(err)
-  if (socket.active) {
-    // socket.io will try to reconnect
-    socketStore.isReconnecting = true;
-    logger.info("Will attempt to reconnect")
-  } else {
-    logger.info("big ewwor")
-    // forced
-    socketStore.isConnected = false
-    switch (err.message) {
-      case "unauthorized": {
-        socketStore.authToggle = true;
-        break;
-      }
-      case "already_connected": {
-        socketStore.alreadyConnected = true;
-        break;
-      }
+    logger.info(err);
+    if (socket.active) {
+        // socket.io will try to reconnect
+        socketStore.isReconnecting = true;
+        logger.info("Will attempt to reconnect");
+    } else {
+        // forced
+        socketStore.isConnected = false;
+        switch (err.message) {
+            case "unauthorized": {
+                socketStore.authToggle = true;
+                break;
+            }
+            case "already_connected": {
+                socketStore.alreadyConnected = true;
+                break;
+            }
+        }
     }
-  }
 }
 
 export function setupSocket() {
-  socket.on("connect", onConnect);
-  socket.on("connect_error", onConnectError);
-  socket.on("disconnect", onDisconnect);
+    socket.on("connect", onConnect);
+    socket.on("connect_error", onConnectError);
+    socket.on("disconnect", onDisconnect);
 }
 
 export function shutdownSocket() {
-  socket.off("connect", onConnect);
-  socket.off("connect_error", onConnectError);
-  socket.off("disconnect", onDisconnect);
+    socket.off("connect", onConnect);
+    socket.off("connect_error", onConnectError);
+    socket.off("disconnect", onDisconnect);
 }
 
 export function connect() {
-  try {
-    socket.io.opts.extraHeaders.authorization = `Bearer ${bootstrap.auth?.access_token}`
-    socket.connect();
-  } catch (error) {
-    logger.warn("Error connecting to server!", error);
-  }
+    try {
+        socketStore.isConnecting = true;
+        socket.io.opts.extraHeaders.authorization = `Bearer ${bootstrap.auth?.access_token}`;
+        socket.connect();
+    } catch (error) {
+        logger.warn("Error connecting to server!", error);
+    }
 }
 
 export function disconnect() {
-  socket.removeAllListeners();
-  socket.disconnect();
-  socketStore.isConnected = false;
+    socketStore.isConnected = false;
+    socketStore.isReconnecting = false;
+    socket.disconnect();
+}
+
+export function removeAllListeners() {
+    socket.removeAllListeners();
 }
 
 async function fetchInfo() {
-  socketStore.setInformation = await fetcher.fetchInformation();
+    socketStore.setInformation = await fetcher.fetchInformation();
 }
 
 function currentPlayerState(state: PlayerState) {
-  playerState.value = state;
+    playerState.value = state;
 }
 
 function newSetEvent() {
-  if (socketStore.isConnected) {
-    fetchInfo();
-  }
+    if (socketStore.isConnected) {
+        fetchInfo();
+    }
 }
 
 function numberOfUsers(size: number) {
-  socketStore.numberOfUsers = size;
+    socketStore.numberOfUsers = size;
 }
