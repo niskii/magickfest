@@ -37,14 +37,16 @@ async function isAdmin(interaction: ChatInputCommandInteraction) {
 }
 
 async function handleTimeParsing(interaction: ChatInputCommandInteraction, timeOfDay = false) {
+    let time = interaction.options.getString("time");
+
+    if (time < 0) {
+        throw "invalid time value";
+    }
+
     let parsedTime = (timeOfDay) ? parseTimeOfDay(interaction.options.getString("time")) : parseTime(interaction.options.getString("time"));
 
     if (parsedTime === null) {
-        interaction.reply({
-            content: `could not parse the input time!`,
-            flags: MessageFlags.Ephemeral,
-        });
-        parsedTime = 0;
+        throw "could not parse the input time!";
     } else {
         parsedTime *= 1000;
     }
@@ -162,12 +164,6 @@ export function configureInteractions(
                     };
 
                     const currentSet = player.getCurrentSet();
-                    let coverPath: PathLike;
-                    if (currentSet.CoverFile) {
-                        coverPath = path.resolve(currentSet.CoverFile!);
-                    } else {
-                        coverPath = path.resolve(__dirname, "noartwork.webp");
-                    }
 
                     let reply: InteractionReplyOptions = {
                         content: "",
@@ -178,7 +174,7 @@ export function configureInteractions(
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
-                                    url: `https://${config.externalHost}/api/public/cover`,
+                                    url: `https://${config.externalHost}/api/public/cover?t=${Date.now()}`,
                                 },
                             },
                         ],
@@ -364,7 +360,7 @@ export function configureInteractions(
 
             if (interaction.isRepliable()) {
                 await interaction.reply({
-                    content: "lol something broke go fix it",
+                    content: `error: ${err}`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
