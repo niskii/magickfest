@@ -30,7 +30,7 @@ let sessionId: number, flushTimeoutId: NodeJS.Timeout;
 
 export { clear, decodeAudio, flushAudio };
 
-function evalSessionId(newSessionId: number) {
+async function evalSessionId(newSessionId: number) {
   // detect new session and reset decoder
   if (sessionId && sessionId === newSessionId) {
     return;
@@ -38,14 +38,14 @@ function evalSessionId(newSessionId: number) {
 
   sessionId = newSessionId;
   playbackBuffer.reset();
-  decoder.reset();
+  await decoder.reset();
 }
 
 async function decodeAudio(
   arrayBuffer: Uint8Array<ArrayBufferLike>,
   sessionId: number,
 ) {
-  evalSessionId(sessionId);
+  await evalSessionId(sessionId);
   const buffer = new Uint8Array(arrayBuffer);
   decoder
     .decode(buffer)
