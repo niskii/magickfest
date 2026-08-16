@@ -42,7 +42,7 @@ export class Oscilloscope {
         this.#canvascontext.fillStyle = this.backgroundColor;
         this.#canvascontext.clearRect(0, 0, this.#canvas.value.width, this.#canvas.value.height);
 
-        this.#canvascontext.lineCap = "round";
+        this.#canvascontext.lineCap = "butt";
         this.#canvascontext.lineJoin = "bevel";
         this.#canvascontext.lineWidth = this.lineWidth;
         this.#canvascontext.strokeStyle = this.lineColor;
