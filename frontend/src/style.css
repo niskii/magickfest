@@ -13,8 +13,6 @@
     --dark-gray: #3a3a3a;
     --darker-gray: #232326;
     --darkest-gray: #1a1a1a;
-
-
 }
 
 * {
@@ -35,6 +33,11 @@ body {
     height: 100vh;
 }
 
+#frame {
+    width: 100%;
+    height: 100%;
+}
+
 #main {
     z-index: 0;
     width: 100%;
@@ -43,7 +46,7 @@ body {
     background-color: var(--main-bg-color);
 }
 
-#main>* {
+#main > * {
     margin: 0 1vw;
 }
 
@@ -132,7 +135,7 @@ input[type="checkbox"]:checked::before {
     background-color: var(--darker-gray);
 }
 
-#bottomBar>div {
+#bottomBar > div {
     display: flex;
     align-items: center;
     color: var(--almost-white);
@@ -338,7 +341,7 @@ input[type="checkbox"]:checked::before {
     cursor: not-allowed;
 }
 
-.dropdownSelected>.horizontalLine {
+.dropdownSelected > .horizontalLine {
     background-color: var(--mid-gray) !important;
     cursor: not-allowed;
 }
@@ -385,13 +388,15 @@ input[type="checkbox"]:checked::before {
     left: -2%;
     width: 104%;
     height: 100%;
-    background: linear-gradient(to right,
-            var(--main-bg-color) 0%,
-            var(--main-bg-color) 3%,
-            rgba(12, 12, 17, 0) 15%,
-            rgba(12, 12, 17, 0) 85%,
-            var(--main-bg-color) 97%,
-            var(--main-bg-color) 100%);
+    background: linear-gradient(
+        to right,
+        var(--main-bg-color) 0%,
+        var(--main-bg-color) 3%,
+        rgba(12, 12, 17, 0) 15%,
+        rgba(12, 12, 17, 0) 85%,
+        var(--main-bg-color) 97%,
+        var(--main-bg-color) 100%
+    );
 }
 
 .overlay h2 {
@@ -437,7 +442,7 @@ input[type="checkbox"]:checked::before {
     width: 2.25vmax;
 }
 
-@media screen and (max-height: 400px) {
+/* @media screen and (max-height: 400px) {
     .fullOnly {
         display: none !important;
     }
@@ -505,11 +510,6 @@ input[type="checkbox"]:checked::before {
         object-position: left;
     }
 
-    body {
-        outline: 3px auto rgba(0, 0, 0, 0.5);
-        outline-offset: -3px;
-    }
-
     #statusInfo {
         margin: -0.5vh 1vw;
     }
@@ -542,7 +542,7 @@ input[type="checkbox"]:checked::before {
     #versionIndicator {
         font-size: 1.75vmax;
     }
-}
+} */
 
 @media screen and (max-width: 760px) and (min-width: 501px) and (min-height: 401px) {
     .alwaysVisible {
@@ -589,7 +589,7 @@ input[type="checkbox"]:checked::before {
         height: 20%;
     }
 
-    #main>div {
+    #main > div {
         width: 100%;
         text-align: center;
     }
@@ -734,7 +734,136 @@ input[type="checkbox"]:checked::before {
     }
 }
 
-@media screen and (min-aspect-ratio: 7/3) and (max-height: 400px) {
+/* Scopes specific to Discord */
+
+@scope (.pip.mobile) {
+    #frame {
+        border-radius: 1.5em;
+    }
+}
+
+@scope (.grid.mobile) {
+    #frame {
+        border-radius: 10px;
+    }
+}
+
+@scope (.pip.desktop) {
+    body {
+        border-radius: 8px;
+    }
+}
+
+@scope (.grid, .pip) {
+    .fullOnly {
+        display: none !important;
+    }
+
+    h1 {
+        font-size: 5vmax;
+    }
+
+    h2 {
+        font-size: 3vmax;
+    }
+
+    h3 {
+        font-size: 1.2vmax;
+    }
+
+    h4 {
+        font-size: 2.15vmax;
+    }
+
+    .alwaysVisible {
+        width: 95% !important;
+        margin-top: -2.25vh;
+        font-size: min(6vmin, 5.65vh) !important;
+        gap: 1.25vh;
+    }
+
+    #progressbar {
+        height: 5.5vh !important;
+    }
+
+    #settings-panel {
+        display: none !important;
+    }
+
+    #main {
+        position: relative;
+        z-index: -2;
+        justify-content: space-between;
+        height: 78vh;
+        padding: 0;
+    }
+
+    #bottomBar {
+        position: relative;
+        z-index: -1;
+        justify-content: center !important;
+        height: 22vh;
+    }
+
+    #setInfo {
+        flex-grow: 1;
+        width: 50vw;
+        max-height: 78vh;
+        margin: 0;
+        margin-left: 1.25vw;
+    }
+
+    #setInfo h1,
+    #setInfo h2 {
+        max-width: 45vw;
+    }
+
+    #cover {
+        height: calc(78vh - 4vw);
+        margin: 2.15vw 2vw 1.75vw 2.15vw;
+        object-position: left;
+    }
+
+    #statusInfo {
+        margin: -0.5vh 1vw;
+    }
+
+    #connectedInfo {
+        margin-top: 2vh;
+    }
+
+    #connectedInfo img {
+        width: 3vmax;
+        height: 3vmax;
+        margin-left: 0.25vw;
+    }
+
+    .statusIndicator .status {
+        width: 3.5vmax;
+        height: 3.5vmax;
+    }
+
+    .statusIndicator .statusText {
+        height: 3vmax;
+        font-size: 2.15vmax;
+    }
+
+    .visualiser {
+        width: 45vw;
+        margin-left: -1.25vw;
+    }
+
+    #versionIndicator {
+        font-size: 1.75vmax;
+    }
+    
+    #frame {
+        outline: 3px auto rgba(0, 0, 0, 0.5);
+        outline-offset: -3px;
+    }
+}
+
+/* @media screen and (min-aspect-ratio: 7/3) and (max-height: 400px) {
 
     h1,
     h2 {
@@ -762,4 +891,4 @@ input[type="checkbox"]:checked::before {
     #connectedInfo {
         margin-top: 2.5vh;
     }
-}
+} */

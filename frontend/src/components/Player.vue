@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Bitrate } from "@shared/types/audio-transfer";
-import { onBeforeMount, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
+import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { socket } from "../scripts/socket/socket";
@@ -44,15 +44,7 @@ const mobileBitratesShown = ref<boolean>(false);
 
 const versionName = import.meta.env.VITE_SHOW_VERSION == "true" ? import.meta.env.VITE_VERSION_NAME : null;
 
-onBeforeMount(() => {
-    const player = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
-    audioStreamPlayer.value = player;
 
-    clearInterval(stateInterval.value);
-    stateInterval.value = setInterval(() => {
-        playState.value = [player.getCurrentPlayPosition(), player.getTotalDuration(), player.getDownloadedAudioTime()];
-    }, config.UpdateInterval);
-});
 
 onMounted(() => {
     getScreenViewport() == Viewport.Mobile ? (storage.volume.value = 100) : null;
@@ -60,6 +52,14 @@ onMounted(() => {
     localStorage.getItem("visualiserOn")
         ? (storage.visualiserOn.value = localStorage.getItem("visualiserOn") == "true")
         : getScreenViewport() != Viewport.Mobile;
+
+    const player = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
+    audioStreamPlayer.value = player;
+
+    clearInterval(stateInterval.value);
+    stateInterval.value = setInterval(() => {
+        playState.value = [player.getCurrentPlayPosition(), player.getTotalDuration(), player.getDownloadedAudioTime()];
+    }, config.UpdateInterval);
 
     storage.load();
     watchers(audioStreamPlayer, visualiserRef);
