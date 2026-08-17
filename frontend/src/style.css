@@ -49,6 +49,8 @@ body {
     height: calc(90vh - 8em);
     padding: 4em 0em;
     background-color: var(--main-bg-color);
+    margin-left: var(--sail);
+    margin-right: var(--sair);
 }
 
 #main > * {
@@ -582,8 +584,6 @@ input[type="checkbox"]:checked::before {
         height: calc(80% - var(--saib));
         padding: 0;
         margin-top: var(--sait);
-        margin-left: var(--sail);
-        margin-right: var(--sair)
     }
 
     #cover {
@@ -744,7 +744,6 @@ input[type="checkbox"]:checked::before {
 }
 
 @media screen and (min-aspect-ratio: 7/3) and (max-height: 400px) {
-
     h1,
     h2 {
         float: left;
@@ -877,7 +876,7 @@ input[type="checkbox"]:checked::before {
     #versionIndicator {
         font-size: 1.75vmax;
     }
-    
+
     #frame {
         outline: 3px auto rgba(0, 0, 0, 0.5);
         outline-offset: -3px;
@@ -909,7 +908,7 @@ input[type="checkbox"]:checked::before {
         height: 100%;
         margin: 2.15vw 2vw 1.75vw 2.15vw;
         object-position: left;
-    }   
+    }
 
     #setInfo {
         display: none;
