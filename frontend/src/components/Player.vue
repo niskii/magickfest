@@ -123,8 +123,11 @@ watch(playerState, () => {
 
 watch(
     () => socketStore.isConnected,
-    (isConnected) => {
-        if (!isConnected) {
+    async (isConnected) => {
+        if (isConnected) {
+            await audioStreamPlayer.value.loadDecoder()
+        }
+        else {
             playerStop();
         }
     },
@@ -137,13 +140,13 @@ function playerStart() {
 }
 
 function playerStop() {
-    clearInterval(stateInterval.value);
-    stateInterval.value = null;
-
     audioStreamPlayer.value.reset();
 }
 
 function playerClose() {
+    clearInterval(stateInterval.value);
+    stateInterval.value = null;
+
     audioStreamPlayer.value.close();
     audioStreamPlayer.value = null;
 }
@@ -308,7 +311,7 @@ const displayBitrate = (q: Bitrate) => {
             </div>
         </div>
         <p id="versionIndicator">{{ versionName }}</p>
-        <img id="cover" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
+        <img id="cover" fetchpriority="high" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
         <div id="setInfo">
             <SetInfo :playerState="playerState" :viewport="getScreenViewport()"></SetInfo>
             <Visualiser

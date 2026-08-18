@@ -1,17 +1,29 @@
-import {
-  type OggOpusDecodedAudio,
-  OggOpusDecoderWebWorker,
-} from "ogg-opus-decoder";
+import type { OggOpusDecodedAudio, OggOpusDecoderWebWorker } from "ogg-opus-decoder";
 import logger from "../../logger";
 import type { ChanneledAudioBuffer, DecodedAudioBuffer } from "./AudioTypes";
 import { DecodedAudioPlaybackBuffer } from "./decoded-audio-playback-buffer";
 
-const decoder = new OggOpusDecoderWebWorker({
-  forceStereo: true,
-  speechQualityEnhancement: "none",
-});
+let module: any = null
 
-await decoder.ready;
+let decoder: OggOpusDecoderWebWorker = null
+
+let loaded: boolean = false;
+
+async function load() {
+  if (module == null) {
+    module = await import("ogg-opus-decoder")
+    decoder = new module.OggOpusDecoderWebWorker({
+      forceStereo: true,
+      speechQualityEnhancement: "none",
+    });
+    
+    await decoder.ready;
+
+    loaded = true
+  }
+}
+
+
 
 // Mutable handlers object that consumers can import and reassign properties on.
 // Example usage from another module:
@@ -28,7 +40,7 @@ export const handlers: {
 const playbackBuffer = new DecodedAudioPlaybackBuffer(onFlush);
 let sessionId: number, flushTimeoutId: NodeJS.Timeout;
 
-export { clear, decodeAudio, flushAudio };
+export { clear, decodeAudio, flushAudio, load };
 
 async function evalSessionId(newSessionId: number) {
   // detect new session and reset decoder
@@ -45,31 +57,34 @@ async function decodeAudio(
   arrayBuffer: Uint8Array<ArrayBufferLike>,
   sessionId: number,
 ) {
+  if(!loaded) return
   await evalSessionId(sessionId);
   const buffer = new Uint8Array(arrayBuffer);
   decoder
     .decode(buffer)
-    .then((decodedAudio) => onDecodeInternal(toDecodedFormat(decodedAudio)))
-    .catch((err) => {
+    .then((decodedAudio: OggOpusDecodedAudio) => onDecodeInternal(toDecodedFormat(decodedAudio)))
+    .catch((err: any) => {
       logger.warn("decode error", err, buffer);
     });
 }
 
 function flushAudio() {
+  if(!loaded) return
   decoder
     .flush()
-    .then((decodedAudio) => onDecodeInternal(toDecodedFormat(decodedAudio)))
-    .catch((err) => {
+    .then((decodedAudio: OggOpusDecodedAudio) => onDecodeInternal(toDecodedFormat(decodedAudio)))
+    .catch((err: any) => {
       logger.warn("decode error", err);
     });
 }
 
 async function clear() {
+  if(!loaded) return
   await decoder.reset();
 }
 
 function toDecodedFormat(
-  decodedAudio: OggOpusDecodedAudio,
+  decodedAudio: any,
 ): DecodedAudioBuffer {
   return {
     left: decodedAudio.channelData[0],
