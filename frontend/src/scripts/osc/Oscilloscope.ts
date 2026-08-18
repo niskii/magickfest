@@ -60,9 +60,9 @@ export class Oscilloscope {
             const y = v * inverseHeight;
 
             if (i === 0) {
-                this.#canvascontext.moveTo(Math.floor(x), Math.floor(y));
+                this.#canvascontext.moveTo(x, y);
             } else {
-                this.#canvascontext.lineTo(Math.floor(x), Math.floor(y));
+                this.#canvascontext.lineTo(x, y);
             }
 
             x += sliceWidth;
