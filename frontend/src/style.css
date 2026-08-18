@@ -897,7 +897,7 @@ input[type="checkbox"]:checked::before {
     }
 
     #main {
-        height: 80vh;
+        height: 100vh;
     }
 
     #statusInfo {
@@ -906,7 +906,7 @@ input[type="checkbox"]:checked::before {
 
     #cover {
         height: 100%;
-        margin: 2.15vw 2vw 1.75vw 2.15vw;
+        margin: 0;
         object-position: left;
     }
 
@@ -925,7 +925,39 @@ input[type="checkbox"]:checked::before {
     }
 
     #bottomBar {
-        height: 20vh;
+        position: absolute;
+        bottom: 0px;
+        height: auto;
+        gap: 0;
+        justify-content: flex-end !important;
+        background-color: rgba(0,0,0,0) !important;
+    }
+
+    #bottomBar > div {
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        font-weight: bolder;
+        font-size: 7vmin !important;
+    }
+
+    #progressbar {
+        background-color: #00000000;
+        backdrop-filter: invert(100%);
+        margin: 0;
+        height: 8vh !important;
+    }
+
+    #buffered {
+        filter: invert(1);
+        background-color: #0000007a;
+    }
+
+    #filled {
+        background-color: #00000085;
+    }
+
+    .alwaysVisible{
+        width: 100% !important;
+        margin: 0;
     }
 }
 
