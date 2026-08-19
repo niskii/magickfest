@@ -786,7 +786,7 @@ input[type="checkbox"]:checked::before {
 }
 
 /* Scopes specific to Discord */
-
+/* discord picture in picture (minimized) */
 @scope (.grid, .pip) {
     .fullOnly {
         display: none !important;
@@ -896,6 +896,7 @@ input[type="checkbox"]:checked::before {
     }
 }
 
+/* discord mobile picture in picture (minimized) */
 @scope (.pip.mobile) {
     #frame {
         border-radius: 1.5em;
@@ -957,7 +958,7 @@ input[type="checkbox"]:checked::before {
         background-color: #00000000;
         backdrop-filter: invert(100%);
         margin: 0;
-        height: 8vh !important;
+        height: 12vh !important;
     }
 
     #buffered {
