@@ -337,7 +337,7 @@ const displayBitrate = (q: Bitrate) => {
                 <div :style="{ width: storage.volume.value + '%' }"></div>
             </div>
         </div>
-        <div style="width: 100%; flex-direction: column" class="alwaysVisible">
+        <div style="width: 100%; flex-direction: column" class="playerInfo">
             <div style="display: flex; flex-direction: row !important">
                 <div id="connectedInfo" v-show="getScreenViewport() == Viewport.Mobile">
                     <h4>{{ socketStore.numberOfUsers }}</h4>
@@ -349,8 +349,10 @@ const displayBitrate = (q: Bitrate) => {
                     v-show="getScreenViewport() == Viewport.Mobile"
                     :hide-status-text="true"
                 ></StatusIndicator>
-                {{ timeConverter(playState[0]) }} /
-                {{ timeConverter(playState[1]) }}
+                <span id="time">
+                    {{ timeConverter(playState[0]) }} /
+                    {{ timeConverter(playState[1]) }}
+                </span>
             </div>
             <div id="progressbar">
                 <div

@@ -136,20 +136,25 @@ input[type="checkbox"]:checked::before {
 }
 
 #bottomBar {
+    position: relative;
     z-index: 1;
     width: 100%;
     height: 10%;
     background-color: var(--darker-gray);
 }
 
-#bottomBar > div {
+#bottomBar > div {   
     display: flex;
     align-items: center;
-    color: var(--almost-white);
-    font-size: 1.25vmax;
 }
 
-.alwaysVisible {
+#time {
+    color: var(--almost-white);
+}
+
+.playerInfo {
+    font-size: 1.25vmax;
+    justify-content: center;
     margin-top: -0.5vh;
 }
 
@@ -169,20 +174,20 @@ input[type="checkbox"]:checked::before {
     background-color: var(--mid-gray);
 }
 
+#buffered,
 #filled {
     position: absolute;
     z-index: 2;
     height: 100%;
+    transition-duration: 0.5s;
+}
+
+#filled {
     background-color: var(--off-white);
-    transition-duration: 0.2s;
 }
 
 #buffered {
-    position: absolute;
-    z-index: 2;
-    height: 100%;
     background-color: var(--lighter-gray);
-    transition-duration: 0.2s;
 }
 
 #volumeSlider {
@@ -470,7 +475,7 @@ input[type="checkbox"]:checked::before {
         font-size: 2.15vmax;
     }
 
-    .alwaysVisible {
+    .playerInfo {
         width: 95% !important;
         margin-top: -2.25vh;
         font-size: min(6vmin, 5.65vh) !important;
@@ -552,7 +557,7 @@ input[type="checkbox"]:checked::before {
 }
 
 @media screen and (max-width: 760px) and (min-width: 501px) and (min-height: 401px) {
-    .alwaysVisible {
+    .playerInfo {
         font-size: 2vmax !important;
     }
 
@@ -593,9 +598,10 @@ input[type="checkbox"]:checked::before {
     }
 
     #bottomBar {
-        justify-content: center !important;
+        justify-content: start !important;  
+        padding-top: 1em;
         height: calc(20% + var(--saib));
-        padding-bottom: var(--saib);
+        background: linear-gradient(0deg,rgb(0, 0, 0) var(--saib), var(--darker-gray) calc(var(--saib) + 6px), var(--darker-gray) 100%);
     }
 
     #main > div {
@@ -603,7 +609,7 @@ input[type="checkbox"]:checked::before {
         text-align: center;
     }
 
-    .alwaysVisible {
+    .playerInfo {
         width: 95% !important;
         font-size: 2.5vmax !important;
     }
@@ -702,7 +708,6 @@ input[type="checkbox"]:checked::before {
     .statusIndicator .status {
         width: 2vmax;
         height: 2vmax;
-        margin-top: 0.4vmax;
     }
 
     .statusIndicator {
@@ -795,7 +800,7 @@ input[type="checkbox"]:checked::before {
         font-size: 2.15vmax;
     }
 
-    .alwaysVisible {
+    .playerInfo {
         width: 95% !important;
         margin-top: -2.25vh;
         font-size: min(6vmin, 5.65vh) !important;
@@ -925,21 +930,22 @@ input[type="checkbox"]:checked::before {
     }
 
     #bottomBar {
-        position: absolute;
-        bottom: 0px;
         height: auto;
         gap: 0;
         justify-content: flex-end !important;
         background-color: rgba(0,0,0,0) !important;
     }
 
-    #bottomBar > div {
+    #time {
+        z-index: 1;
         text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
         font-weight: bolder;
         font-size: 7vmin !important;
     }
 
     #progressbar {
+        position: absolute;
+        bottom: 0;
         background-color: #00000000;
         backdrop-filter: invert(100%);
         margin: 0;
@@ -948,16 +954,21 @@ input[type="checkbox"]:checked::before {
 
     #buffered {
         filter: invert(1);
-        background-color: #0000007a;
+        background-color: #00000045;
     }
 
     #filled {
-        background-color: #00000085;
+        background-color: #0000008c;
     }
 
-    .alwaysVisible{
+    .playerInfo{
         width: 100% !important;
         margin: 0;
+    }
+
+    .playerInfo > div {
+        position: absolute;
+        bottom: 0.2em;
     }
 }
 
