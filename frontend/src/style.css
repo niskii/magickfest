@@ -304,6 +304,7 @@ input[type="checkbox"]:checked::before {
     margin-bottom: 2vh;
     text-align: center;
     font-size: 1.5vmax;
+    color: var(--almost-white);
 }
 
 .dropdown div:not(.dropdownSelected):hover {
