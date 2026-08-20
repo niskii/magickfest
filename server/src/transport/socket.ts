@@ -38,7 +38,7 @@ export function socketSetup(
          * Clean up when a user disconnects.
          */
         socket.on("disconnect", () => {
-            logger.info("a user disconnected");
+            logger.info("a user disconnected", user);
             userManager.removeUser(user!);
             player.events.off("newSet", sendNewSetAlert);
             player.events.off("changedState", sendChangedStateAlert);

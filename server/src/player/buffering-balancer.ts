@@ -1,4 +1,3 @@
-import logger from "../logger";
 
 export class BufferingBalancer {
     #size = 1;
@@ -13,7 +12,6 @@ export class BufferingBalancer {
 
     getPageSize() {
         const currentSize = this.#size;
-        logger.info(Date.now() - this.#latestGet, this.#size * 1000 + 2000)
         if (Date.now() - this.#latestGet < this.#size * 1000 + 2000) {
             this.#size = Math.min(this.#size * 2, 20);
         } else {
@@ -22,8 +20,6 @@ export class BufferingBalancer {
 
 
         this.#latestGet = Date.now()
-
-        logger.info(currentSize);
 
         return currentSize;
     }
