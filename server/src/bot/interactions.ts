@@ -6,8 +6,6 @@ import {
     InteractionReplyOptions,
     MessageFlags
 } from "discord.js";
-import { PathLike } from "fs";
-import * as path from "path";
 import config from "../../config/config";
 import { getDiscordEnvironment } from "../envs";
 import { parseTime, parseTimeOfDay } from "../parsing/time-parser";
@@ -23,7 +21,7 @@ const publicCommands = ["np", "setlist"];
 let scheduledStartTimeout: NodeJS.Timeout | undefined;
 
 async function isAdmin(interaction: ChatInputCommandInteraction) {
-    const member = interaction.member as GuildMember;
+    const member = await interaction.guild?.members.fetch(interaction.member!.user.id) as GuildMember;
     const hasRole = member.roles.cache.has(envs.AdminRoleID);
 
     if (!hasRole) {
