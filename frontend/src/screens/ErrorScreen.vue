@@ -6,7 +6,7 @@ const { error } = defineProps<{
 
 <template>
     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
-        <h1 style="color: lightcoral">error</h1>
-        <h2>{{ error }}</h2>
+        <h1 style="color: lightcoral" id="loadingTitle">error</h1>
+        <h2 id="loadingDesc">{{ error }}</h2>
     </div>
 </template>
