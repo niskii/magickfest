@@ -110,6 +110,7 @@ router.get("/redirect", async (req, res) => {
                 res.redirect(process.env.ClientRedirectUrl!);
             })
             .catch((err) => {
+                logger.warn(err)
                 throw new Error(err);
             });
     }
@@ -129,6 +130,7 @@ router.post("/startsession", async (req, res) => {
             res.sendStatus(200);
         })
         .catch((err) => {
+            logger.warn(err)
             throw new Error(err);
         });
 });
@@ -149,6 +151,7 @@ router.post("/endsession", async (req, res) => {
             res.sendStatus(200);
         })
         .catch((err) => {
+            logger.warn(err)
             throw new Error(err);
         });
 });

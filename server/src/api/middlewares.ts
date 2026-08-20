@@ -135,7 +135,8 @@ export function setupMiddleware(
                     req.session.user = validUser;
                     next();
                 })
-                .catch((reason) => {
+                .catch((err) => {
+                    logger.warn(err)
                     next(new Error("unauthorized"));
                 });
         }
