@@ -39,7 +39,7 @@ const getVolumeIcon = () => {
 </script>
 
 <template>
-    <div style="display: flex; align-items: center; margin-top: -0.25vh;">
+    <div style="display: flex; align-items: center; margin-top: -0.25vh; cursor: pointer;">
         <img v-show="!props.alt" style="height: 5vh;" :src="getVolumeIcon()" alt="volume icon">
         <img v-show="props.alt" style="height: 8vh; margin: 0 -0.7vw;" :src="getVolumeIcon()" alt="volume icon">
     </div>
