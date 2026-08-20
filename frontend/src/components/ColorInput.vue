@@ -10,6 +10,7 @@ const model = defineModel<string>();
     width: 2.25vmax;
     height: 2.25vmax;
     border: dashed 0.25vmax rgba(0, 0, 0, 0.3);
+    aspect-ratio: 1/1;
 }
 
 .swatch input[type="color"] {

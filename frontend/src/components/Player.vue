@@ -266,11 +266,12 @@ const displayBitrate = (q: Bitrate) => {
         <h2>visualizer color:</h2>
         <ColorInput v-model="storage.visualizerColor.value"></ColorInput>
         <h2 v-show="getScreenViewport() != Viewport.Mobile">alternative volume icon:</h2>
-        <input v-show="getScreenViewport() != Viewport.Mobile" type="checkbox" v-model="storage.altIcons.value" />
+        <input v-show="getScreenViewport() != Viewport.Mobile" type="checkbox" style="aspect-ratio: 1/1;"
+            v-model="storage.altIcons.value" />
         <br />
         <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => {
-                settingsShown = false;
-            }
+            settingsShown = false;
+        }
             " />
     </div>
     <div class="overlay" v-show="mobileBitratesShown">
@@ -279,8 +280,8 @@ const displayBitrate = (q: Bitrate) => {
             :disabled-indices="['128kbps', '96kbps', '64kbps'].filter((e) => e == storage.bitrate.value.toString() + 'kbps')">
         </RadioInput>
         <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => {
-                mobileBitratesShown = false;
-            }
+            mobileBitratesShown = false;
+        }
             " />
     </div>
     <div class="flex center flex-responsive" id="main">
