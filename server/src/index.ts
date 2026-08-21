@@ -81,18 +81,4 @@ const playerStateManager = new PlayerStateManager(
 );
 
 playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
-configureInteractions(player, playerStateManager);
-
-// TODO rework this in the command, for now use /start and i'll deal with scheduling soon
-
-// setTimeout(
-//     () => {
-//         if (playerStateManager.hasLoaded) {
-//             player.playAtState();
-//         } else {
-//             player.playAtForwarded();
-//             playerStateManager.saveState();
-//         }
-//     },
-//     Math.max(1, commandLineOptions.scheduledStart - Date.now()),
-// );
+configureInteractions(player);

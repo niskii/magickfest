@@ -10,7 +10,6 @@ import config from "../../config/config";
 import { getDiscordEnvironment } from "../envs";
 import { parseTime, parseTimeOfDay } from "../parsing/time-parser";
 import { Player } from "../player/player";
-import { PlayerStateManager } from "../player/player-state-manager";
 import { sendMessage } from "./actions";
 import { client } from "./setup";
 
@@ -111,18 +110,14 @@ function handleSetInfo(info: String, noInfo: String) {
     return (info) ? info : noInfo;
 }
 
-async function scheduledStart(parsedTime: number, playerStateManager: PlayerStateManager, player: Player) {
+async function scheduledStart(parsedTime: number, player: Player) {
     player.setState(null, Date.now() + parsedTime, null);
 
     if (scheduledStartTimeout) clearTimeout(scheduledStartTimeout);
 
     scheduledStartTimeout = setTimeout(
         async () => {
-            if (playerStateManager.hasLoaded) {
-                player.playAtState();
-            } else {
-                player.playAtForwarded();
-            }
+            player.playAtForwarded();
 
             await sendMessage('starting magickfest!');
         },
@@ -131,8 +126,7 @@ async function scheduledStart(parsedTime: number, playerStateManager: PlayerStat
 }
 
 export function configureInteractions(
-    player: Player,
-    playerStateManager: PlayerStateManager,
+    player: Player
 ) {
     player.events.on("newSet", async () => {
         const currentSet = player.getCurrentSet();
@@ -226,13 +220,10 @@ export function configureInteractions(
                                     content: `magickfest scheduled to start at: <t:${Math.round((Date.now() + parsedTime) / 1000)}:t>!`,
                                 });
 
-                                await scheduledStart(parsedTime, playerStateManager, player);
+                                await scheduledStart(parsedTime, player);
                             } else {
-                                if (playerStateManager.hasLoaded) {
-                                    player.playAtState();
-                                } else {
-                                    player.playAtForwarded();
-                                }
+
+                                player.playAtForwarded();
 
                                 await interaction.reply({
                                     content: `starting magickfest!`,
@@ -329,7 +320,7 @@ export function configureInteractions(
                         const parsedTime = await handleTimeParsing(interaction, true);
 
                         if (parsedTime > 0) {
-                            await scheduledStart(parsedTime, playerStateManager, player);
+                            await scheduledStart(parsedTime, player);
 
                             await interaction.reply({
                                 content: `magickfest will now start at: <t:${Math.round((Date.now() + parsedTime) / 1000)}:t>!`,

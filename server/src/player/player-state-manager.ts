@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFile } from "fs";
-import { Player } from "./player";
 import logger from "src/logger";
+import { Player } from "./player";
 
 const playlistStateFilePath = "temp/playlist_state_";
 
@@ -34,6 +34,10 @@ export class PlayerStateManager {
             state["startTime"],
             state["forwarded"],
         );
+
+        // Automatic recovery.
+        this.#player.playAtState()
+
         return true;
     }
 
