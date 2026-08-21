@@ -98,7 +98,9 @@ export function shutdownSocket() {
 export function connect() {
     try {
         socketStore.isConnecting = true;
-        socket.io.opts.extraHeaders.authorization = `Bearer ${bootstrap.auth?.access_token}`;
+        if (bootstrap.auth?.access_token) {
+            socket.io.opts.extraHeaders.authorization = `Bearer ${bootstrap.auth?.access_token}`;
+        }
         socket.connect();
     } catch (error) {
         logger.warn("Error connecting to server!", error);

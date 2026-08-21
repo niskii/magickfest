@@ -116,28 +116,27 @@ export function setupMiddleware(
         } else {
             const header = req.headers["authorization"];
 
-            if (!header) {
-                return next(new Error("no token"));
+            if (!header || !header.startsWith("Bearer ")) {
+                return next(new Error("unauthorized"));
             }
 
-            if (!header.startsWith("Bearer ")) {
-                return next(new Error("invalid token"));
-            }
-
-            const accessToken = header.substring(7);
+            const accessToken: string = header.slice(7);
             if (accessToken == "undefined")
                 return next(new Error("unauthorized"));
 
-            getGuildMember(accessToken)
+            getGuildMember(accessToken.toString())
                 .then((guildUserData) => {
                     const validUser =
                         createUserFromGuildMemberObject(guildUserData);
                     req.session.user = validUser;
                     next();
                 })
-                .catch((err) => {
-                    logger.warn(err)
-                    next(new Error("unauthorized"));
+                .catch(() => {
+                    logger.warn(
+                        "User attempted to login with invalid token:",
+                        accessToken,
+                    );
+                    next(new Error("invalid_token"));
                 });
         }
     });
