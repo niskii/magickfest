@@ -1,6 +1,6 @@
 {
   "MaxOutOfSync": 15,
-  "FetchThreshold": 10,
+  "FetchThreshold": 15,
   "UpdateInterval": 500,
   "FetchInterval": 500
 }

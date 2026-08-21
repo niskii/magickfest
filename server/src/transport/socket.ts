@@ -10,8 +10,6 @@ import { Player } from "../player/player";
 import { imageMimeTypes } from "../types/mime-map";
 import { UserManager } from "../user/user-manager";
 
-
-
 export function socketSetup(
     io: Server,
     player: Player,
