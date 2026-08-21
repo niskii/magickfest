@@ -10,11 +10,24 @@ import { Player } from "../player/player";
 import { imageMimeTypes } from "../types/mime-map";
 import { UserManager } from "../user/user-manager";
 
+
+
 export function socketSetup(
     io: Server,
     player: Player,
     userManager: UserManager,
 ) {
+    const sendNewSetAlert = () => {
+        io.emit("newSet");
+    };
+
+    const sendChangedStateAlert = () => {
+        io.emit("currentPlayerState", player.getState());
+    };
+
+    player.events.on("newSet", sendNewSetAlert);
+    player.events.on("changedState", sendChangedStateAlert);
+
     io.on("connection", (socket) => {
         const req = socket.request as Request;
         const user = req.session.user!;
@@ -22,26 +35,13 @@ export function socketSetup(
         userManager.setUser(user!, socket);
 
         io.emit("numberOfUsers", userManager.getSize())
-
-        const sendNewSetAlert = () => {
-            socket.emit("newSet");
-        };
-
-        const sendChangedStateAlert = () => {
-            socket.emit("currentPlayerState", player.getState());
-        };
-
-        player.events.on("newSet", sendNewSetAlert);
-        player.events.on("changedState", sendChangedStateAlert);
-
+        
         /**
          * Clean up when a user disconnects.
          */
         socket.on("disconnect", () => {
             logger.info("a user disconnected", user);
             userManager.removeUser(user!);
-            player.events.off("newSet", sendNewSetAlert);
-            player.events.off("changedState", sendChangedStateAlert);
             io.emit("numberOfUsers", userManager.getSize())
         });
 
