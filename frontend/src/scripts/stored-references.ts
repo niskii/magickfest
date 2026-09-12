@@ -1,4 +1,4 @@
-import { Bitrate } from '@shared/types/audio-transfer';
+import { Bitrate } from "@shared/types/audio-transfer";
 import { ref } from "vue";
 
 export const visualizerFFTSize = ref<number>(12);
@@ -12,12 +12,34 @@ export const altIcons = ref<boolean>(false);
 export const visualiserOn = ref<boolean>(true);
 
 export function load() {
-    (localStorage.getItem('visualizerFFTSize')) ? visualizerFFTSize.value = parseInt(localStorage.getItem('visualizerFFTSize')) : null;
-    (localStorage.getItem('visualizerFPSLimit')) ? visualizerFPSLimit.value = parseInt(localStorage.getItem('visualizerFPSLimit')) : null;
-    (localStorage.getItem('visualizerWidth')) ? visualizerWidth.value = parseFloat(localStorage.getItem('visualizerWidth')) : null;
-    (localStorage.getItem('visualizerColor')) ? visualizerColor.value = localStorage.getItem('visualizerColor') : null;
-    (localStorage.getItem('bitrate')) ? bitrate.value = parseInt(localStorage.getItem('bitrate')) : null;
-    (localStorage.getItem('volume')) ? volume.value = parseInt(localStorage.getItem('volume')) : null;
-    (localStorage.getItem('muted')) ? muted.value = (localStorage.getItem('muted') == 'true') : null;
-    (localStorage.getItem('altIcons')) ? altIcons.value = (localStorage.getItem('altIcons') == 'true') : null;
+    localStorage.getItem("visualizerFFTSize")
+        ? (visualizerFFTSize.value = parseInt(
+              localStorage.getItem("visualizerFFTSize"),
+          ))
+        : null;
+    localStorage.getItem("visualizerFPSLimit")
+        ? (visualizerFPSLimit.value = parseInt(
+              localStorage.getItem("visualizerFPSLimit"),
+          ))
+        : null;
+    localStorage.getItem("visualizerWidth")
+        ? (visualizerWidth.value = parseFloat(
+              localStorage.getItem("visualizerWidth"),
+          ))
+        : null;
+    localStorage.getItem("visualizerColor")
+        ? (visualizerColor.value = localStorage.getItem("visualizerColor"))
+        : null;
+    localStorage.getItem("bitrate")
+        ? (bitrate.value = parseInt(localStorage.getItem("bitrate")))
+        : null;
+    localStorage.getItem("volume")
+        ? (volume.value = parseInt(localStorage.getItem("volume")))
+        : null;
+    localStorage.getItem("muted")
+        ? (muted.value = localStorage.getItem("muted") == "true")
+        : null;
+    localStorage.getItem("altIcons")
+        ? (altIcons.value = localStorage.getItem("altIcons") == "true")
+        : null;
 }

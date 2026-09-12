@@ -1,10 +1,10 @@
 import { io } from "socket.io-client";
 
 export const socket = io({
-  withCredentials: true,
-  autoConnect: false,
-  timeout: 20000,
-  extraHeaders: {
-    authorization: null
-  }
+    withCredentials: true,
+    autoConnect: false,
+    timeout: 20000,
+    extraHeaders: {
+        authorization: null,
+    },
 });

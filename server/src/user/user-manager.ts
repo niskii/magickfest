@@ -40,6 +40,6 @@ export class UserManager {
     }
 
     getSize() {
-        return this.#connectedUsers.size
+        return this.#connectedUsers.size;
     }
 }

@@ -6,7 +6,7 @@ import { socketStore } from "../scripts/socket/manager";
 import { timeConverter } from "../scripts/time-converter";
 
 const currentTime = ref(0);
-let timer:NodeJS.Timeout = null
+let timer: NodeJS.Timeout = null;
 
 const props = defineProps<{
     viewport: Viewport;
@@ -20,8 +20,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    clearInterval(timer)
-})
+    clearInterval(timer);
+});
 
 function getTextWidth(text: String) {
     const widths = [

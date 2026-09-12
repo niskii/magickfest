@@ -45,8 +45,8 @@ export function parseTimeOfDay(time: any) {
                 Number(result[1]),
                 Number(result[2]),
                 0,
-                0
-            )
+                0,
+            );
 
             return Math.round((targetTime - Date.now()) / 1000);
         } else {

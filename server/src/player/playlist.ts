@@ -38,7 +38,7 @@ export class Playlist {
 
         this.#sets = new Array();
         setfiles.forEach((file) => {
-            const folder = "sets/" + path.basename(path.dirname(file))
+            const folder = "sets/" + path.basename(path.dirname(file));
             const set: Set = JSON.parse(
                 readFileSync(path.join(location, file)).toString(),
             );

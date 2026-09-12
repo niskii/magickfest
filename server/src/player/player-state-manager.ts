@@ -36,7 +36,7 @@ export class PlayerStateManager {
         );
 
         // Automatic recovery.
-        this.#player.playAtState()
+        this.#player.playAtState();
 
         return true;
     }

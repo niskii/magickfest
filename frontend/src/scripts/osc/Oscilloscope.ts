@@ -12,7 +12,11 @@ export class Oscilloscope {
     backgroundColor: string = "#000";
     lineWidth: number = 2;
 
-    constructor(canvas: ShallowRef<HTMLCanvasElement>, analyser?: AnalyserNode, fftSize?: number) {
+    constructor(
+        canvas: ShallowRef<HTMLCanvasElement>,
+        analyser?: AnalyserNode,
+        fftSize?: number,
+    ) {
         this.#canvas = canvas;
         this.#canvascontext = canvas.value.getContext("2d", {
             willReadFrequently: true,
@@ -40,7 +44,12 @@ export class Oscilloscope {
         this.#analyser.getByteTimeDomainData(this.#dataArray);
 
         this.#canvascontext.fillStyle = this.backgroundColor;
-        this.#canvascontext.clearRect(0, 0, this.#canvas.value.width, this.#canvas.value.height);
+        this.#canvascontext.clearRect(
+            0,
+            0,
+            this.#canvas.value.width,
+            this.#canvas.value.height,
+        );
 
         this.#canvascontext.lineCap = "butt";
         this.#canvascontext.lineJoin = "bevel";
@@ -49,9 +58,12 @@ export class Oscilloscope {
 
         this.#canvascontext.beginPath();
 
-        const stepsize = Math.ceil(this.#bufferLength / this.#canvas.value.width);
+        const stepsize = Math.ceil(
+            this.#bufferLength / this.#canvas.value.width,
+        );
 
-        const sliceWidth = ((this.#canvas.value.width * 1.0) / this.#bufferLength) * stepsize;
+        const sliceWidth =
+            ((this.#canvas.value.width * 1.0) / this.#bufferLength) * stepsize;
         const inverseHeight = this.#canvas.value.height / 2;
         let x = 0;
 
@@ -68,7 +80,10 @@ export class Oscilloscope {
             x += sliceWidth;
         }
 
-        this.#canvascontext.lineTo(this.#canvas.value.width, this.#canvas.value.height / 2);
+        this.#canvascontext.lineTo(
+            this.#canvas.value.width,
+            this.#canvas.value.height / 2,
+        );
 
         this.#canvascontext.stroke();
     }

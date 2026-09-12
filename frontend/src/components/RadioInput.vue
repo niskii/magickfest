@@ -20,7 +20,7 @@ const { elements, funcs, disabledIndices } = defineProps<{
 
 <template>
     <div class="radio">
-        <div v-for="e, i in elements" :class="(disabledIndices.includes(e)) ? 'radioSelected' : null" @click="funcs[i]">
+        <div v-for="(e, i) in elements" :class="disabledIndices.includes(e) ? 'radioSelected' : null" @click="funcs[i]">
             {{ e }}
         </div>
     </div>

@@ -73,8 +73,8 @@ export class OpusReader {
      * @returns number in seconds
      */
     calculateRangeDuration(pageStart: number, pageEnd: number) {
-        pageStart = Math.floor(pageStart)
-        pageEnd = Math.floor(pageEnd)
+        pageStart = Math.floor(pageStart);
+        pageEnd = Math.floor(pageEnd);
         if (
             pageStart < 0 ||
             pageEnd < 0 ||
@@ -84,7 +84,7 @@ export class OpusReader {
             return 0;
 
         return this.#fileSplitter.calculateDurationSeconds(
-            (this.#pages[pageStart].position),
+            this.#pages[pageStart].position,
             this.#pages[pageEnd].position,
         );
     }
@@ -163,8 +163,8 @@ export class OpusReader {
      * @returns AudioPacket containing audio buffer slice
      */
     makeChunkFromRange(start: number, end: number, time: number) {
-        start = Math.floor(start)
-        end = Math.floor(end)
+        start = Math.floor(start);
+        end = Math.floor(end);
         const chunks = this.#fileSplitter.sliceByPage(start, end);
         if (chunks !== null) {
             const packet: AudioPacket = {
@@ -201,9 +201,13 @@ export class OpusReader {
             pageStartOverride !== undefined ? pageStartOverride : currentPage;
         const pageEnd = this.addPages(pageStart, numberOfPages);
 
-        if (pageStart > this.#numberOfPages || pageEnd > this.#numberOfPages || pageStart == pageEnd)
+        if (
+            pageStart > this.#numberOfPages ||
+            pageEnd > this.#numberOfPages ||
+            pageStart == pageEnd
+        )
             return { data: null, status: ReadCode.EOF };
-        
+
         if (
             this.calculateRangeDuration(currentPage, pageStart) >=
             globalThis.settings.maxSecondsLoadAhead

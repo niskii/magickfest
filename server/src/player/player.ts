@@ -265,7 +265,8 @@ export class Player {
         if (startTime !== undefined) this.#startTime = startTime;
         else this.#startTime = Date.now();
 
-        if (this.#initialStartTime == 0) this.#initialStartTime = this.#startTime;
+        if (this.#initialStartTime == 0)
+            this.#initialStartTime = this.#startTime;
 
         this.#state = PlaybackState.Running;
         this.#playbackTimer?.close();

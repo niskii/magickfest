@@ -4,7 +4,6 @@ import { playerState } from "./socket/manager";
 import * as storage from "./stored-references";
 
 export default (audioStreamPlayer: ShallowRef, visualiserRef: ShallowRef) => {
-
     watch(storage.altIcons, () => {
         localStorage.setItem("altIcons", storage.altIcons.value.toString());
     });

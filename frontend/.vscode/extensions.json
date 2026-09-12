@@ -1,7 +1,7 @@
 {
-  "recommendations": [
-    "Vue.volar",
-    "arcanis.vscode-zipfs",
-    "esbenp.prettier-vscode"
-  ]
+    "recommendations": [
+        "Vue.volar",
+        "arcanis.vscode-zipfs",
+        "esbenp.prettier-vscode"
+    ]
 }

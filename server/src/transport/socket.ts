@@ -32,15 +32,15 @@ export function socketSetup(
         logger.info("a user connected", user);
         userManager.setUser(user!, socket);
 
-        io.emit("numberOfUsers", userManager.getSize())
-        
+        io.emit("numberOfUsers", userManager.getSize());
+
         /**
          * Clean up when a user disconnects.
          */
         socket.on("disconnect", () => {
             logger.info("a user disconnected", user);
             userManager.removeUser(user!);
-            io.emit("numberOfUsers", userManager.getSize())
+            io.emit("numberOfUsers", userManager.getSize());
         });
 
         socket.on("getPlayerState", () => {
@@ -71,7 +71,11 @@ export function socketSetup(
         socket.on(
             "fetchChunkFromPage",
             (data: { bitrate: Bitrate; pageStart: number }, callback) => {
-                if (!Number.isInteger(data.bitrate) || !Number.isInteger(data.pageStart)) return;
+                if (
+                    !Number.isInteger(data.bitrate) ||
+                    !Number.isInteger(data.pageStart)
+                )
+                    return;
                 const result = player.getNextChunk(
                     data.pageStart,
                     userManager

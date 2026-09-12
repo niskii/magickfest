@@ -1,4 +1,4 @@
-export function timeConverter (time: number) {
+export function timeConverter(time: number) {
     time = Math.round(time);
     return (
         Math.floor(time / 60 / 60)
@@ -9,4 +9,4 @@ export function timeConverter (time: number) {
         ":" +
         (Math.floor(time) % 60).toString().padStart(2, "0")
     );
-};
+}
