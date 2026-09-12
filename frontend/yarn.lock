@@ -575,12 +575,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wasm-audio-decoders/opus-ml@npm:0.0.2":
-  version: 0.0.2
-  resolution: "@wasm-audio-decoders/opus-ml@npm:0.0.2"
-  dependencies:
-    "@wasm-audio-decoders/common": "npm:9.0.7"
-  checksum: 10c0/0777576226478aade37fabbc76b8483491add1ed853d84d3da9485b11f56628765c0930c01bb01a60cfd9ab299945fa232add7ed0680d7c3a9bbe9d65b898de2
+"@wasm-audio-decoders/opus-ml@https://registry.yarnpkg.com/@favware/skip-dependency/-/skip-dependency-1.0.2.tgz":
+  version: 1.0.2
+  resolution: "@wasm-audio-decoders/opus-ml@https://registry.yarnpkg.com/@favware/skip-dependency/-/skip-dependency-1.0.2.tgz"
+  checksum: 10c0/86c6b6442fcb6675ab470601c59ed9f047df51a390c640a95f0e802a005ae362b8163f5768c453958c175ae49800798118bded35df34b4df38eb892d24e138cf
   languageName: node
   linkType: hard
 
