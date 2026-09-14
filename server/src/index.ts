@@ -48,6 +48,8 @@ const io = new Server(server, {
         origin: config.origin,
         credentials: true,
     },
+
+    perMessageDeflate: false,
     
     connectTimeout: settings.socket.connectTimeout,
     pingInterval: settings.socket.pingInterval,

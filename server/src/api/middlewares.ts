@@ -6,6 +6,7 @@ import { Express, NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import session from "express-session";
 import helmet from "helmet";
+import lusca from "lusca";
 import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
 import logger from "src/logger";
@@ -71,6 +72,26 @@ const sessionMiddleware = session({
     },
 });
 
+const luscaOptions = lusca({
+    csrf: {
+        cookie: {
+            name: "_csrf" 
+        },
+        secret: process.env.SessionSecret
+    },
+    csp: {
+        policy: {
+            "default-src": "*",
+            "connect-src": "'self' wss://",
+        },
+    },
+    xframe: "SAMEORIGIN",
+    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+    xssProtection: true,
+    nosniff: true,
+    referrerPolicy: "same-origin",
+});
+
 db.sync();
 
 export function setupMiddleware(
@@ -93,6 +114,7 @@ export function setupMiddleware(
     app.use(helmet());
     app.use(bodyParser.json());
     app.use(sessionMiddleware);
+    app.use(luscaOptions);
     app.use("/api/auth", authAPI);
     app.use("/api/public", publicAPI);
     app.use(isAuthorized);

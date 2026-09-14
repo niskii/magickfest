@@ -656,6 +656,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lusca@npm:^1":
+  version: 1.7.5
+  resolution: "@types/lusca@npm:1.7.5"
+  dependencies:
+    "@types/express": "npm:*"
+  checksum: 10c0/fe044e1aa97a29c7d9b3eb264fd009a4dbdaf26dbf2be43fe6e3890d0022c71e5e89ff398ceec527c03bc3b38e58ae3ae76fd46867eb3bf78885cf03726062de
+  languageName: node
+  linkType: hard
+
 "@types/mime@npm:^1":
   version: 1.3.5
   resolution: "@types/mime@npm:1.3.5"
@@ -2356,6 +2365,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lusca@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "lusca@npm:1.7.0"
+  dependencies:
+    tsscmp: "npm:^1.0.5"
+  checksum: 10c0/73b49c9289bbdff73298421bdafc0633f958d97bef51a0fe747bbd1ec5a8c6bb2ff9ada37e84d3a8e23703ae2db1fcf8e3d1fbea366559e3b7261467c66fbe2e
+  languageName: node
+  linkType: hard
+
 "magic-bytes.js@npm:^1.13.0":
   version: 1.13.0
   resolution: "magic-bytes.js@npm:1.13.0"
@@ -3139,6 +3157,7 @@ __metadata:
     "@types/cors": "npm:^2"
     "@types/express": "npm:^5.0.5"
     "@types/express-session": "npm:^1"
+    "@types/lusca": "npm:^1"
     "@types/minimist": "npm:^1"
     "@types/node": "npm:^26.0.0"
     axios: "npm:^1.18.1"
@@ -3152,6 +3171,7 @@ __metadata:
     express-rate-limit: "npm:^8.5.2"
     express-session: "npm:^1.18.2"
     helmet: "npm:^8.1.0"
+    lusca: "npm:^1.7.0"
     minimist: "npm:^1.2.8"
     prettier: "npm:3.6.2"
     sequelize: "npm:^6.37.8"
@@ -3547,6 +3567,13 @@ __metadata:
   version: 4.10.2
   resolution: "tslog@npm:4.10.2"
   checksum: 10c0/78b4bd5432e5c2b3fc611d6acefddd3c3f1f4f121c2d47028227d0930b85544b4c928ecd37e2c88908ff195a6f1b90f1783d5dda55bcaa62534cec6b9a2cee79
+  languageName: node
+  linkType: hard
+
+"tsscmp@npm:^1.0.5":
+  version: 1.0.6
+  resolution: "tsscmp@npm:1.0.6"
+  checksum: 10c0/2f79a9455e7e3e8071995f98cdf3487ccfc91b760bec21a9abb4d90519557eafaa37246e87c92fa8bf3fef8fd30cfd0cc3c4212bb929baa9fb62494bfa4d24b2
   languageName: node
   linkType: hard
 
