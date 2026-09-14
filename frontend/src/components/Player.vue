@@ -131,12 +131,14 @@ watch(
 );
 
 function playerStart() {
+    if (!audioStreamPlayer.value) return;
     audioStreamPlayer.value.reset();
     audioStreamPlayer.value.start();
     setVisualiser();
 }
 
 function playerStop() {
+    if (!audioStreamPlayer.value) return;
     audioStreamPlayer.value.reset();
 }
 
