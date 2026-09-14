@@ -4,7 +4,7 @@ import {
     GuildMember,
     Interaction,
     InteractionReplyOptions,
-    MessageFlags
+    MessageFlags,
 } from "discord.js";
 import config from "../../config/config";
 import { getDiscordEnvironment } from "../envs";
@@ -20,7 +20,9 @@ const publicCommands = ["np", "setlist"];
 let scheduledStartTimeout: NodeJS.Timeout | undefined;
 
 async function isAdmin(interaction: ChatInputCommandInteraction) {
-    const member = await interaction.guild?.members.fetch(interaction.member!.user.id) as GuildMember;
+    const member = (await interaction.guild?.members.fetch(
+        interaction.member!.user.id,
+    )) as GuildMember;
     const hasRole = member.roles.cache.has(envs.AdminRoleID);
 
     if (!hasRole) {
@@ -33,14 +35,19 @@ async function isAdmin(interaction: ChatInputCommandInteraction) {
     return hasRole;
 }
 
-async function handleTimeParsing(interaction: ChatInputCommandInteraction, timeOfDay = false) {
+async function handleTimeParsing(
+    interaction: ChatInputCommandInteraction,
+    timeOfDay = false,
+) {
     let time = interaction.options.getString("time");
 
     if (time < 0) {
         throw "invalid time value";
     }
 
-    let parsedTime = (timeOfDay) ? parseTimeOfDay(interaction.options.getString("time")) : parseTime(interaction.options.getString("time"));
+    let parsedTime = timeOfDay
+        ? parseTimeOfDay(interaction.options.getString("time"))
+        : parseTime(interaction.options.getString("time"));
 
     if (parsedTime === null) {
         throw "could not parse the input time!";
@@ -107,7 +114,7 @@ function fancySchmancyBarConverter(time: number, fullTime: number) {
 }
 
 function handleSetInfo(info: String, noInfo: String) {
-    return (info) ? info : noInfo;
+    return info ? info : noInfo;
 }
 
 async function scheduledStart(parsedTime: number, player: Player) {
@@ -119,19 +126,17 @@ async function scheduledStart(parsedTime: number, player: Player) {
         async () => {
             player.playAtForwarded();
 
-            await sendMessage('starting magickfest!');
+            await sendMessage("starting magickfest!");
         },
         Math.max(1, parsedTime),
     );
 }
 
-export function configureInteractions(
-    player: Player
-) {
+export function configureInteractions(player: Player) {
     player.events.on("newSet", async () => {
         const currentSet = player.getCurrentSet();
         await sendMessage(
-            `# now playing: ${handleSetInfo(currentSet.Author, '[unknown author]')} - ${handleSetInfo(currentSet.Title, '[untitled]')}`,
+            `# now playing: ${handleSetInfo(currentSet.Author, "[unknown author]")} - ${handleSetInfo(currentSet.Title, "[untitled]")}`,
         );
     });
 
@@ -152,8 +157,8 @@ export function configureInteractions(
                 case "np":
                     if (!player.isPlayerRunning()) {
                         replyPlaybackState(player, interaction);
-                        return
-                    };
+                        return;
+                    }
 
                     const currentSet = player.getCurrentSet();
 
@@ -162,7 +167,7 @@ export function configureInteractions(
                         embeds: [
                             {
                                 title: "MAGICKFEST 2026",
-                                description: `# NOW PLAYING: ${handleSetInfo(currentSet.Author, '[unknown author]')} - ${handleSetInfo(currentSet.Title, '[untitled]')}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), currentSet.Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(currentSet.Seconds as number)}`,
+                                description: `# NOW PLAYING: ${handleSetInfo(currentSet.Author, "[unknown author]")} - ${handleSetInfo(currentSet.Title, "[untitled]")}\n${fancySchmancyBarConverter(player.getCurrentPositionSeconds(), currentSet.Seconds as number)}⠀ ${fancySchmancyTimeConverter(player.getCurrentPositionSeconds())}/${fancySchmancyTimeConverter(currentSet.Seconds as number)}`,
                                 color: 2326507,
                                 fields: [],
                                 thumbnail: {
@@ -178,8 +183,8 @@ export function configureInteractions(
                 case "setlist":
                     if (player.getState().startTime == 0) {
                         interaction.reply({
-                            content: 'no schedule for today yet...'
-                        })
+                            content: "no schedule for today yet...",
+                        });
                         return;
                     }
 
@@ -190,16 +195,24 @@ export function configureInteractions(
 
                     player.getPlaylistSets().forEach((set) => {
                         finalString +=
-                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title && player.isPlayerRunning()) ? "**" : "") +
+                            (player.getCurrentSet().Author == set.Author &&
+                            player.getCurrentSet().Title == set.Title &&
+                            player.isPlayerRunning()
+                                ? "**"
+                                : "") +
                             "(<t:" +
                             lastSetTime +
                             ":t>-<t:" +
                             (lastSetTime + Math.round(set.Seconds as number)) +
                             ":t>) " +
-                            handleSetInfo(set.Author, '[unknown author]') +
+                            handleSetInfo(set.Author, "[unknown author]") +
                             " - " +
-                            handleSetInfo(set.Title, '[untitled]') +
-                            ((player.getCurrentSet().Author == set.Author && player.getCurrentSet().Title == set.Title && player.isPlayerRunning()) ? " << NOW PLAYING**" : "") +
+                            handleSetInfo(set.Title, "[untitled]") +
+                            (player.getCurrentSet().Author == set.Author &&
+                            player.getCurrentSet().Title == set.Title &&
+                            player.isPlayerRunning()
+                                ? " << NOW PLAYING**"
+                                : "") +
                             "\n";
                         lastSetTime += Math.round(set.Seconds as number);
                     });
@@ -213,7 +226,10 @@ export function configureInteractions(
                 case "start":
                     if (!player.isPlayerRunning()) {
                         if (!scheduledStartTimeout) {
-                            const parsedTime = await handleTimeParsing(interaction, true);
+                            const parsedTime = await handleTimeParsing(
+                                interaction,
+                                true,
+                            );
 
                             if (parsedTime > 0) {
                                 await interaction.reply({
@@ -222,7 +238,6 @@ export function configureInteractions(
 
                                 await scheduledStart(parsedTime, player);
                             } else {
-
                                 player.playAtForwarded();
 
                                 await interaction.reply({
@@ -306,7 +321,7 @@ export function configureInteractions(
                     });
 
                     break;
-                
+
                 case "manage-schedule":
                     if (!scheduledStartTimeout) {
                         await interaction.reply({
@@ -316,8 +331,11 @@ export function configureInteractions(
                     }
                     const type = interaction.options.getString("type");
 
-                    if (type == 'reschedule') {
-                        const parsedTime = await handleTimeParsing(interaction, true);
+                    if (type == "reschedule") {
+                        const parsedTime = await handleTimeParsing(
+                            interaction,
+                            true,
+                        );
 
                         if (parsedTime > 0) {
                             await scheduledStart(parsedTime, player);

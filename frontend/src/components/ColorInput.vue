@@ -1,7 +1,5 @@
 <script setup lang="ts">
-
 const model = defineModel<string>();
-
 </script>
 <style scoped>
 .swatch {
@@ -32,6 +30,6 @@ const model = defineModel<string>();
 
 <template>
     <div class="swatch" :style="{ 'background-color': model }">
-        <input type="color" v-model="model">
+        <input type="color" v-model="model" />
     </div>
 </template>

@@ -6,5 +6,5 @@ declare module "express-session" {
     }
 }
 
-export { };
+export {};
 //# sourceMappingURL=index.d.ts.map

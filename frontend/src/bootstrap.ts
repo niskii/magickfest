@@ -22,9 +22,11 @@ export async function bootstrapDiscord() {
     }
 
     bootstrap.step = "loading Discord SDK...";
-    const DiscordSDK = await import("@discord/embedded-app-sdk").catch((err) => {
-        throw new Error(`could not load the SDK dynamically: ${err}`);
-    });
+    const DiscordSDK = await import("@discord/embedded-app-sdk").catch(
+        (err) => {
+            throw new Error(`could not load the SDK dynamically: ${err}`);
+        },
+    );
 
     // Instantiate the SDK
     bootstrap.step = "connecting to Discord...";
@@ -68,16 +70,22 @@ export async function bootstrapDiscord() {
             }),
         }).catch((err) => {
             bootstrap.status = "error";
-            throw new Error(`the backend server could not authenticate the user with the provided code: ${err}`);
+            throw new Error(
+                `the backend server could not authenticate the user with the provided code: ${err}`,
+            );
         });
 
         if (response && !response.ok) {
             const text = await response.text();
-            throw new Error(`the backend server could not authenticate the user with the provided code: ${text}`);
+            throw new Error(
+                `the backend server could not authenticate the user with the provided code: ${text}`,
+            );
         }
 
         const { access_token } = await response.json().catch((err: Error) => {
-            throw new Error(`could not parse the token provided from the server: ${err}`);
+            throw new Error(
+                `could not parse the token provided from the server: ${err}`,
+            );
         });
 
         // Authenticate with Discord client (using the access_token)
@@ -87,7 +95,9 @@ export async function bootstrapDiscord() {
                 access_token,
             })
             .catch((err: Error) => {
-                throw new Error(`the token provided from the server isn't accepted by Discord: ${err}`);
+                throw new Error(
+                    `the token provided from the server isn't accepted by Discord: ${err}`,
+                );
             });
 
         if (auth == null) {
@@ -110,7 +120,9 @@ export async function bootstrapDiscord() {
 
         if (response && !response.ok) {
             const text = await response.text();
-            throw new Error(`Not member of group, discord error or couldn't save cookie: ${text}`);
+            throw new Error(
+                `Not member of group, discord error or couldn't save cookie: ${text}`,
+            );
         }
 
         bootstrap.platform = discordSdk.platform;

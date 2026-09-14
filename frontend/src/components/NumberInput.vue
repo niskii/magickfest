@@ -1,27 +1,23 @@
 <script setup lang="ts">
-
 const props = defineProps<{
-    min?: string
-    max?: string
-    step?: string
-}>()
+    min?: string;
+    max?: string;
+    step?: string;
+}>();
 
 const model = defineModel<number>();
 
 function decrease() {
-    if (!props.min || model.value > Number(props.min))
-        model.value -= parseFloat(props.step) || 1
+    if (!props.min || model.value > Number(props.min)) model.value -= parseFloat(props.step) || 1;
 }
 
 function increase() {
-    if (!props.max || model.value < Number(props.max))
-        model.value += parseFloat(props.step) || 1
+    if (!props.max || model.value < Number(props.max)) model.value += parseFloat(props.step) || 1;
 }
-
 </script>
 <style scoped>
 .button {
-    background-color: rgba(255, 255, 255, 0.0);
+    background-color: rgba(255, 255, 255, 0);
     color: #fff;
     border: none;
     padding: 0;
@@ -42,7 +38,7 @@ input::-webkit-inner-spin-button {
     /* <-- Apparently some margin are still there even though it's hidden */
 }
 
-input[type=number] {
+input[type="number"] {
     -moz-appearance: textfield;
     background: none;
     color: #fff;
@@ -56,7 +52,7 @@ input[type=number] {
 <template>
     <div class="numberInput">
         <button class="button" @click="decrease">-</button>
-        <input type="number" v-model="model" :min="props.min" :max="props.max" :step="props.step">
+        <input type="number" v-model="model" :min="props.min" :max="props.max" :step="props.step" />
         <button class="button" @click="increase">+</button>
     </div>
 </template>

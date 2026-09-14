@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { text, func, bgColor } = defineProps<{
     text?: string;
-    func?: ((e: Event) => void);
+    func?: (e: Event) => void;
     bgColor?: string;
 }>();
 </script>
@@ -17,7 +17,9 @@ const { text, func, bgColor } = defineProps<{
     cursor: pointer;
     font-weight: bold;
     box-shadow: 0 0 0 0.3vmax #1a1a1a;
-    transition: box-shadow 0.3s, filter 0.3s;
+    transition:
+        box-shadow 0.3s,
+        filter 0.3s;
     font-size: 1.15vmax;
     margin: 2vh 0;
 }

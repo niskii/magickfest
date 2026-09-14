@@ -32,8 +32,8 @@ export function socketSetup(
         logger.info("a user connected", user);
         userManager.setUser(user!, socket);
 
-        io.emit("numberOfUsers", userManager.getSize())
-        
+        io.emit("numberOfUsers", userManager.getSize());
+
         /**
          * Clean up when a user disconnects.
          */
@@ -41,7 +41,7 @@ export function socketSetup(
             if (!user && userManager.isConnected(user)) return
             logger.info("a user disconnected", user);
             userManager.removeUser(user!);
-            io.emit("numberOfUsers", userManager.getSize())
+            io.emit("numberOfUsers", userManager.getSize());
         });
 
         socket.on("getPlayerState", () => {
