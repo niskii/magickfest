@@ -16,7 +16,7 @@ export const readCommands = () => {
 
     const playlistFile: string = getOrDefault(
         argv.playlist,
-        path.join(globalThis.settings.setsLocation, "/playlist.json"),
+        path.join(globalThis.settings.application.setsLocation, "/playlist.json"),
     );
 
     const useSavedState = isDefined(argv.usestate);

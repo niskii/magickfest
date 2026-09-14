@@ -49,9 +49,9 @@ const io = new Server(server, {
         credentials: true,
     },
     
-    connectTimeout: 45_000,
-    pingInterval: 20_000,
-    pingTimeout: 40_000
+    connectTimeout: settings.socket.connectTimeout,
+    pingInterval: settings.socket.pingInterval,
+    pingTimeout: settings.socket.pingTimeout
 });
 
 const userManager = new UserManager();

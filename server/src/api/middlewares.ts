@@ -28,7 +28,7 @@ const limiter = rateLimit({
 const SequelizeStore = connect(session.Store);
 const db = new Sequelize({
     dialect: "sqlite",
-    storage: settings.sesstionStorageLocation,
+    storage: settings.session.storageLocation,
     logging: false,
 });
 
@@ -58,11 +58,11 @@ const sessionMiddleware = session({
         },
         table: "Session",
         db: db,
-        checkExpirationInterval: settings.expireCheckMs,
-        expiration: settings.sessionMaxAge,
+        checkExpirationInterval: settings.session.expireCheckMs,
+        expiration: settings.session.expiration,
     }),
     cookie: {
-        maxAge: settings.sessionMaxAge,
+        maxAge: settings.session.maxAge,
         partitioned: false,
         sameSite: "lax",
         secure: true,

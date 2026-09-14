@@ -357,8 +357,8 @@ export class Player {
                     if (!this.#loop) this.nextSet();
                     if (this.#state == PlaybackState.Running)
                         this.playAtStart();
-                }, globalThis.settings.playerNewSetTimeout);
+                }, globalThis.settings.application.playerNewSetTimeout);
             }
-        }, globalThis.settings.playerUpdateInterval);
+        }, globalThis.settings.application.playerUpdateInterval);
     }
 }

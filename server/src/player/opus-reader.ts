@@ -49,7 +49,7 @@ export class OpusReader {
         this.#pages = this.#fileSplitter.pages;
         this.#numberOfPages = this.#pages.length;
         this.#minPagesForChunk = this.calculateMinPages(
-            globalThis.settings.chunkDuration,
+            globalThis.settings.application.chunkDuration,
             this.#headerObject.audioPageDuration,
         );
         this.#totalDurationSeconds =
@@ -210,7 +210,7 @@ export class OpusReader {
 
         if (
             this.calculateRangeDuration(currentPage, pageStart) >=
-            globalThis.settings.maxSecondsLoadAhead
+            globalThis.settings.application.maxSecondsLoadAhead
         )
             return { data: null, status: ReadCode.INVALID };
 
