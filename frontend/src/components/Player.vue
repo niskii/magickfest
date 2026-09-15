@@ -53,14 +53,14 @@ onMounted(() => {
 
     const player = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
     audioStreamPlayer.value = player;
-
+    
     clearInterval(stateInterval.value);
     stateInterval.value = setInterval(() => {
         playState.value = [player.getCurrentPlayPosition(), player.getTotalDuration(), player.getDownloadedAudioTime()];
     }, config.UpdateInterval);
-
-    storage.load();
+    
     watchers(audioStreamPlayer, visualiserRef);
+    storage.load();
 
     document.addEventListener("freeze", handleFreeze);
     window.addEventListener("beforeunload", handleUnload);
