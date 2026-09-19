@@ -2,11 +2,11 @@ import bodyParser from "body-parser";
 import settings from "config/settings.json";
 import connect from "connect-session-sequelize";
 import cors from "cors";
+import { csrfSync } from "csrf-sync";
 import { Express, NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import session from "express-session";
 import helmet from "helmet";
-import lusca from "lusca";
 import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
 import logger from "src/logger";
@@ -19,6 +19,8 @@ import authAPI, {
 } from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
+
+const { generateToken, csrfSynchronisedProtection } = csrfSync();
 
 const limiter = rateLimit({
     windowMs: settings.rateWindowMs,
@@ -72,26 +74,6 @@ const sessionMiddleware = session({
     },
 });
 
-const luscaOptions = lusca({
-    csrf: {
-        cookie: {
-            name: "_csrf" 
-        },
-        secret: process.env.SessionSecret
-    },
-    csp: {
-        policy: {
-            "default-src": "*",
-            "connect-src": "'self' wss://",
-        },
-    },
-    xframe: "SAMEORIGIN",
-    hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-    xssProtection: true,
-    nosniff: true,
-    referrerPolicy: "same-origin",
-});
-
 db.sync();
 
 export function setupMiddleware(
@@ -114,15 +96,42 @@ export function setupMiddleware(
     app.use(helmet());
     app.use(bodyParser.json());
     app.use(sessionMiddleware);
-    app.use(luscaOptions);
+
+    app.get("/api/csrf-token", (req: Request, res: Response) => {
+        res.json({ token: generateToken(req) });
+    });
+    app.use(csrfSynchronisedProtection);
+
     app.use("/api/auth", authAPI);
     app.use("/api/public", publicAPI);
     app.use(isAuthorized);
     app.use("/api/service", serviceAPI);
     app.use(error);
 
+    function isSocketConnectionRequestValid(
+        receivedToken: any,
+        storedToken: any,
+    ) {
+        return (
+            typeof receivedToken === "string" &&
+            typeof storedToken === "string" &&
+            receivedToken === storedToken
+        );
+    }
+
     io.engine.use(helmet());
     io.engine.use(sessionMiddleware);
+    io.use((socket, next) => {
+        const req = socket.request as Request;
+        const storedToken = req.session.csrfToken;
+        const token = req.headers["csrftoken"];
+
+        if (isSocketConnectionRequestValid(token, storedToken)) {
+            next();
+        } else {
+            next(new Error("Invalid."));
+        }
+    });
     io.use(async (socket, next) => {
         const req = socket.request as Request;
         const user = req.session.user;

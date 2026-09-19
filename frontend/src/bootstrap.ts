@@ -1,4 +1,5 @@
 import { reactive } from "vue";
+import token from "./csrftoken";
 import logger from "./logger";
 
 export const bootstrap = reactive({
@@ -64,6 +65,7 @@ export async function bootstrapDiscord() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "x-csrf-token": token,
             },
             body: JSON.stringify({
                 code,
@@ -110,6 +112,7 @@ export async function bootstrapDiscord() {
             credentials: "include",
             headers: {
                 "Content-Type": "application/json",
+                "x-csrf-token": token,
             },
             body: JSON.stringify({
                 access_token,
