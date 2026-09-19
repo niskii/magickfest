@@ -1,17 +1,13 @@
 import bodyParser from "body-parser";
-import settings from "config/settings.json";
-import connect from "connect-session-sequelize";
-import cors from "cors";
 import { csrfSync } from "csrf-sync";
 import { Express, NextFunction, Request, Response } from "express";
-import rateLimit from "express-rate-limit";
-import session from "express-session";
 import helmet from "helmet";
-import sequelize, { Sequelize } from "sequelize";
 import { Server } from "socket.io";
 import logger from "src/logger";
 import { UserManager } from "src/user/user-manager";
-import config from "../../config/config";
+import corsConfig from "../../config/cors";
+import rateLimitConfig from "../../config/ratelimit";
+import sessionConfig from "../../config/session";
 import authAPI, {
     createUserFromGuildMemberObject,
     getGuildMember,
@@ -19,62 +15,9 @@ import authAPI, {
 } from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
+import { csrfAPI, isSocketConnectionRequestValid } from "./csrf";
 
-const { generateToken, csrfSynchronisedProtection } = csrfSync();
-
-const limiter = rateLimit({
-    windowMs: settings.rateWindowMs,
-    limit: settings.rateLimit,
-    legacyHeaders: false,
-});
-
-const SequelizeStore = connect(session.Store);
-const db = new Sequelize({
-    dialect: "sqlite",
-    storage: settings.session.storageLocation,
-    logging: false,
-});
-
-db.define("Session", {
-    sid: {
-        type: sequelize.STRING,
-        primaryKey: true,
-    },
-    user: sequelize.JSON,
-    expires: sequelize.DATE,
-    data: sequelize.TEXT,
-});
-
-const sessionMiddleware = session({
-    secret: process.env.SessionSecret!,
-    resave: false,
-    saveUninitialized: false,
-    name: "sid",
-
-    store: new SequelizeStore({
-        extendDefaultFields: function (defaults, session) {
-            return {
-                user: session.user ? session.user : null,
-                data: defaults.data,
-                expires: defaults.expires,
-            };
-        },
-        table: "Session",
-        db: db,
-        checkExpirationInterval: settings.session.expireCheckMs,
-        expiration: settings.session.expiration,
-    }),
-    cookie: {
-        maxAge: settings.session.maxAge,
-        partitioned: false,
-        sameSite: "lax",
-        secure: true,
-        httpOnly: true,
-        domain: process.env.CookieDomain,
-    },
-});
-
-db.sync();
+const { csrfSynchronisedProtection } = csrfSync();
 
 export function setupMiddleware(
     app: Express,
@@ -84,22 +27,13 @@ export function setupMiddleware(
 ) {
     configureRouter(player);
 
-    app.use(limiter);
+    app.use(rateLimitConfig);
     app.disable("x-powered-by");
-    app.use(
-        cors({
-            origin: config.origin,
-            credentials: true,
-            allowedHeaders: ["Access-Control-Allow-Origin"],
-        }),
-    );
+    app.use(corsConfig);
     app.use(helmet());
     app.use(bodyParser.json());
-    app.use(sessionMiddleware);
-
-    app.get("/api/csrf-token", (req: Request, res: Response) => {
-        res.json({ token: generateToken(req) });
-    });
+    app.use(sessionConfig);
+    app.use("/api", csrfAPI);
     app.use(csrfSynchronisedProtection);
 
     app.use("/api/auth", authAPI);
@@ -108,19 +42,8 @@ export function setupMiddleware(
     app.use("/api/service", serviceAPI);
     app.use(error);
 
-    function isSocketConnectionRequestValid(
-        receivedToken: any,
-        storedToken: any,
-    ) {
-        return (
-            typeof receivedToken === "string" &&
-            typeof storedToken === "string" &&
-            receivedToken === storedToken
-        );
-    }
-
     io.engine.use(helmet());
-    io.engine.use(sessionMiddleware);
+    io.engine.use(sessionConfig);
     io.use((socket, next) => {
         const req = socket.request as Request;
         const storedToken = req.session.csrfToken;
