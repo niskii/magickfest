@@ -47,7 +47,7 @@ export function setupMiddleware(
     io.use((socket, next) => {
         const req = socket.request as Request;
         const storedToken = req.session.csrfToken;
-        const token = req.headers["csrftoken"];
+        const token = socket.handshake.auth.csrftoken;
 
         if (isSocketConnectionRequestValid(token, storedToken)) {
             next();
@@ -68,7 +68,7 @@ export function setupMiddleware(
                 next();
             }
         } else {
-            const header = req.headers["authorization"];
+            const header = socket.handshake.auth.authorization;
 
             if (!header || !header.startsWith("Bearer ")) {
                 return next(new Error("unauthorized"));

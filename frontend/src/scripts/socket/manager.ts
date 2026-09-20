@@ -1,10 +1,8 @@
 import { type PlayerState } from "@shared/types/player-state";
+import { reactive, ref } from "vue";
 import logger from "../../logger";
 import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";
 import { socket } from "./socket";
-
-import { reactive, ref } from "vue";
-import { bootstrap } from "../../bootstrap";
 
 export const playerState = ref<PlayerState>(null);
 
@@ -98,9 +96,6 @@ export function shutdownSocket() {
 export function connect() {
     try {
         socketStore.isConnecting = true;
-        if (bootstrap.auth?.access_token) {
-            socket.io.opts.extraHeaders.authorization = `Bearer ${bootstrap.auth?.access_token}`;
-        }
         socket.connect();
     } catch (error) {
         logger.warn("Error connecting to server!", error);
