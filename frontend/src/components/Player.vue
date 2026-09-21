@@ -155,9 +155,9 @@ watch(
     },
 );
 
-watch(socketStore, () => {
-    console.log(socketStore.setInformation.coverURL);
-});
+// watch(socketStore, () => {
+//     console.log(socketStore.setInformation.coverURL);
+// });
 
 function playerStart() {
     if (!audioStreamPlayer.value) return;

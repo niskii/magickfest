@@ -84,4 +84,4 @@ const playerStateManager = new PlayerStateManager(
 
 playerStateManager.setupAutoSave(commandLineOptions.isLoadOverriden);
 configureInteractions(player);
-player.playAtForwarded();
+// player.playAtForwarded();
