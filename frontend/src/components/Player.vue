@@ -32,6 +32,7 @@ const visualiserRef = useTemplateRef<visualiserType>("visualiser");
 
 const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
+const bitrateList = ref<[string]>(['128kbps', '96kbps', '64kbps']);
 const isPaused = ref(false);
 const setIndex = ref(0);
 const startPaused = ref(true);
@@ -41,6 +42,10 @@ const overlayToggle = ref<boolean>(true);
 const bitratesShown = ref<boolean>(false);
 const settingsShown = ref<boolean>(false);
 const mobileBitratesShown = ref<boolean>(false);
+
+const easterEggCheck = "2kbps";
+const easterEggProgress = ref<number>(0);
+const easterEggShown = ref<boolean>(false);
 
 const versionName = import.meta.env.VITE_SHOW_VERSION == "true" ? import.meta.env.VITE_VERSION_NAME : null;
 
@@ -53,12 +58,12 @@ onMounted(() => {
 
     const player = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
     audioStreamPlayer.value = player;
-    
+
     clearInterval(stateInterval.value);
     stateInterval.value = setInterval(() => {
         playState.value = [player.getCurrentPlayPosition(), player.getTotalDuration(), player.getDownloadedAudioTime()];
     }, config.UpdateInterval);
-    
+
     watchers(audioStreamPlayer, visualiserRef);
     storage.load();
 
@@ -67,6 +72,12 @@ onMounted(() => {
 
     SocketManager.setupSocket();
 
+    if (!storage.easterEggStatus.value) {
+        window.addEventListener('keydown', easterEggFunc);
+    } else {
+        bitrateList.value.push('2kbps');
+    }
+
     onUnmounted(() => {
         document.removeEventListener("freeze", handleFreeze);
         window.removeEventListener("beforeunload", handleUnload);
@@ -74,6 +85,20 @@ onMounted(() => {
         disconnect();
     });
 });
+
+const easterEggFunc = (e: KeyboardEvent) => {
+    if (e.key == easterEggCheck[easterEggProgress.value]) {
+        if (e.key == "s") {
+            easterEggShown.value = true;
+            easterEggProgress.value = 0;
+            storage.easterEggStatus.value = true;
+            bitrateList.value.push('2kbps');
+            window.removeEventListener('keydown', easterEggFunc);
+        } else {
+            easterEggProgress.value += 1;
+        }
+    }
+}
 
 function handleUnload() {
     SocketManager.removeAllListeners();
@@ -129,6 +154,10 @@ watch(
         }
     },
 );
+
+watch(socketStore, () => {
+    console.log(socketStore.setInformation.coverURL);
+});
 
 function playerStart() {
     if (!audioStreamPlayer.value) return;
@@ -191,6 +220,11 @@ function getScreenViewport() {
 const switchQuality = (e: Event) => {
     const el = e.target as HTMLDivElement;
     storage.bitrate.value = parseInt(el.innerHTML.replace("kbps", ""));
+
+    // if (storage.bitrate.value == 2) {
+    //     audioStreamPlayer.value.reset();
+    //     audioStreamPlayer.value.start();
+    // }
 };
 
 function overlayClick() {
@@ -224,6 +258,8 @@ const renderCoverImage = (coverImage: string) => {
 
 const displayBitrate = (q: Bitrate) => {
     switch (q) {
+        case Bitrate.Bad:
+            return "/quality_2kbps.webp";
         case Bitrate.High:
             return "/quality_128.webp";
         case Bitrate.Medium:
@@ -239,13 +275,9 @@ const displayBitrate = (q: Bitrate) => {
     <div class="overlay" v-show="!socketStore.isConnecting && !socketStore.isConnected">
         <h2 v-show="wasDisconnected">you have been disconnected</h2>
         <img src="/magickfestlogo.gif" fetchpriority="high" style="width: 100%; max-width: 700px" />
-        <img
-            src="/connect_icon.webp"
-            fetchpriority="high"
-            style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer"
-            class="hoverBtn"
-            @click="overlayClick"
-        />
+        <img src="/connect_icon.webp" fetchpriority="high"
+            style="width: 200px; margin-top: 4vh; height: auto; cursor: pointer" class="hoverBtn"
+            @click="overlayClick" />
     </div>
     <div class="overlay" v-show="socketStore.authToggle">
         <h1>browser mode - authenticate through discord</h1>
@@ -260,6 +292,14 @@ const displayBitrate = (q: Bitrate) => {
     <div class="overlay" style="z-index: 9998" v-show="socketStore.isReconnecting">
         <h1>reconnecting...</h1>
     </div>
+    <div class="overlay" v-show="easterEggShown">
+        <h1>You are 2kbps People</h1>
+        <h2>2kbps mode unlocked</h2>
+        <Button :text="'Ok'" :bgColor="'#4a4a4a'" :func="() => {
+            easterEggShown = false;
+        }
+            " />
+    </div>
     <div class="overlay" v-show="settingsShown">
         <h1>settings</h1>
         <h2>visualizer FFT size:</h2>
@@ -271,66 +311,52 @@ const displayBitrate = (q: Bitrate) => {
         <h2>visualizer color:</h2>
         <ColorInput v-model="storage.visualizerColor.value"></ColorInput>
         <h2 v-show="getScreenViewport() != Viewport.Mobile">alternative volume icon:</h2>
-        <input v-show="getScreenViewport() != Viewport.Mobile" type="checkbox" style="aspect-ratio: 1/1" v-model="storage.altIcons.value" />
+        <input v-show="getScreenViewport() != Viewport.Mobile" type="checkbox" style="aspect-ratio: 1/1"
+            v-model="storage.altIcons.value" />
         <br />
-        <Button
-            :text="'close'"
-            :bgColor="'#4a4a4a'"
-            :func="
-                () => {
-                    settingsShown = false;
-                }
-            "
-        />
+        <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => {
+            settingsShown = false;
+        }
+            " />
     </div>
     <div class="overlay" v-show="mobileBitratesShown">
         <h1>select bitrate</h1>
-        <RadioInput
-            :elements="['128kbps', '96kbps', '64kbps']"
-            :funcs="[switchQuality, switchQuality, switchQuality]"
-            :disabled-indices="['128kbps', '96kbps', '64kbps'].filter((e) => e == storage.bitrate.value.toString() + 'kbps')"
-        >
+        <RadioInput :elements="bitrateList" :funcs="[switchQuality, switchQuality, switchQuality]"
+            :disabled-indices="bitrateList.filter((e) => e == storage.bitrate.value.toString() + 'kbps')">
         </RadioInput>
-        <Button
-            :text="'close'"
-            :bgColor="'#4a4a4a'"
-            :func="
-                () => {
-                    mobileBitratesShown = false;
-                }
-            "
-        />
+        <Button :text="'close'" :bgColor="'#4a4a4a'" :func="() => {
+            mobileBitratesShown = false;
+        }
+            " />
     </div>
     <div class="flex center flex-responsive" id="main">
         <div id="statusInfo">
-            <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile"> </StatusIndicator>
+            <StatusIndicator class="flex center" :status="playerState" v-show="getScreenViewport() != Viewport.Mobile">
+            </StatusIndicator>
             <div id="connectedInfo" v-show="getScreenViewport() != Viewport.Mobile">
                 <h4>{{ socketStore.numberOfUsers }}</h4>
                 <img src="/originals/viewers_icon.png" />
             </div>
         </div>
         <p id="versionIndicator">{{ versionName }}</p>
-        <img id="cover" fetchpriority="high" :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
+        <img id="cover" fetchpriority="high" :src="renderCoverImage(socketStore.setInformation.coverURL)"
+            alt="cover artwork for set" />
         <div id="setInfo">
             <SetInfo :playerState="playerState" :viewport="getScreenViewport()"></SetInfo>
-            <Visualiser
-                v-show="storage.visualiserOn.value"
-                ref="visualiser"
-                class="visualiser"
-                :fftSize="storage.visualizerFFTSize.value"
-                :fpsLimit="storage.visualizerFPSLimit.value"
-                :lineWidth="storage.visualizerWidth.value"
-                :lineColor="storage.visualizerColor.value"
-                backgroundColor="#0c0c11"
-            >
+            <Visualiser v-show="storage.visualiserOn.value" ref="visualiser" class="visualiser"
+                :fftSize="storage.visualizerFFTSize.value" :fpsLimit="storage.visualizerFPSLimit.value"
+                :lineWidth="storage.visualizerWidth.value" :lineColor="storage.visualizerColor.value"
+                backgroundColor="#0c0c11">
             </Visualiser>
-            <h3 v-show="!storage.visualiserOn.value && getScreenViewport() == Viewport.Mobile" class="visualiser">[visualizer is off]</h3>
+            <h3 v-show="!storage.visualiserOn.value && getScreenViewport() == Viewport.Mobile" class="visualiser">
+                [visualizer is off]</h3>
         </div>
     </div>
 
     <div class="flex flex-responsive responsive-center" id="bottomBar">
         <div style="min-width: 140px; width: 25%; padding: 0 2em" class="fullOnly">
-            <Mute :muted="storage.muted.value" :volume="parseInt(storage.volume.value.toString())" :alt="storage.altIcons.value" @click="mute()"></Mute>
+            <Mute :muted="storage.muted.value" :volume="parseInt(storage.volume.value.toString())"
+                :alt="storage.altIcons.value" @click="mute()"></Mute>
             <div class="flex center" id="volumeSlider">
                 <input v-model="storage.volume.value" type="range" min="0" max="100" />
                 <div :style="{ width: storage.volume.value + '%' }"></div>
@@ -342,87 +368,58 @@ const displayBitrate = (q: Bitrate) => {
                     <h4>{{ socketStore.numberOfUsers }}</h4>
                     <img src="/originals/viewers_icon.png" />
                 </div>
-                <StatusIndicator
-                    class="flex center"
-                    :status="playerState"
-                    v-show="getScreenViewport() == Viewport.Mobile"
-                    :hide-status-text="true"
-                ></StatusIndicator>
+                <StatusIndicator class="flex center" :status="playerState"
+                    v-show="getScreenViewport() == Viewport.Mobile" :hide-status-text="true"></StatusIndicator>
                 <span id="time">
                     {{ timeConverter(playState[0]) }} /
                     {{ timeConverter(playState[1]) }}
                 </span>
             </div>
             <div id="progressbar">
-                <div
-                    id="buffered"
-                    :style="{
-                        width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
-                    }"
-                ></div>
-                <div
-                    id="filled"
-                    :style="{
-                        width: (playState[0] / playState[1]) * 100 + '%',
-                    }"
-                ></div>
+                <div id="buffered" :style="{
+                    width: ((playState[0] + playState[2]) / playState[1]) * 100 + '%',
+                }"></div>
+                <div id="filled" :style="{
+                    width: (playState[0] / playState[1]) * 100 + '%',
+                }"></div>
             </div>
         </div>
 
         <div id="settings-panel">
-            <img
-                id="visualiser-button"
+            <img id="visualiser-button"
                 :src="storage.visualiserOn.value ? '/visualizer_icon.webp' : '/visualizer_icon_disabled.webp'"
-                alt="visualizer icon"
-                @click="
+                alt="visualizer icon" @click="
                     () => {
                         storage.visualiserOn.value = !storage.visualiserOn.value;
                     }
-                "
-            />
-            <div id="quality-button">
-                <img
-                    :src="displayBitrate(storage.bitrate.value)"
-                    :alt="'quality: ' + storage.bitrate.value + 'kbps'"
-                    style="height: 6vh"
-                    @click="
-                        () => {
-                            if (getScreenViewport() == Viewport.Mobile) {
-                                mobileBitratesShown = !mobileBitratesShown;
-                            } else {
-                                bitratesShown = !bitratesShown;
-                            }
-                        }
-                    "
-                />
-                <img
-                    class="fullOnly"
-                    src="/dropdown_arrow.webp"
-                    alt=""
-                    :style="{
-                        height: '2vh',
-                        marginLeft: '0.3vw',
-                        transform: bitratesShown ? 'rotate(180deg)' : '',
-                    }"
-                />
-                <ListDropdown
-                    :elements="['128kbps', '96kbps', '64kbps']"
-                    :funcs="[switchQuality, switchQuality, switchQuality]"
-                    :disabled-indices="['128kbps', '96kbps', '64kbps'].filter((e) => e == storage.bitrate.value.toString() + 'kbps')"
-                    :visible="bitratesShown"
-                >
+                " />
+            <div id="quality-button" @click="
+                () => {
+                    if (getScreenViewport() == Viewport.Mobile) {
+                        mobileBitratesShown = !mobileBitratesShown;
+                    } else {
+                        bitratesShown = !bitratesShown;
+                    }
+                }
+            ">
+                <img :src="displayBitrate(storage.bitrate.value)" :alt="'quality: ' + storage.bitrate.value + 'kbps'"
+                    style="height: 6vh" />
+                <img class="fullOnly" src="/dropdown_arrow.webp" alt="" :style="{
+                    height: '2vh',
+                    marginLeft: '0.3vw',
+                    transform: bitratesShown ? 'rotate(180deg)' : '',
+                }" />
+                <ListDropdown :elements="bitrateList"
+                    :funcs="[switchQuality, switchQuality, switchQuality, switchQuality]"
+                    :disabled-indices="bitrateList.filter((e) => e == storage.bitrate.value.toString() + 'kbps')"
+                    :visible="bitratesShown">
                 </ListDropdown>
             </div>
-            <img
-                id="settings-button"
-                src="/settings_icon.webp"
-                alt="settings"
-                @click="
-                    () => {
-                        settingsShown = !settingsShown;
-                    }
-                "
-            />
+            <img id="settings-button" src="/settings_icon.webp" alt="settings" @click="
+                () => {
+                    settingsShown = !settingsShown;
+                }
+            " />
         </div>
     </div>
 </template>

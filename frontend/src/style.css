@@ -53,7 +53,7 @@ body {
     margin-right: var(--sair);
 }
 
-#main > * {
+#main>* {
     margin: 0 1vw;
 }
 
@@ -143,7 +143,7 @@ input[type="checkbox"]:checked::before {
     background-color: var(--darker-gray);
 }
 
-#bottomBar > div {
+#bottomBar>div {
     display: flex;
     align-items: center;
 }
@@ -307,7 +307,7 @@ input[type="checkbox"]:checked::before {
     color: var(--almost-white);
 }
 
-.dropdown div:not(.dropdownSelected):hover {
+.dropdown div:not(.dropdownSelected):not(.line):hover {
     cursor: pointer;
     filter: brightness(0.65);
 }
@@ -320,8 +320,9 @@ input[type="checkbox"]:checked::before {
     position: absolute;
     z-index: 20;
     right: 0;
-    bottom: 0.2vmax;
-    width: 0.2vmax;
+    top: 1.42vmax;
+    /* bottom: 0.2vmax; */
+    width: 0.23vmax;
     height: 79%;
     background-color: var(--white-gray);
 }
@@ -354,7 +355,7 @@ input[type="checkbox"]:checked::before {
     cursor: not-allowed;
 }
 
-.dropdownSelected > .horizontalLine {
+.dropdownSelected>.horizontalLine {
     background-color: var(--mid-gray) !important;
     cursor: not-allowed;
 }
@@ -401,15 +402,13 @@ input[type="checkbox"]:checked::before {
     left: -2%;
     width: 104%;
     height: 100%;
-    background: linear-gradient(
-        to right,
-        var(--main-bg-color) 0%,
-        var(--main-bg-color) 3%,
-        rgba(12, 12, 17, 0) 15%,
-        rgba(12, 12, 17, 0) 85%,
-        var(--main-bg-color) 97%,
-        var(--main-bg-color) 100%
-    );
+    background: linear-gradient(to right,
+            var(--main-bg-color) 0%,
+            var(--main-bg-color) 3%,
+            rgba(12, 12, 17, 0) 15%,
+            rgba(12, 12, 17, 0) 85%,
+            var(--main-bg-color) 97%,
+            var(--main-bg-color) 100%);
 }
 
 .overlay h2 {
@@ -605,15 +604,13 @@ input[type="checkbox"]:checked::before {
         justify-content: start !important;
         padding-top: 1em;
         height: calc(20% + var(--saib));
-        background: linear-gradient(
-            0deg,
-            rgb(0, 0, 0) var(--saib),
-            var(--darker-gray) calc(var(--saib) + 6px),
-            var(--darker-gray) 100%
-        );
+        background: linear-gradient(0deg,
+                rgb(0, 0, 0) var(--saib),
+                var(--darker-gray) calc(var(--saib) + 6px),
+                var(--darker-gray) 100%);
     }
 
-    #main > div {
+    #main>div {
         width: 100%;
         text-align: center;
     }
@@ -759,6 +756,7 @@ input[type="checkbox"]:checked::before {
 
 /* minimized widescreen/small window widescreen */
 @media screen and (min-aspect-ratio: 7/3) and (max-height: 360px) {
+
     h1,
     h2 {
         float: left;
@@ -987,7 +985,7 @@ input[type="checkbox"]:checked::before {
         margin: 0;
     }
 
-    .playerInfo > div {
+    .playerInfo>div {
         position: absolute;
         bottom: 0.2em;
     }

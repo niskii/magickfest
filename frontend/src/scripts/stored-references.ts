@@ -10,6 +10,7 @@ export const volume = ref<number>(75);
 export const muted = ref<boolean>(false);
 export const altIcons = ref<boolean>(false);
 export const visualiserOn = ref<boolean>(true);
+export const easterEggStatus = ref<boolean>(false);
 
 export function load() {
     localStorage.getItem("visualizerFFTSize")
@@ -41,5 +42,8 @@ export function load() {
         : null;
     localStorage.getItem("altIcons")
         ? (altIcons.value = localStorage.getItem("altIcons") == "true")
+        : null;
+    localStorage.getItem("easterEggStatus")
+        ? (easterEggStatus.value = localStorage.getItem("easterEggStatus") == "true")
         : null;
 }

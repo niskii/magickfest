@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@discord/embedded-app-sdk": "^2.5.0",
+        "@vue/compiler-sfc": "^3.5.43",
         "@vueuse/core": "^15.0.0",
         "dotenv": "^18.0.1",
         "ogg-opus-decoder": "^1.7.5",

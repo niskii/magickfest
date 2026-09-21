@@ -8,6 +8,10 @@ export default (audioStreamPlayer: ShallowRef, visualiserRef: ShallowRef) => {
         localStorage.setItem("altIcons", storage.altIcons.value.toString());
     });
 
+    watch(storage.easterEggStatus, () => {
+        localStorage.setItem("easterEggStatus", storage.easterEggStatus.value.toString());
+    });
+
     watch(storage.bitrate, () => {
         localStorage.setItem("bitrate", storage.bitrate.value.toString());
 
