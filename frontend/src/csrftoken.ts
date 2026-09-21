@@ -2,6 +2,8 @@ const response = await fetch("/api/csrf-token", {
     method: "GET",
 });
 
-const token = (await response.json()).token;
+let token: string = null;
+
+if (response.ok) token = (await response.json()).token;
 
 export default token;
