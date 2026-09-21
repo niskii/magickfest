@@ -77,6 +77,9 @@ function onConnectError(err: Error) {
                 socketStore.alreadyConnected = true;
                 break;
             }
+            case "invalid_csrf": {
+                break;
+            }
         }
     }
 }

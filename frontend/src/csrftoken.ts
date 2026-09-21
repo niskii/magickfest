@@ -1,9 +1,13 @@
-const response = await fetch("/api/csrf-token", {
-    method: "GET",
-});
-
 let token: string = null;
 
-if (response.ok) token = (await response.json()).token;
+export async function getCTRFToken() {
+    if (!token) {
+        const response = await fetch("/api/csrf-token", {
+            method: "GET",
+        });
+        if (!response.ok) return null;
+        token = (await response.json()).token;
+    }
 
-export default token;
+    return token;
+}
