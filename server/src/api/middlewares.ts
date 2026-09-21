@@ -52,7 +52,7 @@ export function setupMiddleware(
         if (isSocketConnectionRequestValid(token, storedToken)) {
             next();
         } else {
-            next(new Error("Invalid."));
+            next(new Error("invalid_csrf"));
         }
     });
     io.use(async (socket, next) => {

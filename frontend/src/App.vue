@@ -3,7 +3,7 @@ import Player from "./components/Player.vue";
 
 import { onMounted } from "vue";
 import { bootstrap, bootstrapDiscord } from "./bootstrap";
-import token from "./csrftoken";
+import { getCTRFToken } from "./csrftoken";
 import ErrorScreen from "./screens/ErrorScreen.vue";
 import LoadingScreen from "./screens/LoadingScreen.vue";
 
@@ -15,7 +15,7 @@ onMounted(() => {
             method: "POST",
             credentials: "include",
             headers: {
-                "x-csrf-token": token,
+                "x-csrf-token": await getCTRFToken(),
             },
         });
     });
@@ -23,21 +23,18 @@ onMounted(() => {
 </script>
 
 <template>
-    <div
-        id="body"
-        :class="[
-            { pip: bootstrap.layout == 1 },
-            { grid: bootstrap.layout == 2 },
-            { desktop: bootstrap.platform == 'desktop' },
-            { mobile: bootstrap.platform == 'mobile' },
-        ]"
-    >
-        <div id="frame">
-            <LoadingScreen v-if="bootstrap.status == 'loading'" :step="bootstrap.step" />
+<div id="body" :class="[
+    { pip: bootstrap.layout == 1 },
+    { grid: bootstrap.layout == 2 },
+    { desktop: bootstrap.platform == 'desktop' },
+    { mobile: bootstrap.platform == 'mobile' },
+]">
+    <div id="frame">
+        <LoadingScreen v-if="bootstrap.status == 'loading'" :step="bootstrap.step" />
 
-            <ErrorScreen v-else-if="bootstrap.status == 'error'" :error="bootstrap.error" />
+        <ErrorScreen v-else-if="bootstrap.status == 'error'" :error="bootstrap.error" />
 
-            <Player v-else></Player>
-        </div>
+        <Player v-else></Player>
     </div>
+</div>
 </template>
