@@ -65,6 +65,8 @@ export class SetInfoFetcher {
             this.#socket.once("setInformation", (info: SocketSetInfo) => {
                 this.setInfo.title = info.Title;
                 this.setInfo.author = info.Author;
+                this.setInfo.coverURL = null;
+                this.setInfo.coverBlob = null;
                 resolve(this.setInfo);
             });
         }).finally(() => this.#socket.removeListener("setInformation"));
