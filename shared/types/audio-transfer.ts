@@ -11,5 +11,5 @@ export enum Bitrate {
   High = 128,
   Medium = 96,
   Low = 64,
-  Bad = 2,
+  Bad = 4,
 }

@@ -1,4 +1,4 @@
-$bitrates = 128, 96, 64, 2
+$bitrates = 128, 96, 64, 4
 
 $folder = Get-Location
 Write-Output "Searching files in $folder"
