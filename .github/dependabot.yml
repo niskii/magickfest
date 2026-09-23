@@ -5,7 +5,15 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "yarn"
+  - directories:
+      - "/frontend"
+      - "/server"
     schedule:
       interval: "weekly"
+    labels:
+      - "📦dependencies"
+      - "🛠️yarn"
+      - "🤖Dependabot"
+    commit-message:
+      prefix: "[dependabot - yarn] "
