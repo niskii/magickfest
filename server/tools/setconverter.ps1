@@ -20,6 +20,14 @@ foreach ($file in $audioFiles) {
                 Write-Output "found $($path)/$($file.Name) with cover $($cover.Name)"
                 $covers[$index] = $cover
             }
+            else {
+                $embed = "$($path)/cover.jpg"
+                ffmpeg -v 0 -i $file -an -vcodec copy $embed 
+                if (Test-Path -LiteralPath $embed) {
+                    Write-Output "extracted embedded cover: $($embed)"
+                    $covers[$index] = Get-Item -Path $embed
+                }
+            }
         }
         else {
             Write-Output "found $($path)/$($file.Name)"
@@ -29,13 +37,13 @@ foreach ($file in $audioFiles) {
 
 $confirmation = Read-Host -Prompt "Convert these files? (y/n)"
 
-$jsonPath = Join-Path -Path $folder -ChildPath "playlist.json"
-@{Sets = $playlist } | ConvertTo-Json | Out-File $jsonPath
-
 if ($confirmation -ne "y") {
     Write-Output "Exiting"
     exit
 }
+
+$jsonPath = Join-Path -Path $folder -ChildPath "playlist.json"
+@{Sets = $playlist } | ConvertTo-Json | Out-File $jsonPath
 
 Write-Output "Converting files to opus"
 
