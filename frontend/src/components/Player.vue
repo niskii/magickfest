@@ -32,7 +32,7 @@ const visualiserRef = useTemplateRef<visualiserType>("visualiser");
 
 const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
-const bitrateList = ref<[string]>(['128kbps', '96kbps', '64kbps']);
+const bitrateList = ref<[string, string, string] | [string, string, string, string]>(['128kbps', '96kbps', '64kbps']);
 const isPaused = ref(false);
 const setIndex = ref(0);
 const startPaused = ref(true);
