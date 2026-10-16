@@ -47,6 +47,8 @@ const easterEggCheck = "2kbps";
 const easterEggProgress = ref<number>(0);
 const easterEggShown = ref<boolean>(false);
 
+const coverKey = ref(0);
+
 const versionName = import.meta.env.VITE_SHOW_VERSION == "true" ? import.meta.env.VITE_VERSION_NAME : null;
 
 onMounted(() => {
@@ -153,6 +155,17 @@ watch(
             playerStop();
         }
     },
+);
+
+watch(
+    () => [
+        socketStore.setInformation.coverURL,
+        playerState.value?.state,
+        playerState.value?.startTime
+    ],
+    () => {
+        coverKey.value++;
+    }
 );
 
 // watch(socketStore, () => {
@@ -343,7 +356,7 @@ const coverSrc = computed(() => {
             </div>
         </div>
         <p id="versionIndicator">{{ versionName }}</p>
-        <img id="cover" fetchpriority="high" :src="coverSrc" alt="cover artwork for set" />
+        <img :key="coverKey" id="cover" fetchpriority="high" :src="coverSrc" alt="cover artwork for set" />
         <div id="setInfo">
             <SetInfo :playerState="playerState" :viewport="getScreenViewport()"></SetInfo>
             <Visualiser v-show="storage.visualiserOn.value" ref="visualiser" class="visualiser"
