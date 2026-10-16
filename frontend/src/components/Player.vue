@@ -144,6 +144,8 @@ watch(playerState, () => {
 
         startPaused.value = false;
     }
+
+    coverKey.value++;
 });
 
 watch(
@@ -155,17 +157,6 @@ watch(
             playerStop();
         }
     },
-);
-
-watch(
-    () => [
-        socketStore.setInformation.coverURL,
-        playerState.value?.state,
-        playerState.value?.startTime
-    ],
-    () => {
-        coverKey.value++;
-    }
 );
 
 // watch(socketStore, () => {
