@@ -112,7 +112,7 @@ export function socketSetup(
                 );
                 setInfo.ImageMimeType = imageMimeType;
                 socketStream(socket).emit(
-                    "setInformation",
+                    "setInformationStream",
                     imageStream,
                     setInfo,
                 );
