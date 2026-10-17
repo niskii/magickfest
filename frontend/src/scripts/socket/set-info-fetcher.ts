@@ -76,7 +76,7 @@ export class SetInfoFetcher {
     fetchInformation() {
         this.#socket.emit("fetchSetInformation");
 
-        return new Promise<SetInfo>((resolve, reject) => {
+        return new Promise<SetInfo>((resolve) => {
             this.#events.once("done", () => {
                 console.log("done!")
                 resolve(this.setInfo)

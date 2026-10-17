@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Bitrate } from "@shared/types/audio-transfer";
-import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch, computed } from "vue";
+import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
 import { socket } from "../scripts/socket/socket";
