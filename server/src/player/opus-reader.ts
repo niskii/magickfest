@@ -196,6 +196,10 @@ export class OpusReader {
     ) {
         // opus sample rate is 48000 and we multiply that by seconds
         // to get a duration or the position in the sound.
+
+        if (pageStartOverride !== undefined && pageStartOverride < 0)
+            pageStartOverride = undefined
+
         const currentPage = this.searchPosition(start * 48000);
         const pageStart =
             pageStartOverride !== undefined ? pageStartOverride : currentPage;
