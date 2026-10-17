@@ -193,10 +193,9 @@ export function configureInteractions(player: Player) {
                         player.getState().initialStartTime / 1000,
                     );
 
-                    player.getPlaylistSets().forEach((set) => {
+                    player.getPlaylistSets().forEach((set, id) => {
                         finalString +=
-                            (player.getCurrentSet().Author == set.Author &&
-                            player.getCurrentSet().Title == set.Title &&
+                            (player.getCurrentSetIndex() == id &&
                             player.isPlayerRunning()
                                 ? "**"
                                 : "") +
@@ -208,8 +207,7 @@ export function configureInteractions(player: Player) {
                             handleSetInfo(set.Author, "[unknown author]") +
                             " - " +
                             handleSetInfo(set.Title, "[untitled]") +
-                            (player.getCurrentSet().Author == set.Author &&
-                            player.getCurrentSet().Title == set.Title &&
+                            (player.getCurrentSetIndex() == id &&
                             player.isPlayerRunning()
                                 ? " << NOW PLAYING**"
                                 : "") +
