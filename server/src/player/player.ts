@@ -106,6 +106,15 @@ export class Player {
     }
 
     /**
+     * Gets the index of the current set within the playlist.
+     * 
+     * @returns Numerical set index
+     */
+    getCurrentSetIndex(): Number {
+        return this.#playlist.getCurrentIndex();
+    }
+
+    /**
      * Returns the current state of the player.
      *
      * @returns an object containing the state
@@ -198,11 +207,13 @@ export class Player {
      * @param setIndex an index of a set. Null will not change the value.
      * @param startTime the starting point. Null will not change the value.
      * @param forwarded the time the set is forwarded. Null will not change the value.
+     * @param initialStartTime the time the entire setlist starts at. Null will not change the value.
      */
     setState(
         setIndex: number | null,
         startTime: number | null,
         forwarded: number | null,
+        initialStartTime: number | null,
     ) {
         if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
             this.#playlist.setCurrentSet(setIndex);
@@ -210,7 +221,9 @@ export class Player {
         }
         if (startTime !== null) {
             this.#startTime = startTime;
-            this.#initialStartTime = startTime;
+            (initialStartTime !== null)
+                ? this.#initialStartTime = initialStartTime 
+                : this.#initialStartTime = startTime;
         }
         if (forwarded !== null) {
             this.#forwarded = forwarded;

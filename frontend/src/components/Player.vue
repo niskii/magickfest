@@ -47,8 +47,6 @@ const easterEggCheck = "2kbps";
 const easterEggProgress = ref<number>(0);
 const easterEggShown = ref<boolean>(false);
 
-const coverKey = ref(0);
-
 const versionName = import.meta.env.VITE_SHOW_VERSION == "true" ? import.meta.env.VITE_VERSION_NAME : null;
 
 onMounted(() => {
@@ -144,8 +142,6 @@ watch(playerState, () => {
 
         startPaused.value = false;
     }
-
-    coverKey.value++;
 });
 
 watch(
@@ -158,10 +154,6 @@ watch(
         }
     },
 );
-
-// watch(socketStore, () => {
-//     console.log(socketStore.setInformation.coverURL);
-// });
 
 function playerStart() {
     if (!audioStreamPlayer.value) return;
@@ -224,11 +216,6 @@ function getScreenViewport() {
 const switchQuality = (e: Event) => {
     const el = e.target as HTMLDivElement;
     storage.bitrate.value = parseInt(el.innerHTML.replace("kbps", ""));
-
-    // if (storage.bitrate.value == 2) {
-    //     audioStreamPlayer.value.reset();
-    //     audioStreamPlayer.value.start();
-    // }
 };
 
 function overlayClick() {
@@ -273,10 +260,6 @@ const displayBitrate = (q: Bitrate) => {
             return "/quality_64.webp";
     }
 };
-
-const coverSrc = computed(() => {
-    return renderCoverImage(socketStore.setInformation.coverURL);
-});
 </script>
 
 <template>
@@ -347,7 +330,8 @@ const coverSrc = computed(() => {
             </div>
         </div>
         <p id="versionIndicator">{{ versionName }}</p>
-        <img :key="coverKey" id="cover" fetchpriority="high" :src="coverSrc" alt="cover artwork for set" />
+        <img id="cover" fetchpriority="high" :src="renderCoverImage(socketStore.setInformation.coverURL)"
+            alt="cover artwork for set" />
         <div id="setInfo">
             <SetInfo :playerState="playerState" :viewport="getScreenViewport()"></SetInfo>
             <Visualiser v-show="storage.visualiserOn.value" ref="visualiser" class="visualiser"

@@ -33,6 +33,7 @@ export class PlayerStateManager {
             state["setIndex"],
             state["startTime"],
             state["forwarded"],
+            state["initialStartTime"],
         );
 
         // Automatic recovery.
