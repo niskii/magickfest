@@ -118,7 +118,7 @@ function handleSetInfo(info: String, noInfo: String) {
 }
 
 async function scheduledStart(parsedTime: number, player: Player) {
-    player.setState(null, Date.now() + parsedTime, null);
+    player.setState(null, Date.now() + parsedTime, null, null);
 
     if (scheduledStartTimeout) clearTimeout(scheduledStartTimeout);
 
