@@ -348,7 +348,7 @@ export class Player {
      */
     stop() {
         this.#state = PlaybackState.Stopped;
-        this.setState(0, 0, 0);
+        this.setState(0, 0, 0, 0);
         this.events.emit("changedState");
         this.#playbackTimer?.close();
     }

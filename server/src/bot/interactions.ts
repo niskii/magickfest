@@ -296,7 +296,7 @@ export function configureInteractions(player: Player) {
                 case "seek":
                     if (player.isPlayerRunning()) {
                         const parsedTime = await handleTimeParsing(interaction);
-                        player.setState(null, null, parsedTime);
+                        player.setState(null, null, parsedTime, null);
                         player.playAtForwarded();
 
                         await interaction.reply({
@@ -311,7 +311,7 @@ export function configureInteractions(player: Player) {
                 case "playset":
                     const setIndex = interaction.options.getInteger("index");
                     const parsedTime = await handleTimeParsing(interaction);
-                    player.setState(setIndex, null, parsedTime);
+                    player.setState(setIndex, null, parsedTime, null);
                     player.playAtForwarded();
 
                     await interaction.reply({
@@ -350,7 +350,7 @@ export function configureInteractions(player: Player) {
                     } else {
                         clearTimeout(scheduledStartTimeout);
                         scheduledStartTimeout = undefined;
-                        player.setState(null, 0, null);
+                        player.setState(null, 0, null, null);
 
                         await interaction.reply({
                             content: `unscheduled a planned start!`,
