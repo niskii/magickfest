@@ -10,13 +10,13 @@ export default defineConfig(async ({mode}) => {
   const userConfig: UserConfig = {
     build: {
       assetsInlineLimit: 0,
-      rolldownOptions: {
-        output: {
-          entryFileNames: `assets/[name].js`,
-          chunkFileNames: `assets/[name].js`,
-          assetFileNames: `assets/[name].[ext]`
-        }
-      }
+    //   rolldownOptions: {
+    //     output: {
+    //       entryFileNames: `assets/[name].js`,
+    //       chunkFileNames: `assets/[name].js`,
+    //       assetFileNames: `assets/[name].[ext]`
+    //     }
+    //   }
     },
     plugins: [vue(), nodePolyfills()],
     server: {
