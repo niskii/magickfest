@@ -21,9 +21,10 @@ function isUserAdmin(userRoles: string[]) {
 }
 
 export function isAuthorized(req: Request, res: Response, next: NextFunction) {
-    logger.info(req.session.user);
-    if (req.session.user) next();
-    else next("Not Authorized");
+    if (req.session.user) {
+        logger.info(req.session.user);
+        next();
+    } else next("Not Authorized");
 }
 
 async function authenticate(code: string, redirect: boolean): Promise<string> {
@@ -34,7 +35,11 @@ async function authenticate(code: string, redirect: boolean): Promise<string> {
         code: code.toString(),
     });
 
-    if (redirect) formData.set("redirect_uri", `https://${config.externalHost}/api/auth/redirect`);
+    if (redirect)
+        formData.set(
+            "redirect_uri",
+            `https://${config.externalHost}/api/auth/redirect`,
+        );
 
     return new Promise<string>((resolve, reject) => {
         axios
@@ -110,7 +115,7 @@ router.get("/redirect", async (req, res) => {
                 res.redirect(process.env.ClientRedirectUrl!);
             })
             .catch((err) => {
-                logger.warn(err)
+                logger.warn(err);
                 throw new Error(err);
             });
     }
@@ -130,7 +135,7 @@ router.post("/startsession", async (req, res) => {
             res.sendStatus(200);
         })
         .catch((err) => {
-            logger.warn(err)
+            logger.warn(err);
             throw new Error(err);
         });
 });
@@ -151,7 +156,7 @@ router.post("/endsession", async (req, res) => {
             res.sendStatus(200);
         })
         .catch((err) => {
-            logger.warn(err)
+            logger.warn(err);
             throw new Error(err);
         });
 });

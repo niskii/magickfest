@@ -28,24 +28,44 @@ export function socketSetup(
 
     io.on("connection", (socket) => {
         const req = socket.request as Request;
-        const user = req.session.user!;
-        logger.info("a user connected", user);
-        userManager.setUser(user!, socket);
+
+        if (req.session.user === undefined) {
+            socket.disconnect();
+            return;
+        }
+
+        logger.info("a user connected", req.session.user);
+        userManager.setUser(req.session.user, socket);
 
         io.emit("numberOfUsers", userManager.getSize());
+
+        socket.use((event, next) => {
+            req.session.reload((err) => {
+                if (err || req.session.user === undefined) {
+                    logger.info("Undefined user", event);
+                    socket.disconnect();
+                }
+            });
+
+            next();
+        });
 
         /**
          * Clean up when a user disconnects.
          */
         socket.on("disconnect", () => {
-            if (!user && userManager.isConnected(user)) return
+            const user = req.session.user;
+            if (user === undefined) return;
+            if (userManager.isConnected(user)) return;
             logger.info("a user disconnected", user);
-            userManager.removeUser(user!);
+            userManager.removeUser(user);
             io.emit("numberOfUsers", userManager.getSize());
         });
 
         socket.on("getPlayerState", () => {
-            if (!user && userManager.isConnected(user)) return
+            const user = req.session.user;
+            if (user === undefined) return;
+            if (!userManager.isConnected(user)) return;
             socket.emit("currentPlayerState", player.getState());
         });
 
@@ -55,7 +75,10 @@ export function socketSetup(
         socket.on(
             "fetchSyncedChunk",
             (data: { bitrate: Bitrate }, callback) => {
-                if (!user && userManager.isConnected(user)) return
+                const user = req.session.user;
+                if (user === undefined) return;
+                if (!userManager.isConnected(user)) return;
+
                 if (!Number.isInteger(data.bitrate)) return;
                 const result = player.getCurrentChunk(data.bitrate);
                 if (result !== undefined) {
@@ -74,14 +97,20 @@ export function socketSetup(
         socket.on(
             "fetchChunkFromPage",
             (data: { bitrate: Bitrate; pageStart: number }, callback) => {
-                if (!user && userManager.isConnected(user)) return
-                if (!Number.isInteger(data.bitrate) || !Number.isInteger(data.pageStart)) return;
+                const user = req.session.user;
+                if (user === undefined) return;
+                if (!userManager.isConnected(user)) return;
+                if (
+                    !Number.isInteger(data.bitrate) ||
+                    !Number.isInteger(data.pageStart)
+                )
+                    return;
+                const connectedUser = userManager.getUser(user);
+                if (connectedUser === undefined) return;
+
                 const result = player.getNextChunk(
                     data.pageStart,
-                    userManager
-                        .getUser(user)!
-                        .getBufferingBalancer()
-                        .getPageSize(),
+                    connectedUser.getBufferingBalancer().getPageSize(),
                     data.bitrate,
                 );
                 if (result !== undefined)
@@ -96,7 +125,9 @@ export function socketSetup(
          * Sends the set information and streams the cover image.
          */
         socket.on("fetchSetInformation", () => {
-            if (!user && userManager.isConnected(user)) return
+            const user = req.session.user;
+            if (user === undefined) return;
+            if (!userManager.isConnected(user)) return;
             const currentSet = player.getCurrentSet();
             const imageFile = currentSet.CoverFile;
 
