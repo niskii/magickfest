@@ -3,7 +3,7 @@ $bitrates = 128, 96, 64, 4
 $folder = Get-Location
 Write-Output "Searching files in $folder"
 
-$audioFiles = @(Get-ChildItem -Recurse -Path $folder | Where-Object { ($_.Name -like "*.mp3") -or ($_.Name -like "*.flac") -or ($_.Name -like "*.aif") -or ($_.Name -like "*.m4a") -or ($_.Name -like "*.wav") })
+$audioFiles = @(Get-ChildItem -Recurse -Path $folder | Where-Object { ($_.Name -like "*.mp3") -or ($_.Name -like "*.flac") -or ($_.Name -like "*.ogg") -or ($_.Name -like "*.aif") -or ($_.Name -like "*.m4a") -or ($_.Name -like "*.wav") })
 $covers = [System.Object[]]::new($audioFiles.Length);
 $playlist = [System.Collections.ArrayList]::new()
 
@@ -14,10 +14,11 @@ foreach ($file in $audioFiles) {
     if (!$playlist.Contains($setfile)) {
         $playlist.Add($setfile) > $null
         $sub = $file.Directory
+		Write-Output "found $($path)/$($file.Name)"
         if ($folder.ToString() -ne $sub.ToString()) {
             $cover = Get-ChildItem -Path $sub | Where-Object { ($_.Name -like "*.jpg") -or ($_.Name -like "*.jpeg") -or ($_.Name -like "*.gif") -or ($_.Name -like "*.png") }
             if (![string]::IsNullOrEmpty($cover)) {
-                Write-Output "found $($path)/$($file.Name) with cover $($cover.Name)"
+                Write-Output "    folder has cover image: $($cover.Name)"
                 $covers[$index] = $cover
             }
             else {
@@ -29,9 +30,7 @@ foreach ($file in $audioFiles) {
                 }
             }
         }
-        else {
-            Write-Output "found $($path)/$($file.Name)"
-        }
+        
     }
 }
 
