@@ -63,7 +63,7 @@ $audioFiles | ForEach-Object {
 
 $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
-$jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
+$audioFiles | ForEach-Object {
     $syncCopy = $Using:sync
     $index = ($using:audioFiles).IndexOf($_)
     $process = $syncCopy.$($index)
@@ -74,7 +74,7 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
     $outputImage = ""
 
     if (![string]::IsNullOrEmpty($cover)) {
-        $coverDimensions = (& mediainfo --Inform="Image;%Width%,%Height%" "$($cover.Fullname)") -split ","
+        $coverDimensions = (& mediainfo --Inform="Image;%Width%,%Height%," "$($cover.Fullname)") -split ","
     
         $inputRatio = $coverDimensions[0] / $coverDimensions[1]
         $outputWidth = $coverDimensions[0]
@@ -90,8 +90,11 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
             $outputHeight = $coverDimensions[0]
             $y = ($coverDimensions[1] - $outputHeight) / 2
         }
+
+        Write-Output "$($coverDimensions[1]) $($outputHeight)"
+        Write-Output "$($x) $($y), $($outputWidth) $($outputHeight)"
     
-        cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -lossless -resize 512 512 "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
+        cwebp -crop $($x) $($y) $($outputWidth) $($outputHeight) -q 100 -sns 100 -pass 10 -resize 512 512 "$($cover.FullName)" -o "$($basePath)\$($cover.Basename).webp"
 
         $outputImage = "$($cover.Basename).webp"
     }
@@ -114,7 +117,7 @@ $jobs = $audioFiles | ForEach-Object -ThrottleLimit 6 -AsJob -Parallel {
         $process.Status = "Converting $($_.BaseName) $percent/100"
         $outputPath = Join-Path -Path $using:folder -ChildPath "$($basePath)\$($_.BaseName)_$bitrate.opus"
 
-        if ($_.Name -like "*.mp3" -or $_.Name -like "*.m4a" -or $_.Name -like ".aif" -or $_.Name -like "*.flac" -or $_.Name -like "*.wav") {
+        if ($_.Name -like "*.mp3" -or $_.Name -like "*.m4a" -or $_.Name -like ".aif" -or $_.Name -like "*.flac" -or $_.Name -like "*.wav" -or $_.Name -like "*.ogg") {
             ffmpeg -progress pipe:1 -nostats -y -i "$($_.FullName)" -c:a libopus -b:a "$($bitrate)k" -frame_duration:a 40 "$($outputPath)" | Select-String 'out_time_ms=(\d+)' | ForEach-Object {
                 $converted = [int] $_.Matches.Groups[1].Value
                 $progress.($bitrate) = $converted / 1000000
