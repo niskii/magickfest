@@ -1,14 +1,19 @@
 import settings from "config/settings.json";
-settings.playerNewSetTimeout = 0;
-settings.playerUpdateInterval = 50;
+settings.application.playerNewSetTimeout = 0;
+settings.application.playerUpdateInterval = 50;
 globalThis.settings = settings;
 
 import { PlaybackState } from "@shared/types/player-state";
-import { sleepSync } from "bun";
-import { beforeEach, expect, test } from "bun:test";
+import { beforeEach, expect, test } from "vitest";
 import { Player } from "../../src/player/player.js";
 
 let player: Player;
+
+export default function sleep(milliseconds: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, milliseconds);
+    });
+}
 
 beforeEach(() => {
     try {
@@ -31,9 +36,9 @@ test("Finished player is stopped again", async () => {
     });
 });
 
-test("player progresses", () => {
+test("player progresses", async () => {
     player.playAtStart();
     const sample = player.getCurrentPositionMilliseconds();
-    sleepSync(10);
+    await sleep(10);
     expect(sample).toBeLessThan(player.getCurrentPositionMilliseconds());
 });

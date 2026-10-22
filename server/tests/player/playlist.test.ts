@@ -1,4 +1,4 @@
-import { expect, test, beforeEach } from "bun:test";
+import { beforeEach, expect, test } from "vitest";
 import { Playlist } from "../../src/player/playlist.js";
 
 let playlist: Playlist;

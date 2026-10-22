@@ -1,5 +1,5 @@
-import { expect, test } from "bun:test";
 import { parseTime } from "src/parsing/time-parser";
+import { expect, test } from "vitest";
 
 test("can parse good input", () => {
     expect(parseTime("1:11:30")).toBe(60 * 60 + 60 * 11 + 30);

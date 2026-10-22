@@ -25,3 +25,5 @@ temp/*
 dist
 
 security/*
+
+.vitest/
