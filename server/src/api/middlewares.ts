@@ -15,7 +15,7 @@ import authAPI, {
 } from "../api/auth";
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
-import { csrfAPI } from "./csrf";
+import { csrfAPI, isSocketConnectionRequestValid } from "./csrf";
 
 const { csrfSynchronisedProtection } = csrfSync();
 
@@ -36,7 +36,7 @@ export function setupMiddleware(
     app.use("/api", csrfAPI);
     app.use("/api/public", publicAPI);
 
-    //app.use(csrfSynchronisedProtection);
+    app.use(csrfSynchronisedProtection);
     
     app.use("/api/auth", authAPI);
     app.use(isAuthorized);
@@ -45,8 +45,14 @@ export function setupMiddleware(
 
     io.engine.use(helmet());
     io.engine.use(sessionConfig);
-    /*io.use((socket, next) => {
+    io.use((socket, next) => {
         const req = socket.request as Request;
+
+        req.session.reload((err) => {
+            logger.error(err)
+            socket.disconnect();
+        });
+
         const storedToken = req.session.csrfToken;
         const token = socket.handshake.auth.csrftoken;
 
@@ -55,7 +61,7 @@ export function setupMiddleware(
         } else {
             next(new Error("invalid_csrf"));
         }
-    });*/
+    });
     io.use(async (socket, next) => {
         const req = socket.request as Request;
         const user = req.session.user;
