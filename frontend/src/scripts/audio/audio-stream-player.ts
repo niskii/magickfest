@@ -49,7 +49,7 @@ export class AudioStreamPlayer {
 
     setVolume(volume: number) {
         this.#volume = volume;
-        if (this.#audioCtx !== null) this.#gainNode.gain.value = volume;
+        if (this.#audioCtx !== null) this.#gainNode.gain.value = volume ** 1.5;
     }
 
     getAnalyzer() {
@@ -96,7 +96,7 @@ export class AudioStreamPlayer {
         this.#audioCtx = new window.AudioContext();
         this.#gainNode = this.#audioCtx.createGain();
         this.#analyzer = this.#audioCtx.createAnalyser();
-        this.#gainNode.gain.value = this.#volume;
+        this.#gainNode.gain.value = this.#volume ** 1.5;
         this.#audioCtx.suspend();
 
         this.#timeKeeper.setAudioContext(this.#audioCtx);
