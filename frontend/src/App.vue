@@ -3,7 +3,7 @@ import Player from "./components/Player.vue";
 
 import { onMounted } from "vue";
 import { bootstrap, bootstrapDiscord } from "./bootstrap";
-import { getCTRFToken } from "./csrftoken";
+import csrfToken from "./csrftoken";
 import ErrorScreen from "./screens/ErrorScreen.vue";
 import LoadingScreen from "./screens/LoadingScreen.vue";
 
@@ -15,7 +15,7 @@ onMounted(() => {
             method: "POST",
             credentials: "include",
             headers: {
-                "x-csrf-token": await getCTRFToken(),
+                "x-csrf-token": csrfToken,
             },
         });
     });

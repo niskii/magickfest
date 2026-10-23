@@ -36,6 +36,11 @@ export function setupMiddleware(
     app.use("/api", csrfAPI);
     app.use("/api/public", publicAPI);
 
+    app.use((req, res, next) => {
+        logger.info("session", req.session.csrfToken)
+        next();
+    })
+
     app.use(csrfSynchronisedProtection);
     
     app.use("/api/auth", authAPI);
@@ -45,23 +50,20 @@ export function setupMiddleware(
 
     io.engine.use(helmet());
     io.engine.use(sessionConfig);
+
     io.use((socket, next) => {
-        const req = socket.request as Request;
-
-        req.session.reload((err) => {
-            logger.error(err)
-            socket.disconnect();
-        });
-
-        const storedToken = req.session.csrfToken;
+        const req = socket.request as Request
         const token = socket.handshake.auth.csrftoken;
 
-        if (isSocketConnectionRequestValid(token, storedToken)) {
+        logger.info("compare", req.session.csrfToken, token)
+
+        if (isSocketConnectionRequestValid(token, req.session.csrfToken)) {
             next();
         } else {
-            next(new Error("invalid_csrf"));
+            socket.disconnect();
         }
     });
+
     io.use(async (socket, next) => {
         const req = socket.request as Request;
         const user = req.session.user;
