@@ -16,8 +16,8 @@ import authAPI, {
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
 import { csrfAPI, isSocketConnectionRequestValid } from "./csrf";
-import crypto from "crypto";
 import { getDiscordEnvironment } from "src/envs";
+import nacl from "tweetnacl";
 
 const envs = getDiscordEnvironment();
 
@@ -41,33 +41,35 @@ export function setupMiddleware(
         const payload = req.get("X-Discord-Proxy-Payload");
 
         if (payload && signature) {
-            const payloadBytes = Buffer.from(payload, "base64");
-            const payloadString = payloadBytes.toString("utf-8");
-            const payloadData = JSON.parse(payloadString);
+            try {
+                const payloadBytes = Buffer.from(payload, "base64");
+                const payloadString = payloadBytes.toString("utf-8");
+                const payloadData = JSON.parse(payloadString);
 
-            if (payloadData.created_at.toString() !== timestamp) {
-                return res.status(401).end("invalid request timestamp");
+                if (payloadData.created_at.toString() !== timestamp) {
+                    return res.status(401).end("invalid request timestamp");
+                }
+
+                if (payloadData.expires_at < Math.floor(Date.now() / 1000)) {
+                    return res.status(401).end("expired proxy token");
+                }
+
+                const isVerified = nacl.sign.detached.verify(
+                    payloadBytes,
+                    Buffer.from(envs.DiscordAppPublicKey, "hex"),
+                    Buffer.from(signature, "base64"),
+                );
+
+                if (!isVerified) {
+                    return res.status(401).end("invalid request signature");
+                }
+            } catch (error) {
+                logger.error("Very bad error", error);
             }
 
-            if (payloadData.expires_at < Math.floor(Date.now() / 1000)) {
-                return res.status(401).end("expired proxy token");
-            }
-
-            const newHash = crypto
-                .createHash("ed25519")
-                .update(payloadString)
-                .digest("hex");
-
-            const isVerified = crypto.verify(
-                "sha256",
-                Buffer.from(newHash),
-                envs.DiscordAppPublicKey,
-                Buffer.from(signature, "hex"),
-            );
-
-            if (!isVerified) {
-                return res.status(401).end("invalid request signature");
-            }
+            next();
+        } else {
+            next();
         }
     });
     app.use(bodyParser.json());
