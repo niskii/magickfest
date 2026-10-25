@@ -1,5 +1,5 @@
 import { reactive } from "vue";
-import csrfToken from "./csrftoken";
+import { getCSRFToken } from "./csrftoken";
 import logger from "./logger";
 
 export const bootstrap = reactive({
@@ -40,6 +40,8 @@ export async function bootstrapDiscord() {
     bootstrap.auth = auth;
 
     async function setupDiscordSdk() {
+        const csrfToken = await getCSRFToken();
+
         bootstrap.step = "setting up Discord SDK...";
         await discordSdk.ready().catch((err: Error) => {
             throw new Error(`the sdk could not setup: ${err}`);
