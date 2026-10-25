@@ -18,8 +18,7 @@
         "sequelize": "^6.37.8",
         "socket.io": "^4.8.3",
         "socket.io-stream": "patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch",
-        "sqlite3": "^6.0.1",
-        "tweetnacl": "^1.0.3"
+        "sqlite3": "^6.0.1"
     },
     "resolutions": {
         "socket.io-parser@npm": "4.2.7",

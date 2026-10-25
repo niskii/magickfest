@@ -16,10 +16,6 @@ import authAPI, {
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
 import { csrfAPI, isSocketConnectionRequestValid } from "./csrf";
-import { getDiscordEnvironment } from "src/envs";
-import nacl from "tweetnacl";
-
-const envs = getDiscordEnvironment();
 
 const { csrfSynchronisedProtection } = csrfSync();
 
@@ -35,43 +31,6 @@ export function setupMiddleware(
     app.disable("x-powered-by");
     app.use(corsConfig);
     app.use(helmet());
-    app.use((req, res, next) => {
-        const signature = req.get("X-Signature-Ed25519");
-        const timestamp = req.get("X-Signature-Timestamp");
-        const payload = req.get("X-Discord-Proxy-Payload");
-
-        if (payload && signature) {
-            try {
-                const payloadBytes = Buffer.from(payload, "base64");
-                const payloadString = payloadBytes.toString("utf-8");
-                const payloadData = JSON.parse(payloadString);
-
-                if (payloadData.created_at.toString() !== timestamp) {
-                    return res.status(401).end("invalid request timestamp");
-                }
-
-                if (payloadData.expires_at < Math.floor(Date.now() / 1000)) {
-                    return res.status(401).end("expired proxy token");
-                }
-
-                const isVerified = nacl.sign.detached.verify(
-                    payloadBytes,
-                    Buffer.from(envs.DiscordAppPublicKey, "hex"),
-                    Buffer.from(signature, "base64"),
-                );
-
-                if (!isVerified) {
-                    return res.status(401).end("invalid request signature");
-                }
-            } catch (error) {
-                logger.error("Very bad error", error);
-            }
-
-            next();
-        } else {
-            next();
-        }
-    });
     app.use(bodyParser.json());
     app.use(sessionConfig);
     app.use("/api", csrfAPI);
@@ -91,11 +50,15 @@ export function setupMiddleware(
         const req = socket.request as Request;
         const token = socket.handshake.auth.csrftoken;
 
-        if (isSocketConnectionRequestValid(token, req.session.csrfToken)) {
-            next();
-        } else {
-            next(new Error("invalid_token"));
-        }
+        req.session.reload((err) => {
+            if (err) socket.disconnect();
+
+            if (isSocketConnectionRequestValid(token, req.session.csrfToken)) {
+                next();
+            } else {
+                next(new Error("invalid_token"));
+            }
+        });
     });
 
     io.use(async (socket, next) => {
