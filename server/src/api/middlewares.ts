@@ -16,6 +16,10 @@ import authAPI, {
 import { configureRouter, publicAPI, serviceAPI } from "../api/service";
 import { Player } from "../player/player";
 import { csrfAPI, isSocketConnectionRequestValid } from "./csrf";
+import crypto from "crypto";
+import { getDiscordEnvironment } from "src/envs";
+
+const envs = getDiscordEnvironment();
 
 const { csrfSynchronisedProtection } = csrfSync();
 
@@ -31,6 +35,41 @@ export function setupMiddleware(
     app.disable("x-powered-by");
     app.use(corsConfig);
     app.use(helmet());
+    app.use((req, res, next) => {
+        const signature = req.get("X-Signature-Ed25519");
+        const timestamp = req.get("X-Signature-Timestamp");
+        const payload = req.get("X-Discord-Proxy-Payload");
+
+        if (payload && signature) {
+            const payloadBytes = Buffer.from(payload, "base64");
+            const payloadString = payloadBytes.toString("utf-8");
+            const payloadData = JSON.parse(payloadString);
+
+            if (payloadData.created_at.toString() !== timestamp) {
+                return res.status(401).end("invalid request timestamp");
+            }
+
+            if (payloadData.expires_at < Math.floor(Date.now() / 1000)) {
+                return res.status(401).end("expired proxy token");
+            }
+
+            const newHash = crypto
+                .createHash("ed25519")
+                .update(payloadString)
+                .digest("hex");
+
+            const isVerified = crypto.verify(
+                "sha256",
+                Buffer.from(newHash),
+                envs.DiscordAppPublicKey,
+                Buffer.from(signature, "hex"),
+            );
+
+            if (!isVerified) {
+                return res.status(401).end("invalid request signature");
+            }
+        }
+    });
     app.use(bodyParser.json());
     app.use(sessionConfig);
     app.use("/api", csrfAPI);
