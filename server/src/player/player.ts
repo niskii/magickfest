@@ -2,14 +2,15 @@ import { Bitrate } from "@shared/types/audio-transfer";
 import { PlaybackState, PlayerState } from "@shared/types/player-state";
 import EventEmitter from "node:events";
 import { DeepReadonly } from "../types/deep-readonly";
-import { OpusReader } from "./opus-reader";
+import { OpusReader } from "./formats/opus/opus-reader";
 import { Playlist, Set } from "./playlist";
+import { MediaReader } from "./media-reader";
 
 export class Player {
     /**
      * Collection of opus readers loaded with different bitrate opus files.
      */
-    #readerCollection: Map<Bitrate, OpusReader>;
+    #readerCollection: Map<Bitrate, MediaReader>;
 
     /**
      * Timestamp for when the player started. Resets every set.
@@ -107,7 +108,7 @@ export class Player {
 
     /**
      * Gets the index of the current set within the playlist.
-     * 
+     *
      * @returns Numerical set index
      */
     getCurrentSetIndex(): Number {
@@ -194,10 +195,10 @@ export class Player {
     getNextChunk(pageStart: number, numberOfPages: number, bitrate: Bitrate) {
         const reader = this.#getCurrentReader(bitrate);
         if (reader)
-            return reader.getChunkAtTime(
-                this.getCurrentPositionSeconds(),
-                numberOfPages,
+            return reader.getNextChunk(
                 pageStart,
+                numberOfPages,
+                this.getCurrentPositionSeconds(),
             );
     }
 
@@ -221,9 +222,9 @@ export class Player {
         }
         if (startTime !== null) {
             this.#startTime = startTime;
-            (initialStartTime !== null)
-                ? this.#initialStartTime = initialStartTime 
-                : this.#initialStartTime = startTime;
+            initialStartTime !== null
+                ? (this.#initialStartTime = initialStartTime)
+                : (this.#initialStartTime = startTime);
         }
         if (forwarded !== null) {
             this.#forwarded = forwarded;

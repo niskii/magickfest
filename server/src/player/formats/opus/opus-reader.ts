@@ -1,17 +1,20 @@
 import { AudioPacket } from "@shared/types/audio-transfer";
 import { ReadCode } from "@shared/types/read-codes";
 import { readFileSync } from "fs";
+import { OpusFileSplitter } from "./synced-opus-splitter";
 import {
     HeaderObject,
-    OpusFileSplitter,
     Page,
-} from "../thirdparty/opus-file-splitter/src/opus-file-splitter.mjs";
+    calculateDuration,
+} from "src/player/formats/opus/metadata";
+import { OpusSplitter } from "src/player/formats/opus/opus-splitter";
+import { MediaReader } from "src/player/media-reader";
 
-export class OpusReader {
+export class OpusReader implements MediaReader {
     /**
      * Manages the opus pages.
      */
-    #fileSplitter: OpusFileSplitter;
+    #fileSplitter: OpusSplitter;
 
     /**
      * Metadata of the file.
@@ -45,18 +48,17 @@ export class OpusReader {
 
     constructor(file: string) {
         this.#fileSplitter = new OpusFileSplitter(readFileSync(file).buffer);
-        this.#headerObject = this.#fileSplitter.headerObject;
+        this.#headerObject = this.#fileSplitter.header;
         this.#pages = this.#fileSplitter.pages;
         this.#numberOfPages = this.#pages.length;
         this.#minPagesForChunk = this.calculateMinPages(
             globalThis.settings.application.chunkDuration,
             this.#headerObject.audioPageDuration,
         );
-        this.#totalDurationSeconds =
-            this.#fileSplitter.calculateDurationSeconds(
-                BigInt(this.#headerObject.preskipGranule),
-                this.#headerObject.PCMLength,
-            );
+        this.#totalDurationSeconds = calculateDuration(
+            BigInt(this.#headerObject.preskipGranule),
+            this.#headerObject.PCMLength,
+        );
 
         this.#positions = this.#pages.flatMap((p) => Number(p.position));
     }
@@ -83,7 +85,7 @@ export class OpusReader {
         )
             return 0;
 
-        return this.#fileSplitter.calculateDurationSeconds(
+        return calculateDuration(
             this.#pages[pageStart].position,
             this.#pages[pageEnd].position,
         );
@@ -189,37 +191,48 @@ export class OpusReader {
      * @param pageStartOverride start of the range
      * @returns an AudioPacket and a read code
      */
-    getChunkAtTime(
-        start: number,
-        numberOfPages: number,
-        pageStartOverride?: number,
-    ) {
+    getChunkAtTime(start: number, numberOfPages: number) {
         // opus sample rate is 48000 and we multiply that by seconds
         // to get a duration or the position in the sound.
-
-        if (pageStartOverride !== undefined && pageStartOverride < 0)
-            pageStartOverride = undefined
-
         const currentPage = this.searchPosition(start * 48000);
-        const pageStart =
-            pageStartOverride !== undefined ? pageStartOverride : currentPage;
-        const pageEnd = this.addPages(pageStart, numberOfPages);
+        const pageEnd = this.addPages(currentPage, numberOfPages);
 
         if (
-            pageStart > this.#numberOfPages ||
+            currentPage > this.#numberOfPages ||
             pageEnd > this.#numberOfPages ||
-            pageStart == pageEnd
+            currentPage == pageEnd
         )
             return { data: null, status: ReadCode.EOF };
 
+        return {
+            data: this.makeChunkFromRange(currentPage, pageEnd, start),
+            status: ReadCode.CONTINUATION,
+        };
+    }
+
+    getNextChunk(
+        pageNumber: number,
+        numberOfPages: number,
+        timeOverride: number,
+    ) {
+        const pageEnd = this.addPages(pageNumber, numberOfPages);
+        if (pageNumber < 0 || pageNumber > this.#numberOfPages) {
+            return { data: null, status: ReadCode.INVALID };
+        }
+
+        if (pageEnd > this.#numberOfPages || pageNumber == pageEnd)
+            return { data: null, status: ReadCode.EOF };
+
+        const currentPage = this.searchPosition(timeOverride * 48000);
+
         if (
-            this.calculateRangeDuration(currentPage, pageStart) >=
+            this.calculateRangeDuration(currentPage, pageNumber) >=
             globalThis.settings.application.maxSecondsLoadAhead
         )
             return { data: null, status: ReadCode.INVALID };
 
         return {
-            data: this.makeChunkFromRange(pageStart, pageEnd, start),
+            data: this.makeChunkFromRange(pageNumber, pageEnd, timeOverride),
             status: ReadCode.CONTINUATION,
         };
     }

@@ -1,60 +1,15 @@
-import { OggPageHeader } from "./ogg-page-header.mjs";
+import * as opus from "./metadata.js";
+import { OggPageHeader } from "./ogg-page-header.js";
+import { OpusSplitter } from "./opus-splitter.js";
 
-export class Page {
-    offset: number;
-    position: bigint;
-    length: number;
-
-    constructor(offset: number, position: bigint, length: number) {
-        this.offset = offset;
-        this.position = position;
-        this.length = length;
-    }
-}
-
-class OpusTags {
-    vendorLength: number;
-    vendorString: string;
-    commentsLength: number;
-    comments: Array<string>;
-
-    constructor(
-        vendorLength: number,
-        vendorString: string,
-        commentLengths: number,
-        comments: Array<string>,
-    ) {
-        this.vendorLength = vendorLength;
-        this.vendorString = vendorString;
-        this.commentsLength = commentLengths;
-        this.comments = comments;
-    }
-}
-
-export class HeaderObject {
-    preskipGranule: number;
-    channels: number;
-    PCMLength: bigint;
-    audioPageDuration: number;
-    firstAudioPageIndex: number;
-
-    constructor() {
-        this.preskipGranule = 0;
-        this.channels = 0;
-        this.PCMLength = 0n;
-        this.audioPageDuration = 0;
-        this.firstAudioPageIndex = 0;
-    }
-}
-
-export class OpusFileSplitter {
+export class OpusFileSplitter implements OpusSplitter {
     #bytes: Uint8Array | null = null;
     #headerBytes: Uint8Array | null = null;
-    #pages: Array<Page> = [];
+    #pages: Array<opus.Page> = [];
     #audioPageBoundaries: Array<Number> | null = null;
     #preskipSeconds: number = 0;
 
-    #headerObject: HeaderObject = new HeaderObject();
+    #headerObject: opus.HeaderObject = new opus.HeaderObject();
 
     constructor(buffer: ArrayBufferLike) {
         this.parseFile(buffer);
@@ -68,7 +23,7 @@ export class OpusFileSplitter {
         return this.#pages;
     }
 
-    get headerObject() {
+    get header() {
         return this.#headerObject;
     }
 
@@ -76,12 +31,8 @@ export class OpusFileSplitter {
         return this.#headerBytes!.length;
     }
 
-    get preSkipSeconds() {
+    get preskip() {
         return this.#preskipSeconds;
-    }
-
-    calculateDurationSeconds(granuleStart: bigint, granuleEnd: bigint) {
-        return Number(((granuleEnd - granuleStart) * 100n) / 48000n) / 100;
     }
 
     // scans file and executes callback when a page is found. ({ pageHeader }) =>
@@ -120,7 +71,7 @@ export class OpusFileSplitter {
                 position += length;
             }
 
-            return new OpusTags(
+            return new opus.OpusTags(
                 vendorLength,
                 vendorString,
                 commentsLength,
@@ -134,17 +85,6 @@ export class OpusFileSplitter {
             );
         }
 
-        // big-endian Ogg page markers. see https://tools.ietf.org/html/rfc3533#page-10
-        const pageMarker = new DataView(
-            new TextEncoder().encode("OggS").buffer,
-        ).getUint32(0);
-        const opusIdHeaderMarker = new DataView(
-            new TextEncoder().encode("OpusHead").buffer,
-        ).getBigUint64(0);
-        const opusCommentHeaderMarker = new DataView(
-            new TextEncoder().encode("OpusTags").buffer,
-        ).getBigUint64(0);
-
         const view = new DataView(buffer);
         const scanTo = buffer.byteLength - Uint32Array.BYTES_PER_ELEMENT;
 
@@ -157,7 +97,7 @@ export class OpusFileSplitter {
 
         for (let i = 0; i < scanTo; i++) {
             // skip bytes until 'OggS' is read.
-            if (pageMarker !== view.getUint32(i)) continue;
+            if (!opus.isPageMarker(view.getUint32(i))) continue;
 
             // once we know the contents of the header, we can read the whole page.
             const pageHeader = new OggPageHeader(view, i);
@@ -173,7 +113,7 @@ export class OpusFileSplitter {
 
             const opusOffset = i + pageHeader.headerSize;
             if (!idPageFound) {
-                if (opusIdHeaderMarker === view.getBigUint64(opusOffset)) {
+                if (opus.isIdHeaderMarker(view.getBigUint64(opusOffset))) {
                     pageHeader.isIdPage = true;
                     idPageFound = true;
                     this.#headerObject.preskipGranule = view.getUint16(
@@ -187,7 +127,7 @@ export class OpusFileSplitter {
                 }
             } else if (!commentPageFound) {
                 // There is only one comment page header so we only enter this section once per file.
-                if (opusCommentHeaderMarker === view.getBigUint64(opusOffset)) {
+                if (opus.isCommentMarker(view.getBigUint64(opusOffset))) {
                     pageHeader.isCommentPage = true;
                     commentPageFound = true;
 
@@ -212,7 +152,7 @@ export class OpusFileSplitter {
                 // The length should be constant for all pages.
                 if (pageNumber === this.#headerObject.firstAudioPageIndex + 1) {
                     this.#headerObject.audioPageDuration =
-                        this.calculateDurationSeconds(
+                        opus.calculateDuration(
                             tempGranulePosition,
                             pageHeader.granulePosition,
                         );
@@ -237,7 +177,7 @@ export class OpusFileSplitter {
     }
 
     parseFile(buffer: ArrayBufferLike) {
-        const pages: Array<Page> = [];
+        const pages: Array<opus.Page> = [];
         const audioPages: Array<number> = [];
 
         this.#scanPages(buffer, onPage);
@@ -254,7 +194,7 @@ export class OpusFileSplitter {
 
         this.#audioPageBoundaries = audioPages;
         this.#pages = pages;
-        this.#preskipSeconds = this.calculateDurationSeconds(
+        this.#preskipSeconds = opus.calculateDuration(
             0n,
             BigInt(this.#headerObject.preskipGranule),
         );
@@ -263,7 +203,7 @@ export class OpusFileSplitter {
             if (pageHeader.isAudioPage) {
                 audioPages.push(pageHeader.offset);
                 pages.push(
-                    new Page(
+                    new opus.Page(
                         pageHeader.offset,
                         pageHeader.granulePosition,
                         pageHeader.pageSize,

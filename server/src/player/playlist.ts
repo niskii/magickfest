@@ -1,6 +1,6 @@
 import { Bitrate } from "@shared/types/audio-transfer";
 import { createHash } from "crypto";
-import { readFileSync } from "fs";
+import fs from "fs";
 import path from "path";
 
 export interface AudioFile {
@@ -33,14 +33,14 @@ export class Playlist {
         const location = path.dirname(playlist) + "/";
 
         const setfiles: Array<string> = JSON.parse(
-            readFileSync(playlist).toString(),
+            fs.readFileSync(playlist).toString(),
         )["Sets"];
 
         this.#sets = new Array();
         setfiles.forEach((file) => {
             const folder = "sets/" + path.basename(path.dirname(file));
             const set: Set = JSON.parse(
-                readFileSync(path.join(location, file)).toString(),
+                fs.readFileSync(path.join(location, file)).toString(),
             );
 
             // Handle the relative paths.
@@ -50,6 +50,13 @@ export class Playlist {
             set.AudioFiles.map((af) => {
                 af.File = path.join(location, folder, af.File);
             });
+
+            set.AudioFiles.forEach((af) => {
+                if (!fs.existsSync(af.File)) {
+                    throw new Error(`File not found: ${af.File}`);
+                }
+            });
+
             this.#sets.push(set);
         });
 
