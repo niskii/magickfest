@@ -162,18 +162,18 @@ export class OpusReader implements MediaReader {
      *
      * @param start page number to start the slice
      * @param end page number to end the slice
-     * @returns AudioPacket containing audio buffer slice
+     * @returns MediaPacket containing audio buffer slice
      */
-    makeChunkFromRange(start: number, end: number, time: number) {
+    createMediaPacketFromRange(start: number, end: number, time: number) {
         start = Math.floor(start);
         end = Math.floor(end);
         const chunks = this.#fileSplitter.sliceByPage(start, end);
         if (chunks !== null) {
             const packet: AudioPacket = {
                 Buffer: chunks,
-                PageStart: start,
-                PageEnd: end,
-                ChunkPlayPosition: this.#headerObject.audioPageDuration * start,
+                PacketStart: start,
+                PacketEnd: end,
+                Timestamp: this.#headerObject.audioPageDuration * start,
                 TotalDuration: this.#totalDurationSeconds,
                 ServerTime: time,
             };
@@ -186,15 +186,15 @@ export class OpusReader implements MediaReader {
     /**
      * Validates the requested play position and page number and creates an AudioPacket.
      *
-     * @param start start position
+     * @param timestamp start position
      * @param numberOfPages number of pages for the chunk
      * @param pageStartOverride start of the range
-     * @returns an AudioPacket and a read code
+     * @returns a MediaPacket and a read code
      */
-    getChunkAtTime(start: number, numberOfPages: number) {
+    async getChunkAtTime(timestamp: number, numberOfPages: number) {
         // opus sample rate is 48000 and we multiply that by seconds
         // to get a duration or the position in the sound.
-        const currentPage = this.searchPosition(start * 48000);
+        const currentPage = this.searchPosition(timestamp * 48000);
         const pageEnd = this.addPages(currentPage, numberOfPages);
 
         if (
@@ -205,15 +205,19 @@ export class OpusReader implements MediaReader {
             return { data: null, status: ReadCode.EOF };
 
         return {
-            data: this.makeChunkFromRange(currentPage, pageEnd, start),
+            data: this.createMediaPacketFromRange(
+                currentPage,
+                pageEnd,
+                timestamp,
+            ),
             status: ReadCode.CONTINUATION,
         };
     }
 
-    getNextChunk(
+    async getNextChunk(
         pageNumber: number,
         numberOfPages: number,
-        timeOverride: number,
+        timestamp: number,
     ) {
         const pageEnd = this.addPages(pageNumber, numberOfPages);
         if (pageNumber < 0 || pageNumber > this.#numberOfPages) {
@@ -223,7 +227,7 @@ export class OpusReader implements MediaReader {
         if (pageEnd > this.#numberOfPages || pageNumber == pageEnd)
             return { data: null, status: ReadCode.EOF };
 
-        const currentPage = this.searchPosition(timeOverride * 48000);
+        const currentPage = this.searchPosition(timestamp * 48000);
 
         if (
             this.calculateRangeDuration(currentPage, pageNumber) >=
@@ -232,7 +236,11 @@ export class OpusReader implements MediaReader {
             return { data: null, status: ReadCode.INVALID };
 
         return {
-            data: this.makeChunkFromRange(pageNumber, pageEnd, timeOverride),
+            data: this.createMediaPacketFromRange(
+                pageNumber,
+                pageEnd,
+                timestamp,
+            ),
             status: ReadCode.CONTINUATION,
         };
     }

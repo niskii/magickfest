@@ -1,8 +1,15 @@
-export type AudioPacket = {
+export type AudioPacket = MediaPacket & {
   Buffer: Uint8Array<ArrayBuffer>;
-  PageStart: number;
-  PageEnd: number;
-  ChunkPlayPosition: number;
+};
+
+export type VideoPacket = MediaPacket & {
+  EncodedPackets: EncodedPacket[];
+};
+
+export type MediaPacket = {
+  PacketStart: number;
+  PacketEnd: number;
+  Timestamp: number;
   TotalDuration: number;
   ServerTime: number;
 };

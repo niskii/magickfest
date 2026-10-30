@@ -178,7 +178,7 @@ export class Player {
      * Returns the current chunk in the given bitrate of the opus file being played.
      *
      * @param bitrate
-     * @returns an AudioPacket and a read code
+     * @returns a MediaPacket and a read code
      */
     getCurrentChunk(bitrate: Bitrate) {
         const reader = this.#getCurrentReader(bitrate);
@@ -190,7 +190,7 @@ export class Player {
      * Returns the chunk starting at the page number in the given bitrate of the opus file being played.
      *
      * @param bitrate
-     * @returns an AudioPacket and a read code
+     * @returns an MediaPacket and a read code
      */
     getNextChunk(pageStart: number, numberOfPages: number, bitrate: Bitrate) {
         const reader = this.#getCurrentReader(bitrate);

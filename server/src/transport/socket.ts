@@ -70,17 +70,17 @@ export function socketSetup(
         });
 
         /**
-         * Sends the current AudioPacket in the requested bitrate.
+         * Sends the current MediaPacket in the requested bitrate.
          */
         socket.on(
             "fetchSyncedChunk",
-            (data: { bitrate: Bitrate }, callback) => {
+            async (data: { bitrate: Bitrate }, callback) => {
                 const user = req.session.user;
                 if (user === undefined) return;
                 if (!userManager.isConnected(user)) return;
 
                 if (!Number.isInteger(data.bitrate)) return;
-                const result = player.getCurrentChunk(data.bitrate);
+                const result = await player.getCurrentChunk(data.bitrate);
                 if (result !== undefined) {
                     userManager.getUser(user)?.getBufferingBalancer().reset();
                     socket.emit("syncedChunk", result.data);
@@ -92,11 +92,11 @@ export function socketSetup(
         );
 
         /**
-         * Sends the next AudioPacket in the requested bitrate.
+         * Sends the next Packet in the requested bitrate.
          */
         socket.on(
             "fetchChunkFromPage",
-            (data: { bitrate: Bitrate; pageStart: number }, callback) => {
+            async (data: { bitrate: Bitrate; pageStart: number }, callback) => {
                 const user = req.session.user;
                 if (user === undefined) return;
                 if (!userManager.isConnected(user)) return;
@@ -108,7 +108,7 @@ export function socketSetup(
                 const connectedUser = userManager.getUser(user);
                 if (connectedUser === undefined) return;
 
-                const result = player.getNextChunk(
+                const result = await player.getNextChunk(
                     data.pageStart,
                     connectedUser.getBufferingBalancer().getPageSize(),
                     data.bitrate,

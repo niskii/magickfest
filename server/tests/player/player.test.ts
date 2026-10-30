@@ -6,14 +6,9 @@ globalThis.settings = settings;
 import { PlaybackState } from "@shared/types/player-state";
 import { beforeEach, expect, test } from "vitest";
 import { Player } from "../../src/player/player.js";
+import sleep from "tests/test-functions.js";
 
 let player: Player;
-
-export default function sleep(milliseconds: number) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, milliseconds);
-    });
-}
 
 beforeEach(() => {
     try {

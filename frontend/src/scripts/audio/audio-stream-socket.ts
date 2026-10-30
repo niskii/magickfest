@@ -38,8 +38,8 @@ export class AudioStreamSocket {
 
     handleChunk(data: AudioPacket) {
         if (data == null) return;
-        if (this.#lastChunkPage == data.PageEnd) return;
-        this.#lastChunkPage = data.PageEnd;
+        if (this.#lastChunkPage == data.PacketEnd) return;
+        this.#lastChunkPage = data.PacketEnd;
         this.onFetch(data.Buffer);
     }
 
@@ -59,12 +59,12 @@ export class AudioStreamSocket {
             if (!data) return;
             this.#needsResync = false;
             // save the play position of the sync chunk.
-            this.#timeKeeper.setStartPosition(data.ChunkPlayPosition);
+            this.#timeKeeper.setStartPosition(data.Timestamp);
             // save the duration of the audio.
             this.#timeKeeper.setTotalDuration(data.TotalDuration);
             // the calculated duration since client audio buffer ended.
             this.#timeKeeper.addDelay(
-                data.ChunkPlayPosition -
+                data.Timestamp -
                     data.ServerTime -
                     this.#timeKeeper.getCurrentTime(),
             );
