@@ -19,6 +19,7 @@ db.define("Session", {
     user: sequelize.JSON,
     expires: sequelize.DATE,
     data: sequelize.TEXT,
+    csrfToken: sequelize.TEXT,
 });
 
 const sessionConfig = session({
@@ -31,6 +32,7 @@ const sessionConfig = session({
         extendDefaultFields: function (defaults, session) {
             return {
                 user: session.user ? session.user : null,
+                csrfToken: session.csrfToken ? session.csrfToken : null,
                 data: defaults.data,
                 expires: defaults.expires,
             };

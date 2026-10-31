@@ -3,7 +3,7 @@ import Player from "./components/Player.vue";
 
 import { onMounted } from "vue";
 import { bootstrap, bootstrapDiscord } from "./bootstrap";
-import csrfToken from "./csrftoken";
+import { getCSRFToken } from "./csrftoken";
 import ErrorScreen from "./screens/ErrorScreen.vue";
 import LoadingScreen from "./screens/LoadingScreen.vue";
 
@@ -11,6 +11,9 @@ onMounted(() => {
     bootstrapDiscord().catch(async (err) => {
         bootstrap.status = "error";
         bootstrap.error = err;
+
+        const csrfToken = await getCSRFToken();
+
         await fetch("/api/auth/endsession", {
             method: "POST",
             credentials: "include",

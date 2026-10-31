@@ -81,17 +81,16 @@ export async function getGuildMember(accessToken: string): Promise<any> {
 
 function saveUserSession(user: UserType, req: Request) {
     return new Promise<void>((resolve, reject) => {
-        req.session.regenerate(function (err) {
+        req.session.regenerate((err) => {
             if (err) reject(`could not regenerate session ${err}`);
-
             // Discord embed cookie options
             // as referenced https://discord.com/developers/docs/activities/development-guides/networking
-            const origin = req.get("origin");
+            const origin = req.headers["referer"];
             if (origin && new URL(origin).host == envs.DiscordURL.host) {
                 req.session.cookie.sameSite = "none";
                 // @ts-ignore
                 req.session.cookie.partitioned = true;
-                req.session.cookie.domain = undefined;
+                req.session.cookie.domain = envs.DiscordURL.host;
             }
 
             req.session.user = user;

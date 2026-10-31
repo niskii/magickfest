@@ -36,13 +36,8 @@ export function setupMiddleware(
     app.use("/api", csrfAPI);
     app.use("/api/public", publicAPI);
 
-    app.use((req, res, next) => {
-        logger.info("session", req.session.csrfToken)
-        next();
-    })
-
     app.use(csrfSynchronisedProtection);
-    
+
     app.use("/api/auth", authAPI);
     app.use(isAuthorized);
     app.use("/api/service", serviceAPI);
@@ -52,16 +47,18 @@ export function setupMiddleware(
     io.engine.use(sessionConfig);
 
     io.use((socket, next) => {
-        const req = socket.request as Request
+        const req = socket.request as Request;
         const token = socket.handshake.auth.csrftoken;
 
-        logger.info("compare", req.session.csrfToken, token)
+        req.session.reload((err) => {
+            if (err) socket.disconnect();
 
-        if (isSocketConnectionRequestValid(token, req.session.csrfToken)) {
-            next();
-        } else {
-            socket.disconnect();
-        }
+            if (isSocketConnectionRequestValid(token, req.session.csrfToken)) {
+                next();
+            } else {
+                next(new Error("invalid_token"));
+            }
+        });
     });
 
     io.use(async (socket, next) => {

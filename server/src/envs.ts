@@ -6,6 +6,7 @@ export const getDiscordEnvironment = () => {
         !env.DiscordClientSecret ||
         !env.DiscordAppToken ||
         !env.DiscordBotToken ||
+        !env.DiscordAppPublicKey ||
         !env.DiscordGuildID ||
         !env.DiscordAdminRole ||
         !env.AdminRoleID
@@ -18,6 +19,7 @@ export const getDiscordEnvironment = () => {
         DiscordClientSecret: env.DiscordClientSecret,
         DiscordAppToken: env.DiscordAppToken,
         DiscordBotToken: env.DiscordBotToken,
+        DiscordAppPublicKey: env.DiscordAppPublicKey,
         DiscordGuildID: env.DiscordGuildID,
         DiscordAdminRole: env.DiscordAdminRole,
         AdminRoleID: env.AdminRoleID,
