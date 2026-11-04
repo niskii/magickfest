@@ -12,4 +12,5 @@ export interface MediaReader {
         timestamp: number,
     ) => Promise<{ data: MediaPacket | null; status: ReadCode }>;
     getTotalDuration: () => number;
+    evictCache: (timeStamp: number) => void;
 }

@@ -9,6 +9,7 @@ import {
 import { MediaReader } from "src/player/media-reader";
 import { VideoPacket } from "shared/types/audio-transfer";
 import { ReadCode } from "shared/types/read-codes";
+import rbtree, { Tree } from "functional-red-black-tree"
 
 export class VideoReader implements MediaReader {
     videoTrack: InputVideoTrack | null = null;
@@ -18,10 +19,10 @@ export class VideoReader implements MediaReader {
 
     #currentPacket: EncodedPacket | null = null;
 
-    packetCache: Array<EncodedPacket>;
+    packetCache: Tree<number, EncodedPacket>;
 
     constructor(file: string) {
-        this.packetCache = new Array();
+        this.packetCache = rbtree();
         this.loadFile(file);
     }
 
@@ -34,7 +35,7 @@ export class VideoReader implements MediaReader {
         const videoTrack = await input.getPrimaryVideoTrack();
         if (!videoTrack) throw new Error("video track is null!");
         const duration = await videoTrack.getDurationFromMetadata();
-        if (!duration) throw new Error("can't get duration from video!½");
+        if (!duration) throw new Error("can't get duration from video!");
 
         this.videoTrack = videoTrack;
         this.numberOfPackets = (
@@ -44,9 +45,27 @@ export class VideoReader implements MediaReader {
         this.duration = duration;
     }
 
-    async #getPacket(packetNumber: number) {
-        if (this.packetCache.at(packetNumber))
-            return this.packetCache.at(packetNumber)!;
+    async evictCache(timeStamp: number) {
+        const packet = await this.videoSink?.getPacket(timeStamp, {metadataOnly: true});
+        if (!packet) return;
+        const iter = this.packetCache.ge(packet.sequenceNumber);
+        while (iter.hasPrev) {
+            iter.prev()
+            if (iter.key) {
+                this.packetCache = this.packetCache.remove(iter.key)
+            }
+        }
+    }
+
+
+    async getPacket(packetNumber: number) {
+        if (packetNumber < 0) return null
+        packetNumber += 1
+
+        const cached = this.packetCache.get(packetNumber)
+        if (cached) {
+            return cached;
+        }
 
         let packet;
         if (!this.#currentPacket) {
@@ -57,7 +76,7 @@ export class VideoReader implements MediaReader {
 
         if (packet) {
             this.#currentPacket = packet;
-            this.packetCache.push(packet);
+            this.packetCache = this.packetCache.insert(packetNumber, packet);
             return packet;
         }
 
@@ -70,9 +89,8 @@ export class VideoReader implements MediaReader {
         timestamp: number,
     ) {
         const chunks: EncodedPacket[] = new Array(end - start);
-
         for (let i = 0; i < end - start; i++) {
-            const packet = await this.#getPacket(start + i);
+            const packet = await this.getPacket(start + i);
             if (packet) chunks[i] = packet;
         }
 

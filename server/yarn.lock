@@ -666,6 +666,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/functional-red-black-tree@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "@types/functional-red-black-tree@npm:1.0.6"
+  checksum: 10c0/fd215b69ce58cf0cb732f6918b8f415c82cc77b51d2f4ecf29cb86aa5a1b1a6deef3a85ba37f25118c31150a6fc0e6cb5d35cdc1dae2d8bb7f56e8ae75b4ce1e
+  languageName: node
+  linkType: hard
+
 "@types/http-errors@npm:*":
   version: 2.0.5
   resolution: "@types/http-errors@npm:2.0.5"
@@ -1954,6 +1961,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"functional-red-black-tree@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "functional-red-black-tree@npm:1.0.1"
+  checksum: 10c0/5959eed0375803d9924f47688479bb017e0c6816a0e5ac151e22ba6bfe1d12c41de2f339188885e0aa8eeea2072dad509d8e4448467e816bde0a2ca86a0670d3
+  languageName: node
+  linkType: hard
+
 "generator-function@npm:^2.0.0":
   version: 2.0.1
   resolution: "generator-function@npm:2.0.1"
@@ -3052,6 +3066,7 @@ __metadata:
     "@types/cors": "npm:^2.8.19"
     "@types/express": "npm:^5.0.6"
     "@types/express-session": "npm:^1.19.0"
+    "@types/functional-red-black-tree": "npm:^1.0.6"
     "@types/minimist": "npm:^1.2.5"
     "@types/node": "npm:^26.6.2"
     axios: "npm:^1.20.0"
@@ -3064,6 +3079,7 @@ __metadata:
     express: "npm:^5.2.1"
     express-rate-limit: "npm:^8.7.0"
     express-session: "npm:^1.19.0"
+    functional-red-black-tree: "npm:^1.0.1"
     helmet: "npm:^8.3.0"
     mediabunny: "npm:^1.62.1"
     minimist: "npm:^1.2.8"
@@ -3094,8 +3110,8 @@ __metadata:
 
 "shared@file:../shared::locator=server%40workspace%3A.":
   version: 0.0.0
-  resolution: "shared@file:../shared#../shared::hash=72cfe0&locator=server%40workspace%3A."
-  checksum: 10c0/5da3179b708731e65266641f89d22794cb77c9973751a0121e66704717f12d9dfdc42e28b5235c3454fa1686bb7077b37b822b596ee8c1f7f5b745090dc7fd15
+  resolution: "shared@file:../shared#../shared::hash=0c202d&locator=server%40workspace%3A."
+  checksum: 10c0/9f17ed28d6db016ef538434d128207b92fbdc5e829b94a4d3098a2df141eb0141f75dbdaf5137f2f638c05eea3eec5e19d48dce86dfaa392448dd09c04cc3eb3
   languageName: node
   linkType: hard
 

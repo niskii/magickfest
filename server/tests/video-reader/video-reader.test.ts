@@ -52,7 +52,6 @@ test("packets are ordered", async () => {
         const a = packets[i];
         const b = packets[i - 1];
         if (a.timestamp < b.timestamp) {
-            console.log(a.timestamp, b.timestamp);
             isUnordered = true;
         }
     }
@@ -83,3 +82,15 @@ test("chunk has 5 ordered packets", async () => {
     expect(chunks.data?.EncodedPackets.length).toBe(5);
     expect(isUnordered).toBeFalsy();
 });
+
+test("cache gets pruned up to timestamp", async () => {
+    await readAllPackets();
+    await videoReader.evictCache(5.0)
+    const packet = await videoReader.getPacket(0)
+    const packet2 = await videoReader.getPacket(140);
+    expect(packet).toBeNull()
+    expect(packet2).toBeTruthy();
+    await videoReader.evictCache(10.0)
+    const packet3 = await videoReader.getPacket(140);
+    expect(packet3).toBeNull();
+})
