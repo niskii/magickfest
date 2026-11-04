@@ -1,4 +1,4 @@
-import { PlaybackState } from "@shared/types/player-state";
+import { PlaybackState } from "shared/types/player-state";
 import { watch, type ShallowRef } from "vue";
 import { playerState } from "./socket/manager";
 import * as storage from "./stored-references";
@@ -9,7 +9,10 @@ export default (audioStreamPlayer: ShallowRef, visualiserRef: ShallowRef) => {
     });
 
     watch(storage.easterEggStatus, () => {
-        localStorage.setItem("easterEggStatus", storage.easterEggStatus.value.toString());
+        localStorage.setItem(
+            "easterEggStatus",
+            storage.easterEggStatus.value.toString(),
+        );
     });
 
     watch(storage.bitrate, () => {

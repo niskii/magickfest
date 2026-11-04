@@ -1,5 +1,5 @@
-import { Bitrate } from "@shared/types/audio-transfer";
-import { PlaybackState, PlayerState } from "@shared/types/player-state";
+import { Bitrate } from "shared/types/audio-transfer";
+import { PlaybackState, PlayerState } from "shared/types/player-state";
 import EventEmitter from "node:events";
 import { DeepReadonly } from "../types/deep-readonly";
 import { OpusReader } from "./formats/opus/opus-reader";

@@ -1,4 +1,4 @@
-import { PlaybackState } from "@shared/types/player-state";
+import { PlaybackState } from "shared/types/player-state";
 import {
     ChatInputCommandInteraction,
     GuildMember,

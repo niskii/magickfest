@@ -55,6 +55,7 @@
         "@types/minimist": "^1.2.5",
         "@types/node": "^26.6.2",
         "prettier": "^3.9.8",
+        "shared": "file:../shared",
         "socket.io-client": "^4.8.4",
         "ts-node": "^10.9.2",
         "tslog": "^5.2.0",

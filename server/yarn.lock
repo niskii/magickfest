@@ -3069,6 +3069,7 @@ __metadata:
     minimist: "npm:^1.2.8"
     prettier: "npm:^3.9.8"
     sequelize: "npm:^6.37.8"
+    shared: "file:../shared"
     socket.io: "npm:^4.8.3"
     socket.io-client: "npm:^4.8.4"
     socket.io-stream: "patch:socket.io-stream@npm%3A0.9.1#~/.yarn/patches/socket.io-stream-npm-0.9.1-b7d76067b2.patch"
@@ -3088,6 +3089,13 @@ __metadata:
   version: 1.2.0
   resolution: "setprototypeof@npm:1.2.0"
   checksum: 10c0/68733173026766fa0d9ecaeb07f0483f4c2dc70ca376b3b7c40b7cda909f94b0918f6c5ad5ce27a9160bdfb475efaa9d5e705a11d8eaae18f9835d20976028bc
+  languageName: node
+  linkType: hard
+
+"shared@file:../shared::locator=server%40workspace%3A.":
+  version: 0.0.0
+  resolution: "shared@file:../shared#../shared::hash=72cfe0&locator=server%40workspace%3A."
+  checksum: 10c0/5da3179b708731e65266641f89d22794cb77c9973751a0121e66704717f12d9dfdc42e28b5235c3454fa1686bb7077b37b822b596ee8c1f7f5b745090dc7fd15
   languageName: node
   linkType: hard
 

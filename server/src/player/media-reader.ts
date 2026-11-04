@@ -1,5 +1,5 @@
-import { MediaPacket } from "@shared/types/audio-transfer";
-import { ReadCode } from "@shared/types/read-codes";
+import { MediaPacket } from "shared/types/audio-transfer";
+import { ReadCode } from "shared/types/read-codes";
 
 export interface MediaReader {
     getChunkAtTime: (

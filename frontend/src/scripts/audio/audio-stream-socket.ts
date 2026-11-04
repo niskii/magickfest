@@ -1,5 +1,5 @@
-import { type AudioPacket, Bitrate } from "@shared/types/audio-transfer";
-import { ReadCode } from "@shared/types/read-codes";
+import { type AudioPacket, Bitrate } from "shared/types/audio-transfer";
+import { ReadCode } from "shared/types/read-codes";
 import { Socket } from "socket.io-client";
 import config from "../../config/client.json";
 import logger from "../../logger";

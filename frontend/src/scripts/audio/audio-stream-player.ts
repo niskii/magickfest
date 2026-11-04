@@ -1,4 +1,4 @@
-import { Bitrate } from "@shared/types/audio-transfer";
+import { Bitrate } from "shared/types/audio-transfer";
 import { Socket } from "socket.io-client";
 import logger from "../../logger";
 import { AudioStreamSocket } from "./audio-stream-socket";

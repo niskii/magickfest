@@ -1,5 +1,5 @@
-import { Bitrate } from "@shared/types/audio-transfer";
-import { SocketSetInfo } from "@shared/types/set";
+import { Bitrate } from "shared/types/audio-transfer";
+import { SocketSetInfo } from "shared/types/set";
 import { Request } from "express";
 import fs from "fs";
 import path from "path";

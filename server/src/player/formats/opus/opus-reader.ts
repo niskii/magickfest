@@ -1,5 +1,5 @@
-import { AudioPacket } from "@shared/types/audio-transfer";
-import { ReadCode } from "@shared/types/read-codes";
+import { AudioPacket } from "shared/types/audio-transfer";
+import { ReadCode } from "shared/types/read-codes";
 import { readFileSync } from "fs";
 import { OpusFileSplitter } from "./synced-opus-splitter";
 import {

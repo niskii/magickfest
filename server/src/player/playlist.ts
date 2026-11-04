@@ -1,4 +1,4 @@
-import { Bitrate } from "@shared/types/audio-transfer";
+import { Bitrate } from "shared/types/audio-transfer";
 import { createHash } from "crypto";
 import fs from "fs";
 import path from "path";

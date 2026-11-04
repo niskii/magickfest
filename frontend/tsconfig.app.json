@@ -12,10 +12,7 @@
         "noUncheckedSideEffectImports": true,
         "strictNullChecks": false,
 
-        "baseUrl": ".",
-        "paths": {
-            "@shared/*": ["../shared/*"]
-        }
+        "baseUrl": "."
     },
     "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/assets/*"]
 }

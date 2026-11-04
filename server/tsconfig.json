@@ -20,7 +20,6 @@
         "skipLibCheck": true,
         "moduleResolution": "node16",
         "paths": {
-            "@shared/*": ["../shared/*.ts"],
             "*": ["./*"]
         },
 

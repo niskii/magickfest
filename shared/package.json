@@ -1,0 +1,7 @@
+{
+  "name": "shared",
+  "packageManager": "yarn@4.18.1",
+  "devDependencies": {
+    "mediabunny": "^1.65.0"
+  }
+}

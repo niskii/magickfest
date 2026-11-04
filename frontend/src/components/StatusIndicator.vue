@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type PlayerState } from "@shared/types/player-state";
+import { type PlayerState } from "shared/types/player-state";
 
 const props = defineProps<{
     status?: PlayerState;
@@ -42,8 +42,8 @@ const getStatus = () => {
 </script>
 
 <template>
-    <div class="statusIndicator" :title="getStatus().text">
-        <div class="statusText" v-show="!hideStatusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
-        <div class="status" :style="{ backgroundColor: getStatus().color }"></div>
-    </div>
+<div class="statusIndicator" :title="getStatus().text">
+    <div class="statusText" v-show="!hideStatusText" :style="{ color: getStatus().color }">{{ getStatus().text }}</div>
+    <div class="status" :style="{ backgroundColor: getStatus().color }"></div>
+</div>
 </template>

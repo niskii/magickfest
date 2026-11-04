@@ -3,7 +3,7 @@ settings.application.playerNewSetTimeout = 0;
 settings.application.playerUpdateInterval = 50;
 globalThis.settings = settings;
 
-import { PlaybackState } from "@shared/types/player-state";
+import { PlaybackState } from "shared/types/player-state";
 import { beforeEach, expect, test } from "vitest";
 import { Player } from "../../src/player/player.js";
 import sleep from "tests/test-functions.js";

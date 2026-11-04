@@ -1,4 +1,4 @@
-import { type PlayerState } from "@shared/types/player-state";
+import { type PlayerState } from "shared/types/player-state";
 import { reactive, ref } from "vue";
 import logger from "../../logger";
 import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";

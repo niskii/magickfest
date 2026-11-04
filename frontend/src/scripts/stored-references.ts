@@ -1,4 +1,4 @@
-import { Bitrate } from "@shared/types/audio-transfer";
+import { Bitrate } from "shared/types/audio-transfer";
 import { ref } from "vue";
 
 export const visualizerFFTSize = ref<number>(12);
@@ -44,6 +44,7 @@ export function load() {
         ? (altIcons.value = localStorage.getItem("altIcons") == "true")
         : null;
     localStorage.getItem("easterEggStatus")
-        ? (easterEggStatus.value = localStorage.getItem("easterEggStatus") == "true")
+        ? (easterEggStatus.value =
+              localStorage.getItem("easterEggStatus") == "true")
         : null;
 }

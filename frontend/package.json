@@ -41,6 +41,7 @@
         "@vitejs/plugin-vue": "^6.0.9",
         "@vue/tsconfig": "^0.9.1",
         "prettier": "^3.9.8",
+        "shared": "file:../shared",
         "tslog": "^5.2.0",
         "typescript": "^5.9.3",
         "vite": "^8.3.3",

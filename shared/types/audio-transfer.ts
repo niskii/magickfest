@@ -1,3 +1,5 @@
+import { EncodedPacket } from "mediabunny";
+
 export type AudioPacket = MediaPacket & {
   Buffer: Uint8Array<ArrayBuffer>;
 };

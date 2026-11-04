@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type PlayerState, PlaybackState } from "@shared/types/player-state";
+import { type PlayerState, PlaybackState } from "shared/types/player-state";
 import { onMounted, onUnmounted, ref } from "vue";
 import { Viewport } from "../scripts/enum/Viewport";
 import { socketStore } from "../scripts/socket/manager";
@@ -135,18 +135,16 @@ const renderStreamInfoPerStatus = (
 };
 </script>
 <template>
-    <h1
-        :style="{
-            fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`,
-        }"
-    >
-        {{ renderStreamInfoPerStatus(socketStore.setInformation.title, "[untitled]", "no set available", `starting in %time%`, false, "", currentTime) }}
-    </h1>
-    <h2
-        :style="{
-            fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author, true), true)}vmax)`,
-        }"
-    >
-        {{ renderStreamInfoPerStatus(socketStore.setInformation.author, "[unknown author]", null, null, true, "by ", Date.now()) }}
-    </h2>
+<h1 :style="{
+    fontSize: `min(${getViewportFontSize(false)}vmax, ${adjustSizePerSetInfo(truncateSetInfo(socketStore.setInformation.title, false), false)}vmax)`,
+}">
+    {{ renderStreamInfoPerStatus(socketStore.setInformation.title, "[untitled]", "no set available", `starting in
+    %time%`, false, "", currentTime) }}
+</h1>
+<h2 :style="{
+    fontSize: `min(${getViewportFontSize(true)}vmax, ${adjustSizePerSetInfo(truncateSetInfo('by ' + socketStore.setInformation.author, true), true)}vmax)`,
+}">
+    {{ renderStreamInfoPerStatus(socketStore.setInformation.author, "[unknown author]", null, null, true, "by ",
+        Date.now()) }}
+</h2>
 </template>

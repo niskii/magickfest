@@ -1,4 +1,4 @@
-import { type SocketSetInfo } from "@shared/types/set";
+import { type SocketSetInfo } from "shared/types/set";
 import EventEmitter from "node:events";
 import { Socket } from "socket.io-client";
 import socketStream from "socket.io-stream";
@@ -25,7 +25,6 @@ export class SetInfoFetcher {
         socketStream(this.#socket).on(
             "setInformationStream",
             (stream: Duplex, info: SocketSetInfo) => {
-
                 const fileBuffer: Array<Uint8Array> = [];
                 let bufferLength = 0;
 
@@ -33,7 +32,7 @@ export class SetInfoFetcher {
                 this.setInfo.author = info.Author;
 
                 stream.on("data", (data) => {
-                    logger.info("data!")
+                    logger.info("data!");
                     fileBuffer.push(data);
                     bufferLength += data.length;
                 });
@@ -54,11 +53,11 @@ export class SetInfoFetcher {
                         this.setInfo.coverBlob,
                     );
 
-                    this.#events.emit("done")
+                    this.#events.emit("done");
                 });
 
                 stream.on("error", (err) => {
-                    logger.error(err)
+                    logger.error(err);
                 });
             },
         );
@@ -69,7 +68,7 @@ export class SetInfoFetcher {
             this.setInfo.coverURL = null;
             this.setInfo.coverBlob = null;
 
-            this.#events.emit("done")
+            this.#events.emit("done");
         });
     }
 
@@ -78,9 +77,9 @@ export class SetInfoFetcher {
 
         return new Promise<SetInfo>((resolve) => {
             this.#events.once("done", () => {
-                console.log("done!")
-                resolve(this.setInfo)
-            })
-        })
-    };
+                console.log("done!");
+                resolve(this.setInfo);
+            });
+        });
+    }
 }

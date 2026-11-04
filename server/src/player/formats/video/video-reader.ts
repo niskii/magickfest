@@ -7,8 +7,8 @@ import {
     InputVideoTrack,
 } from "mediabunny";
 import { MediaReader } from "src/player/media-reader";
-import { VideoPacket } from "@shared/types/audio-transfer";
-import { ReadCode } from "@shared/types/read-codes";
+import { VideoPacket } from "shared/types/audio-transfer";
+import { ReadCode } from "shared/types/read-codes";
 
 export class VideoReader implements MediaReader {
     videoTrack: InputVideoTrack | null = null;
