@@ -10,6 +10,7 @@ export type SetInfo = {
     coverBlob?: Blob;
     title?: string;
     author?: string;
+    hasVideo?: boolean;
 };
 
 export class SetInfoFetcher {
@@ -30,6 +31,7 @@ export class SetInfoFetcher {
 
                 this.setInfo.title = info.Title;
                 this.setInfo.author = info.Author;
+                this.setInfo.hasVideo = info.HasVideo;
 
                 stream.on("data", (data) => {
                     logger.info("data!");
@@ -65,6 +67,7 @@ export class SetInfoFetcher {
         this.#socket.on("setInformation", (info: SocketSetInfo) => {
             this.setInfo.title = info.Title;
             this.setInfo.author = info.Author;
+            this.setInfo.hasVideo = info.HasVideo;
             this.setInfo.coverURL = null;
             this.setInfo.coverBlob = null;
 

@@ -1,7 +1,7 @@
 import { HeaderObject, Page } from "./metadata";
 
 export interface OpusSplitter {
-    audioPageBoundaries: Array<Number> | null;
+    audioPageBoundaries?: Array<Number>;
     pages: Array<Page>;
     header: HeaderObject;
     preskip: number;

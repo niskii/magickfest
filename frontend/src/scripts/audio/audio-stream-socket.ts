@@ -3,11 +3,11 @@ import { ReadCode } from "shared/types/read-codes";
 import { Socket } from "socket.io-client";
 import config from "../../config/client.json";
 import logger from "../../logger";
-import { TimeKeeper } from "./time-keeper";
+import { BufferHealthManager } from "../buffer-health-manager";
 
 export class AudioStreamSocket {
     #socket: Socket;
-    #timeKeeper: TimeKeeper;
+    #timeKeeper: BufferHealthManager;
     #fetchTimer: NodeJS.Timeout;
     #isFetching = false;
     #needsResync = false;
@@ -17,7 +17,11 @@ export class AudioStreamSocket {
     onFetch: (buffer: Uint8Array<ArrayBufferLike>) => void;
     onFlush: () => void;
 
-    constructor(socket: Socket, timeKeeper: TimeKeeper, bitrate: Bitrate) {
+    constructor(
+        socket: Socket,
+        timeKeeper: BufferHealthManager,
+        bitrate: Bitrate,
+    ) {
         this.#socket = socket;
         this.#timeKeeper = timeKeeper;
         this.#bitrate = bitrate;
@@ -46,14 +50,14 @@ export class AudioStreamSocket {
     fetchCurrent() {
         this.#isFetching = true;
         this.#socket.emit(
-            "fetchSyncedChunk",
-            { bitrate: this.#bitrate },
+            "fetchSyncedAudioChunk",
+            { type: "audio", bitrate: this.#bitrate },
             (response: { status: ReadCode }) => {
                 logger.info("Status code:", response.status);
             },
         );
 
-        this.#socket.once("syncedChunk", async (data: AudioPacket) => {
+        this.#socket.once("syncedAudio", async (data: AudioPacket) => {
             logger.info("syncing!", this.#lastChunkPage);
             this.#isFetching = false;
             if (!data) return;
@@ -77,8 +81,12 @@ export class AudioStreamSocket {
         this.#isFetching = true;
 
         this.#socket.emit(
-            "fetchChunkFromPage",
-            { bitrate: this.#bitrate, pageStart: this.#lastChunkPage },
+            "fetchNextAudioChunk",
+            {
+                type: "audio",
+                bitrate: this.#bitrate,
+                pageStart: this.#lastChunkPage,
+            },
             (response: { status: ReadCode }) => {
                 if (response.status == ReadCode.EOF) {
                     this.onFlush();
@@ -90,7 +98,7 @@ export class AudioStreamSocket {
             },
         );
 
-        this.#socket.once("chunkFromPage", (data: AudioPacket) => {
+        this.#socket.once("nextAudioChunk", (data: AudioPacket) => {
             this.#isFetching = false;
             if (!data) return;
             logger.info(

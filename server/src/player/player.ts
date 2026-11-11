@@ -1,16 +1,22 @@
-import { Bitrate } from "shared/types/audio-transfer";
+import { Bitrate, MediaType } from "shared/types/audio-transfer";
 import { PlaybackState, PlayerState } from "shared/types/player-state";
 import EventEmitter from "node:events";
 import { DeepReadonly } from "../types/deep-readonly";
 import { OpusReader } from "./formats/opus/opus-reader";
 import { Playlist, Set } from "./playlist";
 import { MediaReader } from "./media-reader";
+import { VideoReader } from "./formats/video/video-reader";
 
 export class Player {
     /**
      * Collection of opus readers loaded with different bitrate opus files.
      */
     #readerCollection: Map<Bitrate, MediaReader>;
+
+    /**
+     * Manages video packets.
+     */
+    #videoReader?: VideoReader;
 
     /**
      * Timestamp for when the player started. Resets every set.
@@ -30,7 +36,7 @@ export class Player {
     /**
      * Timer for internal progression checking.
      */
-    #playbackTimer: NodeJS.Timeout | null = null;
+    #playbackTimer?: NodeJS.Timeout;
 
     /**
      * The playlist to play.
@@ -60,7 +66,7 @@ export class Player {
     /**
      * The state of the player at the point of pausing.
      */
-    #pointOfPause: number | null = null;
+    #pointOfPause?: number;
 
     //testing
     #loop = false;
@@ -180,10 +186,14 @@ export class Player {
      * @param bitrate
      * @returns a MediaPacket and a read code
      */
-    getCurrentChunk(bitrate: Bitrate) {
-        const reader = this.#getCurrentReader(bitrate);
-        if (reader)
-            return reader.getChunkAtTime(this.getCurrentPositionSeconds(), 1);
+    getCurrentChunk(type: MediaType, bitrate?: Bitrate) {
+        if (type === "audio" && bitrate) {
+            const reader = this.#getCurrentReader(bitrate);
+            if (reader)
+                return reader.getChunkAtTime(this.getCurrentPositionSeconds(), 1);
+        } else if (type === "video" && this.#videoReader) {
+            return this.#videoReader.getChunkAtTime(this.getCurrentPositionSeconds(), 6)
+        }
     }
 
     /**
@@ -192,7 +202,8 @@ export class Player {
      * @param bitrate
      * @returns an MediaPacket and a read code
      */
-    getNextChunk(pageStart: number, numberOfPages: number, bitrate: Bitrate) {
+    getNextChunk(type: MediaType, pageStart: number, numberOfPages: number, bitrate?: Bitrate) {
+        if (type === "audio" && bitrate) {
         const reader = this.#getCurrentReader(bitrate);
         if (reader)
             return reader.getNextChunk(
@@ -200,6 +211,13 @@ export class Player {
                 numberOfPages,
                 this.getCurrentPositionSeconds(),
             );
+        } else if (type === "video" && this.#videoReader) {
+            return this.#videoReader.getNextChunk(
+                pageStart,
+                90,
+                this.getCurrentPositionSeconds(),
+            );
+        }
     }
 
     /**
@@ -211,22 +229,22 @@ export class Player {
      * @param initialStartTime the time the entire setlist starts at. Null will not change the value.
      */
     setState(
-        setIndex: number | null,
-        startTime: number | null,
-        forwarded: number | null,
-        initialStartTime: number | null,
+        setIndex?: number,
+        startTime?: number,
+        forwarded?: number,
+        initialStartTime?: number,
     ) {
-        if (setIndex !== null && this.#playlist.getCurrentIndex() != setIndex) {
+        if (setIndex !== undefined && this.#playlist.getCurrentIndex() != setIndex) {
             this.#playlist.setCurrentSet(setIndex);
             this.#loadCurrentSet();
         }
-        if (startTime !== null) {
+        if (startTime !== undefined) {
             this.#startTime = startTime;
-            initialStartTime !== null
+            initialStartTime !== undefined
                 ? (this.#initialStartTime = initialStartTime)
                 : (this.#initialStartTime = startTime);
         }
-        if (forwarded !== null) {
+        if (forwarded !== undefined) {
             this.#forwarded = forwarded;
         }
 
@@ -333,7 +351,7 @@ export class Player {
     resume() {
         if (
             this.#state == PlaybackState.Paused &&
-            this.#pointOfPause !== null
+            this.#pointOfPause !== undefined
         ) {
             this.#state = PlaybackState.Running;
             this.#forwarded =
@@ -360,6 +378,10 @@ export class Player {
             const reader = new OpusReader(audioFile.File);
             this.#readerCollection.set(audioFile.Bitrate, reader);
         });
+
+        const videoFile = this.#playlist.getCurrentSet().Video
+        if (videoFile)
+            this.#videoReader = new VideoReader(videoFile);
     }
 
     #setupPlaybackTimer() {

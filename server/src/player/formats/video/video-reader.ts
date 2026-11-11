@@ -10,14 +10,16 @@ import { MediaReader } from "src/player/media-reader";
 import { VideoPacket } from "shared/types/audio-transfer";
 import { ReadCode } from "shared/types/read-codes";
 import rbtree, { Tree } from "functional-red-black-tree"
+import { BSON } from "bson";
 
 export class VideoReader implements MediaReader {
-    videoTrack: InputVideoTrack | null = null;
-    videoSink: EncodedPacketSink | null = null;
+    videoTrack?: InputVideoTrack;
+    videoSink?: EncodedPacketSink;
     numberOfPackets: number = 0;
-    duration: number = 0;
+    totalDuration: number = 0;
 
-    #currentPacket: EncodedPacket | null = null;
+    #currentPacket?: EncodedPacket;
+    #latestKeyPacket?: EncodedPacket;
 
     packetCache: Tree<number, EncodedPacket>;
 
@@ -42,11 +44,11 @@ export class VideoReader implements MediaReader {
             await videoTrack.computePacketStats()
         ).packetCount;
         this.videoSink = new EncodedPacketSink(videoTrack);
-        this.duration = duration;
+        this.totalDuration = duration;
     }
 
-    async evictCache(timeStamp: number) {
-        const packet = await this.videoSink?.getPacket(timeStamp, {metadataOnly: true});
+    async evictCache(timestamp: number) {
+        const packet = await this.videoSink?.getPacket(timestamp, {metadataOnly: true});
         if (!packet) return;
         const iter = this.packetCache.ge(packet.sequenceNumber);
         while (iter.hasPrev) {
@@ -57,30 +59,53 @@ export class VideoReader implements MediaReader {
         }
     }
 
-
     async getPacket(packetNumber: number) {
         if (packetNumber < 0) return null
-        packetNumber += 1
 
-        const cached = this.packetCache.get(packetNumber)
+        const cached = this.packetCache.get(packetNumber + 1)
         if (cached) {
+            console.log("cache hit!", packetNumber)
             return cached;
         }
 
-        let packet;
-        if (!this.#currentPacket) {
-            packet = await this.videoSink?.getFirstKeyPacket();
+        let packet: EncodedPacket | undefined | null;
+        let cursor: EncodedPacket;
+        if (this.#latestKeyPacket) {
+            cursor = this.#latestKeyPacket
         } else {
-            packet = await this.videoSink?.getNextPacket(this.#currentPacket);
+            cursor = (await this.videoSink?.getFirstKeyPacket())!;
+        }
+
+        if (this.#currentPacket && this.#currentPacket.sequenceNumber > cursor.sequenceNumber && this.#currentPacket.sequenceNumber < packetNumber)
+            cursor = this.#currentPacket;
+
+        packet = cursor;
+
+        while (packet && packet.sequenceNumber < packetNumber) {
+            this.packetCache = this.packetCache.insert(packet.sequenceNumber + 1, packet);
+            packet = await this.videoSink?.getNextPacket(packet);
         }
 
         if (packet) {
-            this.#currentPacket = packet;
-            this.packetCache = this.packetCache.insert(packetNumber, packet);
+            this.packetCache = this.packetCache.insert(packet.sequenceNumber + 1, packet);
+            if (!this.#currentPacket || packet.sequenceNumber > this.#currentPacket.sequenceNumber)
+                this.#currentPacket = packet; 
             return packet;
         }
 
         return null;
+    }
+
+    async getLatestKeyPacket(timestamp: number) {
+        const packet = await this.videoSink?.getKeyPacket(timestamp);
+        if (this.#latestKeyPacket) {
+            if (packet && packet.timestamp > this.#latestKeyPacket.timestamp) {
+                this.#latestKeyPacket = packet;
+                this.packetCache = this.packetCache.insert(packet.sequenceNumber + 1, packet);
+            }
+            return this.#latestKeyPacket;
+        }
+        return packet;
     }
 
     async createMediaPacketFromRange(
@@ -91,12 +116,14 @@ export class VideoReader implements MediaReader {
         const chunks: EncodedPacket[] = new Array(end - start);
         for (let i = 0; i < end - start; i++) {
             const packet = await this.getPacket(start + i);
-            if (packet) chunks[i] = packet;
+            if (packet) chunks[i] = packet;            
         }
+
+        const serializedChunks = BSON.serialize({chunks})
 
         if (chunks !== null) {
             const packet: VideoPacket = {
-                EncodedPackets: chunks,
+                EncodedPackets: serializedChunks,
                 PacketStart: start,
                 PacketEnd: end,
                 Timestamp: chunks[0].timestamp,
@@ -105,17 +132,16 @@ export class VideoReader implements MediaReader {
             };
             return packet;
         } else {
+            console.log("sumtin wong!")
             return null;
         }
     }
 
     async getChunkAtTime(timestamp: number, numberOfPages: number) {
-        const packet = await this.videoSink?.getKeyPacket(timestamp, {
-            metadataOnly: true,
-        });
+        const packet = await this.getLatestKeyPacket(timestamp);
 
         if (!packet) return { data: null, status: ReadCode.INVALID };
-
+        
         const data = await this.createMediaPacketFromRange(
             packet.sequenceNumber,
             packet.sequenceNumber + numberOfPages,
@@ -123,6 +149,7 @@ export class VideoReader implements MediaReader {
         );
         return { data: data, status: ReadCode.CONTINUATION };
     }
+
     async getNextChunk(
         pageNumber: number,
         numberOfPages: number,
@@ -135,7 +162,8 @@ export class VideoReader implements MediaReader {
         );
         return { data: data, status: ReadCode.CONTINUATION };
     }
+
     getTotalDuration() {
-        return this.duration;
+        return this.totalDuration;
     }
 }

@@ -4,7 +4,10 @@ import logger from "../../logger";
 import { AudioStreamSocket } from "./audio-stream-socket";
 import type { ChanneledAudioBuffer } from "./AudioTypes";
 import * as decoder from "./decoder-service";
-import { TimeKeeper } from "./time-keeper";
+import {
+    AudioTimeContext,
+    BufferHealthManager,
+} from "../buffer-health-manager";
 
 export class AudioStreamPlayer {
     #stream: AudioStreamSocket;
@@ -12,7 +15,7 @@ export class AudioStreamPlayer {
     #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
     #audioSrcNodes: Array<AudioBufferSourceNode>; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
     #gainNode: GainNode;
-    #timeKeeper: TimeKeeper;
+    #timeKeeper: BufferHealthManager;
     #flushTimeoutId: NodeJS.Timeout;
     #bitrate: Bitrate;
     #volume: number;
@@ -24,7 +27,7 @@ export class AudioStreamPlayer {
         this.#bitrate = bitrate;
         this.#volume = volume;
 
-        this.#timeKeeper = new TimeKeeper();
+        this.#timeKeeper = new BufferHealthManager();
 
         const stream = new AudioStreamSocket(
             socket,
@@ -99,7 +102,7 @@ export class AudioStreamPlayer {
         this.#gainNode.gain.value = this.#volume ** 1.5;
         this.#audioCtx.suspend();
 
-        this.#timeKeeper.setAudioContext(this.#audioCtx);
+        this.#timeKeeper.setMediaContext(new AudioTimeContext(this.#audioCtx));
         this.#stream.start();
     }
 

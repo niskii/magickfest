@@ -1,11 +1,13 @@
 import { EncodedPacket } from "mediabunny";
 
+export type MediaType = "video" | "audio";
+
 export type AudioPacket = MediaPacket & {
   Buffer: Uint8Array<ArrayBuffer>;
 };
 
 export type VideoPacket = MediaPacket & {
-  EncodedPackets: EncodedPacket[];
+  EncodedPackets: Uint8Array<ArrayBufferLike>;
 };
 
 export type MediaPacket = {

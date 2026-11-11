@@ -244,4 +244,9 @@ export class OpusReader implements MediaReader {
             status: ReadCode.CONTINUATION,
         };
     }
+
+    async evictCache() {
+        // nothing to evict yet.
+        return;
+    }
 }

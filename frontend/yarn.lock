@@ -237,6 +237,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dom-mediacapture-transform@npm:^0.1.11":
+  version: 0.1.12
+  resolution: "@types/dom-mediacapture-transform@npm:0.1.12"
+  dependencies:
+    "@types/dom-webcodecs": "npm:*"
+  checksum: 10c0/340d31b37dd12c4c145d9cb1e10057376bcbefeb32833bb829a9cea430e04ddc6f5a942479f92ad9f33adb8ee0fe208675cb1f3f1ad501c8e8c50f0a14cd496c
+  languageName: node
+  linkType: hard
+
+"@types/dom-webcodecs@npm:*":
+  version: 0.1.19
+  resolution: "@types/dom-webcodecs@npm:0.1.19"
+  checksum: 10c0/bb6e04daf5c22eda547db38ddc000d978b5af6203a519962859439a14c3455ce89edeea33d9464f698872a3540971c20c7cda354a5535b1a3bc18cbdddcdf843
+  languageName: node
+  linkType: hard
+
+"@types/dom-webcodecs@npm:0.1.13":
+  version: 0.1.13
+  resolution: "@types/dom-webcodecs@npm:0.1.13"
+  checksum: 10c0/16683fd0330fdfbb867affec1c18fd493d88433a4ec66257579adc5d07b07e9492268b4401e9017b7388b13750722365b0392b375e39c84e74f564d5b4f634a4
+  languageName: node
+  linkType: hard
+
 "@types/estree@npm:^1.0.0":
   version: 1.0.9
   resolution: "@types/estree@npm:1.0.9"
@@ -669,6 +692,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bson@npm:^7.3.4":
+  version: 7.3.4
+  resolution: "bson@npm:7.3.4"
+  checksum: 10c0/8bef34eec1892ca7e5d59c1c44cd807acdc42f5933ff93c47d8f3e3cfb822aeda86c73e01975599934029e06d7393ffb38bea8ed2683920f1c0cad6a5ccaa282
+  languageName: node
+  linkType: hard
+
 "buffer-xor@npm:^1.0.3":
   version: 1.0.3
   resolution: "buffer-xor@npm:1.0.3"
@@ -1097,7 +1127,9 @@ __metadata:
     "@vue/compiler-sfc": "npm:^3.5.43"
     "@vue/tsconfig": "npm:^0.9.1"
     "@vueuse/core": "npm:^15.0.0"
+    bson: "npm:^7.3.4"
     dotenv: "npm:^18.0.1"
+    mediabunny: "npm:^1.65.2"
     ogg-opus-decoder: "npm:^1.7.5"
     prettier: "npm:^3.9.8"
     shared: "file:../shared"
@@ -1546,6 +1578,16 @@ __metadata:
     inherits: "npm:^2.0.1"
     safe-buffer: "npm:^5.1.2"
   checksum: 10c0/b7bd75077f419c8e013fc4d4dada48be71882e37d69a44af65a2f2804b91e253441eb43a0614423a1c91bb830b8140b0dc906bc797245e2e275759584f4efcc5
+  languageName: node
+  linkType: hard
+
+"mediabunny@npm:^1.65.2":
+  version: 1.65.2
+  resolution: "mediabunny@npm:1.65.2"
+  dependencies:
+    "@types/dom-mediacapture-transform": "npm:^0.1.11"
+    "@types/dom-webcodecs": "npm:0.1.13"
+  checksum: 10c0/4ecf83aeb552ca8b85dc9fb6ec6d5dddaa0ebf443613d127284a90acbb0948211d22bda7cb8a929219ab39163625c8bbcd7b940958b66544b65bc44d92fb82de
   languageName: node
   linkType: hard
 
@@ -2139,8 +2181,8 @@ __metadata:
 
 "shared@file:../shared::locator=frontend%40workspace%3A.":
   version: 0.0.0
-  resolution: "shared@file:../shared#../shared::hash=0c202d&locator=frontend%40workspace%3A."
-  checksum: 10c0/9f17ed28d6db016ef538434d128207b92fbdc5e829b94a4d3098a2df141eb0141f75dbdaf5137f2f638c05eea3eec5e19d48dce86dfaa392448dd09c04cc3eb3
+  resolution: "shared@file:../shared#../shared::hash=045477&locator=frontend%40workspace%3A."
+  checksum: 10c0/f10e7cbf766d9b97e685e2e6c14cac0fffc700edbf8960ac9abe2ec58e80d6813c70cd4e130fa398bbf76b23a37f0ec2c66bbab92b3e1f9005910522c5fa3ff3
   languageName: node
   linkType: hard
 

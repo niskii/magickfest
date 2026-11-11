@@ -3,6 +3,7 @@ import { reactive, ref } from "vue";
 import logger from "../../logger";
 import { SetInfoFetcher, type SetInfo } from "./set-info-fetcher";
 import { socket } from "./socket";
+import type { DisconnectDescription } from "socket.io-client";
 
 export const playerState = ref<PlayerState>(null);
 
@@ -40,8 +41,8 @@ function onConnect() {
     socket.on("numberOfUsers", numberOfUsers);
 }
 
-function onDisconnect(reason: string) {
-    logger.info("onDisconnect", reason, socket.active);
+function onDisconnect(reason: string, description: DisconnectDescription) {
+    logger.info("onDisconnect", reason, description, socket.active);
     if (socket.active) {
         // temporary disconnection, the socket will automatically try to reconnect
         socketStore.isReconnecting = true;

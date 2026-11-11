@@ -13,6 +13,7 @@ export interface Set {
     Author: string;
     Seconds: Number;
     CoverFile?: string;
+    Video?: string;
     AudioFiles: Array<AudioFile>;
 }
 
@@ -46,6 +47,9 @@ export class Playlist {
             // Handle the relative paths.
             set.CoverFile = set.CoverFile
                 ? path.join(location, folder, set.CoverFile)
+                : undefined;
+            set.Video = set.Video
+                ? path.join(location, folder, set.Video)
                 : undefined;
             set.AudioFiles.map((af) => {
                 af.File = path.join(location, folder, af.File);

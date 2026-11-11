@@ -1215,6 +1215,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bson@npm:^7.3.4":
+  version: 7.3.4
+  resolution: "bson@npm:7.3.4"
+  checksum: 10c0/8bef34eec1892ca7e5d59c1c44cd807acdc42f5933ff93c47d8f3e3cfb822aeda86c73e01975599934029e06d7393ffb38bea8ed2683920f1c0cad6a5ccaa282
+  languageName: node
+  linkType: hard
+
 "buffer-from@npm:^1.0.0":
   version: 1.1.2
   resolution: "buffer-from@npm:1.1.2"
@@ -3071,6 +3078,7 @@ __metadata:
     "@types/node": "npm:^26.6.2"
     axios: "npm:^1.20.0"
     body-parser: "npm:^2.4.0"
+    bson: "npm:^7.3.4"
     connect-session-sequelize: "npm:^8.0.6"
     cors: "npm:^2.8.6"
     csrf-sync: "npm:^4.2.1"
@@ -3110,8 +3118,8 @@ __metadata:
 
 "shared@file:../shared::locator=server%40workspace%3A.":
   version: 0.0.0
-  resolution: "shared@file:../shared#../shared::hash=0c202d&locator=server%40workspace%3A."
-  checksum: 10c0/9f17ed28d6db016ef538434d128207b92fbdc5e829b94a4d3098a2df141eb0141f75dbdaf5137f2f638c05eea3eec5e19d48dce86dfaa392448dd09c04cc3eb3
+  resolution: "shared@file:../shared#../shared::hash=045477&locator=server%40workspace%3A."
+  checksum: 10c0/f10e7cbf766d9b97e685e2e6c14cac0fffc700edbf8960ac9abe2ec58e80d6813c70cd4e130fa398bbf76b23a37f0ec2c66bbab92b3e1f9005910522c5fa3ff3
   languageName: node
   linkType: hard
 

@@ -3,6 +3,7 @@ import { Bitrate } from "shared/types/audio-transfer";
 import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
 import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
+import { VideoStreamPlayer } from "../scripts/video/video-stream-player";
 import { socket } from "../scripts/socket/socket";
 import Button from "./Button.vue";
 import ListDropdown from "./ListDropdown.vue";
@@ -28,7 +29,9 @@ type visualiserType = InstanceType<typeof Visualiser>;
 
 // other
 const audioStreamPlayer = shallowRef<AudioStreamPlayer>(null);
+const videoStreamPlayer = shallowRef<VideoStreamPlayer>(null);
 const visualiserRef = useTemplateRef<visualiserType>("visualiser");
+const canvas = useTemplateRef<HTMLCanvasElement>("videoCanvas");
 
 const stateInterval = ref<NodeJS.Timeout>(null);
 const playState = ref<[number, number, number]>([0, 0, 0]);
@@ -56,13 +59,16 @@ onMounted(() => {
         ? (storage.visualiserOn.value = localStorage.getItem("visualiserOn") == "true")
         : getScreenViewport() != Viewport.Mobile;
 
-    const player = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
-    audioStreamPlayer.value = player;
+    const audioPlayer = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
+    audioStreamPlayer.value = audioPlayer;
 
     clearInterval(stateInterval.value);
     stateInterval.value = setInterval(() => {
-        playState.value = [player.getCurrentPlayPosition(), player.getTotalDuration(), player.getDownloadedAudioTime()];
+        playState.value = [audioPlayer.getCurrentPlayPosition(), audioPlayer.getTotalDuration(), audioPlayer.getDownloadedAudioTime()];
     }, config.UpdateInterval);
+
+    const videoPlayer = new VideoStreamPlayer(socket, canvas);
+    videoStreamPlayer.value = videoPlayer;
 
     watchers(audioStreamPlayer, visualiserRef);
     storage.load();
@@ -159,6 +165,7 @@ function playerStart() {
     if (!audioStreamPlayer.value) return;
     audioStreamPlayer.value.reset();
     audioStreamPlayer.value.start();
+    videoStreamPlayer.value.start();
     setVisualiser();
 }
 
@@ -329,8 +336,10 @@ const displayBitrate = (q: Bitrate) => {
         </div>
     </div>
     <p id="versionIndicator">{{ versionName }}</p>
-    <img id="cover" fetchpriority="high" :src="renderCoverImage(socketStore.setInformation.coverURL)"
-        alt="cover artwork for set" />
+    <canvas id="videoCanvas" ref="videoCanvas" width="640" height="480"
+        v-show="socketStore.setInformation.hasVideo"></canvas>
+    <img id="cover" v-show="socketStore.setInformation.hasVideo == false" fetchpriority="high"
+        :src="renderCoverImage(socketStore.setInformation.coverURL)" alt="cover artwork for set" />
     <div id="setInfo">
         <SetInfo :playerState="playerState" :viewport="getScreenViewport()"></SetInfo>
         <Visualiser v-show="storage.visualiserOn.value" ref="visualiser" class="visualiser"

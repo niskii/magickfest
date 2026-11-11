@@ -3,10 +3,10 @@ import { OggPageHeader } from "./ogg-page-header.js";
 import { OpusSplitter } from "./opus-splitter.js";
 
 export class OpusFileSplitter implements OpusSplitter {
-    #bytes: Uint8Array | null = null;
-    #headerBytes: Uint8Array | null = null;
+    #bytes?: Uint8Array;
+    #headerBytes?: Uint8Array;
     #pages: Array<opus.Page> = [];
-    #audioPageBoundaries: Array<Number> | null = null;
+    #audioPageBoundaries?: Array<Number>;
     #preskipSeconds: number = 0;
 
     #headerObject: opus.HeaderObject = new opus.HeaderObject();
@@ -217,9 +217,9 @@ export class OpusFileSplitter implements OpusSplitter {
     sliceByPage(begin: number, end: number) {
         const boundaries = this.#pages;
         if (
-            boundaries === null ||
-            this.#bytes === null ||
-            this.#headerBytes === null
+            boundaries === undefined ||
+            this.#bytes === undefined ||
+            this.#headerBytes === undefined
         )
             return null;
 
