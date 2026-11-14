@@ -9,8 +9,9 @@ import {
 import { MediaReader } from "src/player/media-reader";
 import { VideoPacket } from "shared/types/audio-transfer";
 import { ReadCode } from "shared/types/read-codes";
-import rbtree, { Tree } from "functional-red-black-tree"
+import rbtree, { Tree } from "functional-red-black-tree";
 import { BSON } from "bson";
+import logger from "src/logger";
 
 export class VideoReader implements MediaReader {
     videoTrack?: InputVideoTrack;
@@ -48,48 +49,62 @@ export class VideoReader implements MediaReader {
     }
 
     async evictCache(timestamp: number) {
-        const packet = await this.videoSink?.getPacket(timestamp, {metadataOnly: true});
+        const packet = await this.videoSink?.getPacket(timestamp, {
+            metadataOnly: true,
+        });
         if (!packet) return;
         const iter = this.packetCache.ge(packet.sequenceNumber);
         while (iter.hasPrev) {
-            iter.prev()
+            iter.prev();
             if (iter.key) {
-                this.packetCache = this.packetCache.remove(iter.key)
+                this.packetCache = this.packetCache.remove(iter.key);
             }
         }
     }
 
     async getPacket(packetNumber: number) {
-        if (packetNumber < 0) return null
+        if (packetNumber < 0) return null;
 
-        const cached = this.packetCache.get(packetNumber + 1)
+        const cached = this.packetCache.get(packetNumber + 1);
         if (cached) {
-            console.log("cache hit!", packetNumber)
             return cached;
         }
 
         let packet: EncodedPacket | undefined | null;
         let cursor: EncodedPacket;
         if (this.#latestKeyPacket) {
-            cursor = this.#latestKeyPacket
+            cursor = this.#latestKeyPacket;
         } else {
             cursor = (await this.videoSink?.getFirstKeyPacket())!;
         }
 
-        if (this.#currentPacket && this.#currentPacket.sequenceNumber > cursor.sequenceNumber && this.#currentPacket.sequenceNumber < packetNumber)
+        if (
+            this.#currentPacket &&
+            this.#currentPacket.sequenceNumber > cursor.sequenceNumber &&
+            this.#currentPacket.sequenceNumber < packetNumber
+        )
             cursor = this.#currentPacket;
 
         packet = cursor;
 
         while (packet && packet.sequenceNumber < packetNumber) {
-            this.packetCache = this.packetCache.insert(packet.sequenceNumber + 1, packet);
+            this.packetCache = this.packetCache.insert(
+                packet.sequenceNumber + 1,
+                packet,
+            );
             packet = await this.videoSink?.getNextPacket(packet);
         }
 
         if (packet) {
-            this.packetCache = this.packetCache.insert(packet.sequenceNumber + 1, packet);
-            if (!this.#currentPacket || packet.sequenceNumber > this.#currentPacket.sequenceNumber)
-                this.#currentPacket = packet; 
+            this.packetCache = this.packetCache.insert(
+                packet.sequenceNumber + 1,
+                packet,
+            );
+            if (
+                !this.#currentPacket ||
+                packet.sequenceNumber > this.#currentPacket.sequenceNumber
+            )
+                this.#currentPacket = packet;
             return packet;
         }
 
@@ -101,7 +116,10 @@ export class VideoReader implements MediaReader {
         if (this.#latestKeyPacket) {
             if (packet && packet.timestamp > this.#latestKeyPacket.timestamp) {
                 this.#latestKeyPacket = packet;
-                this.packetCache = this.packetCache.insert(packet.sequenceNumber + 1, packet);
+                this.packetCache = this.packetCache.insert(
+                    packet.sequenceNumber + 1,
+                    packet,
+                );
             }
             return this.#latestKeyPacket;
         }
@@ -116,10 +134,10 @@ export class VideoReader implements MediaReader {
         const chunks: EncodedPacket[] = new Array(end - start);
         for (let i = 0; i < end - start; i++) {
             const packet = await this.getPacket(start + i);
-            if (packet) chunks[i] = packet;            
+            if (packet) chunks[i] = packet;
         }
 
-        const serializedChunks = BSON.serialize({chunks})
+        const serializedChunks = BSON.serialize({ chunks });
 
         if (chunks !== null) {
             const packet: VideoPacket = {
@@ -132,7 +150,7 @@ export class VideoReader implements MediaReader {
             };
             return packet;
         } else {
-            console.log("sumtin wong!")
+            logger.error("sumtin wong!");
             return null;
         }
     }
@@ -141,10 +159,15 @@ export class VideoReader implements MediaReader {
         const packet = await this.getLatestKeyPacket(timestamp);
 
         if (!packet) return { data: null, status: ReadCode.INVALID };
-        
+
+        const start = packet.sequenceNumber;
+        const end = Math.min(start + numberOfPages, this.getTotalPages());
+
+        if (start == end) return { data: null, status: ReadCode.EOF };
+
         const data = await this.createMediaPacketFromRange(
             packet.sequenceNumber,
-            packet.sequenceNumber + numberOfPages,
+            end,
             timestamp,
         );
         return { data: data, status: ReadCode.CONTINUATION };
@@ -155,9 +178,17 @@ export class VideoReader implements MediaReader {
         numberOfPages: number,
         timestamp: number,
     ) {
+        if (pageNumber < 0 || pageNumber > this.getTotalPages()) {
+            return { data: null, status: ReadCode.INVALID };
+        }
+
+        const end = Math.min(pageNumber + numberOfPages, this.getTotalPages());
+
+        if (pageNumber == end) return { data: null, status: ReadCode.EOF };
+
         const data = await this.createMediaPacketFromRange(
             pageNumber,
-            pageNumber + numberOfPages,
+            end,
             timestamp,
         );
         return { data: data, status: ReadCode.CONTINUATION };
@@ -165,5 +196,9 @@ export class VideoReader implements MediaReader {
 
     getTotalDuration() {
         return this.totalDuration;
+    }
+
+    getTotalPages(): number {
+        return this.numberOfPackets;
     }
 }

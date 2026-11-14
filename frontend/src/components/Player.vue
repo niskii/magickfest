@@ -62,12 +62,12 @@ onMounted(() => {
     const audioPlayer = new AudioStreamPlayer(socket, storage.bitrate.value, storage.volume.value / 100);
     audioStreamPlayer.value = audioPlayer;
 
-    clearInterval(stateInterval.value);
     stateInterval.value = setInterval(() => {
         playState.value = [audioPlayer.getCurrentPlayPosition(), audioPlayer.getTotalDuration(), audioPlayer.getDownloadedAudioTime()];
+        videoPlayer.setExternalClockReference(audioPlayer.getCurrentPlayPosition() * 1000)
     }, config.UpdateInterval);
 
-    const videoPlayer = new VideoStreamPlayer(socket, canvas);
+    const videoPlayer = new VideoStreamPlayer(socket, canvas.value);
     videoStreamPlayer.value = videoPlayer;
 
     watchers(audioStreamPlayer, visualiserRef);
@@ -85,6 +85,7 @@ onMounted(() => {
     }
 
     onUnmounted(() => {
+        clearTimeout(stateInterval.value);
         document.removeEventListener("freeze", handleFreeze);
         window.removeEventListener("beforeunload", handleUnload);
         SocketManager.removeAllListeners();
@@ -165,6 +166,8 @@ function playerStart() {
     if (!audioStreamPlayer.value) return;
     audioStreamPlayer.value.reset();
     audioStreamPlayer.value.start();
+
+    videoStreamPlayer.value.reset();
     videoStreamPlayer.value.start();
     setVisualiser();
 }

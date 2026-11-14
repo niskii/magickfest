@@ -190,9 +190,15 @@ export class Player {
         if (type === "audio" && bitrate) {
             const reader = this.#getCurrentReader(bitrate);
             if (reader)
-                return reader.getChunkAtTime(this.getCurrentPositionSeconds(), 1);
+                return reader.getChunkAtTime(
+                    this.getCurrentPositionSeconds(),
+                    1,
+                );
         } else if (type === "video" && this.#videoReader) {
-            return this.#videoReader.getChunkAtTime(this.getCurrentPositionSeconds(), 6)
+            return this.#videoReader.getChunkAtTime(
+                this.getCurrentPositionSeconds(),
+                90,
+            );
         }
     }
 
@@ -202,15 +208,20 @@ export class Player {
      * @param bitrate
      * @returns an MediaPacket and a read code
      */
-    getNextChunk(type: MediaType, pageStart: number, numberOfPages: number, bitrate?: Bitrate) {
+    getNextChunk(
+        type: MediaType,
+        pageStart: number,
+        numberOfPages: number,
+        bitrate?: Bitrate,
+    ) {
         if (type === "audio" && bitrate) {
-        const reader = this.#getCurrentReader(bitrate);
-        if (reader)
-            return reader.getNextChunk(
-                pageStart,
-                numberOfPages,
-                this.getCurrentPositionSeconds(),
-            );
+            const reader = this.#getCurrentReader(bitrate);
+            if (reader)
+                return reader.getNextChunk(
+                    pageStart,
+                    numberOfPages,
+                    this.getCurrentPositionSeconds(),
+                );
         } else if (type === "video" && this.#videoReader) {
             return this.#videoReader.getNextChunk(
                 pageStart,
@@ -234,7 +245,10 @@ export class Player {
         forwarded?: number,
         initialStartTime?: number,
     ) {
-        if (setIndex !== undefined && this.#playlist.getCurrentIndex() != setIndex) {
+        if (
+            setIndex !== undefined &&
+            this.#playlist.getCurrentIndex() != setIndex
+        ) {
             this.#playlist.setCurrentSet(setIndex);
             this.#loadCurrentSet();
         }
@@ -379,9 +393,8 @@ export class Player {
             this.#readerCollection.set(audioFile.Bitrate, reader);
         });
 
-        const videoFile = this.#playlist.getCurrentSet().Video
-        if (videoFile)
-            this.#videoReader = new VideoReader(videoFile);
+        const videoFile = this.#playlist.getCurrentSet().Video;
+        if (videoFile) this.#videoReader = new VideoReader(videoFile);
     }
 
     #setupPlaybackTimer() {

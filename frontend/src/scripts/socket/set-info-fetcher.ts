@@ -34,7 +34,6 @@ export class SetInfoFetcher {
                 this.setInfo.hasVideo = info.HasVideo;
 
                 stream.on("data", (data) => {
-                    logger.info("data!");
                     fileBuffer.push(data);
                     bufferLength += data.length;
                 });
@@ -80,7 +79,6 @@ export class SetInfoFetcher {
 
         return new Promise<SetInfo>((resolve) => {
             this.#events.once("done", () => {
-                console.log("done!");
                 resolve(this.setInfo);
             });
         });

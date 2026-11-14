@@ -219,10 +219,10 @@ export class OpusReader implements MediaReader {
         numberOfPages: number,
         timestamp: number,
     ) {
-        const pageEnd = this.addPages(pageNumber, numberOfPages);
         if (pageNumber < 0 || pageNumber > this.#numberOfPages) {
             return { data: null, status: ReadCode.INVALID };
         }
+        const pageEnd = this.addPages(pageNumber, numberOfPages);
 
         if (pageEnd > this.#numberOfPages || pageNumber == pageEnd)
             return { data: null, status: ReadCode.EOF };
@@ -248,5 +248,9 @@ export class OpusReader implements MediaReader {
     async evictCache() {
         // nothing to evict yet.
         return;
+    }
+
+    getTotalPages(): number {
+        return this.#numberOfPages;
     }
 }

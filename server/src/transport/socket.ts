@@ -26,7 +26,7 @@ export function socketSetup(
 
     player.events.on("newSet", sendNewSetAlert);
     player.events.on("changedState", sendChangedStateAlert);
-    
+
     io.on("connection", (socket) => {
         const req = socket.request as Request;
 
@@ -58,7 +58,12 @@ export function socketSetup(
             callback(user);
         }
 
-        async function sendSyncedChunk(user: UserType, type: MediaType, bitrate: Bitrate, callback: any) {
+        async function sendSyncedChunk(
+            user: UserType,
+            type: MediaType,
+            bitrate: Bitrate,
+            callback: any,
+        ) {
             if (!Number.isInteger(bitrate)) return;
             const result = await player.getCurrentChunk(type, bitrate);
             if (result !== undefined) {
@@ -74,16 +79,20 @@ export function socketSetup(
             });
         }
 
-        async function sendNextChunk(user: UserType, type: MediaType, pageStart: number, bitrate: Bitrate, callback: any) {
-            if (
-                !Number.isInteger(bitrate) ||
-                !Number.isInteger(pageStart)
-            )
+        async function sendNextChunk(
+            user: UserType,
+            type: MediaType,
+            pageStart: number,
+            bitrate: Bitrate,
+            callback: any,
+        ) {
+            if (!Number.isInteger(bitrate) || !Number.isInteger(pageStart))
                 return;
             const connectedUser = userManager.getUser(user);
             if (connectedUser === undefined) return;
 
-            const result = await player.getNextChunk(type,
+            const result = await player.getNextChunk(
+                type,
                 pageStart,
                 connectedUser.getBufferingBalancer().getPageSize(),
                 bitrate,
@@ -107,7 +116,7 @@ export function socketSetup(
                 logger.info("a user disconnected", user);
                 userManager.removeUser(user);
                 io.emit("numberOfUsers", userManager.getSize());
-            })
+            });
         });
 
         socket.on("getPlayerState", () => {
@@ -123,7 +132,7 @@ export function socketSetup(
             "fetchSyncedAudioChunk",
             (data: { bitrate: Bitrate }, callback) => {
                 getVerifiedUser(async (user) => {
-                    sendSyncedChunk(user, "audio", data.bitrate, callback)
+                    sendSyncedChunk(user, "audio", data.bitrate, callback);
                 });
             },
         );
@@ -135,7 +144,13 @@ export function socketSetup(
             "fetchNextAudioChunk",
             async (data: { bitrate: Bitrate; pageStart: number }, callback) => {
                 getVerifiedUser(async (user) => {
-                    sendNextChunk(user, "audio", data.pageStart, data.bitrate, callback)
+                    sendNextChunk(
+                        user,
+                        "audio",
+                        data.pageStart,
+                        data.bitrate,
+                        callback,
+                    );
                 });
             },
         );
@@ -147,7 +162,7 @@ export function socketSetup(
             "fetchSyncedVideoChunk",
             (data: { bitrate: Bitrate }, callback) => {
                 getVerifiedUser(async (user) => {
-                    sendSyncedChunk(user, "video", data.bitrate, callback)
+                    sendSyncedChunk(user, "video", data.bitrate, callback);
                 });
             },
         );
@@ -158,12 +173,17 @@ export function socketSetup(
         socket.on(
             "fetchNextVideoChunk",
             async (data: { bitrate: Bitrate; pageStart: number }, callback) => {
-                console.log("received", data.bitrate, data.pageStart)
                 getVerifiedUser(async (user) => {
-                    sendNextChunk(user, "video", data.pageStart, data.bitrate, callback)
+                    sendNextChunk(
+                        user,
+                        "video",
+                        data.pageStart,
+                        data.bitrate,
+                        callback,
+                    );
                 });
             },
-        );        
+        );
 
         /**
          * Sends the set information and streams the cover image.
@@ -176,7 +196,7 @@ export function socketSetup(
                 const setInfo: SocketSetInfo = {
                     Title: currentSet.Title,
                     Author: currentSet.Author,
-                    HasVideo: (currentSet.Video != undefined),
+                    HasVideo: currentSet.Video != undefined,
                 };
 
                 if (imageFile && fs.existsSync(imageFile)) {

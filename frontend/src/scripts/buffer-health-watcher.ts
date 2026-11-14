@@ -23,7 +23,6 @@ export class BufferHealthWatcher {
 
     start() {
         this.fetchCurrent();
-        logger.info("starting");
         clearTimeout(this.#fetchTimer);
         this.#fetchTimer = setInterval(async () => {
             if (
@@ -34,7 +33,11 @@ export class BufferHealthWatcher {
                 this.reset();
             }
             if (this.#bufferHealthManager.isBelowThreshold()) this.fetchNext();
-        }, 3000);
+        }, 1000);
+    }
+
+    stop() {
+        clearTimeout(this.#fetchTimer);
     }
 
     /**

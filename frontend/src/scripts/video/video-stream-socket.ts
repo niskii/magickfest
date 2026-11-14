@@ -7,6 +7,7 @@ import { MediaSocket } from "../media-socket";
 
 export class VideoStreamSocket extends MediaSocket {
     onOutput: (packets: Uint8Array<ArrayBufferLike>) => void;
+    onFileEnd: () => void;
     isFetching = false;
 
     constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
@@ -19,12 +20,11 @@ export class VideoStreamSocket extends MediaSocket {
     }
 
     setupListeners() {
-        logger.warn("setting up sockets!");
+        this.socket.removeListener("syncedVideo");
+        this.socket.removeListener("nextVideoChunk");
 
         this.socket.on("syncedVideo", async (data: VideoPacket) => {
             this.isFetching = false;
-            logger.info("syncing!", this.lastChunkPage);
-            logger.info("got video");
             if (!data) return;
 
             this.initializeBufferHealth(data);
@@ -34,7 +34,6 @@ export class VideoStreamSocket extends MediaSocket {
 
         this.socket.on("nextVideoChunk", (data: VideoPacket) => {
             this.isFetching = false;
-            logger.info("got more video");
             if (!data) return;
 
             this.updateBufferHealth(data);
@@ -46,7 +45,6 @@ export class VideoStreamSocket extends MediaSocket {
     getCurrent() {
         if (this.isFetching) return;
         this.isFetching = true;
-        logger.warn("getcurrent!");
         this.socket.emit(
             "fetchSyncedVideoChunk",
             { bitrate: Bitrate.High },
@@ -59,7 +57,6 @@ export class VideoStreamSocket extends MediaSocket {
     getNext() {
         if (this.isFetching) return;
         this.isFetching = true;
-        logger.warn("getting!", this.lastChunkPage);
         this.socket.emit(
             "fetchNextVideoChunk",
             {
@@ -68,7 +65,9 @@ export class VideoStreamSocket extends MediaSocket {
             },
             (response: { status: ReadCode }) => {
                 if (response.status == ReadCode.EOF) {
+                    this.stop();
                     this.reset();
+                    this.onFileEnd();
                     return;
                 }
                 if (response.status == ReadCode.INVALID)
@@ -78,8 +77,11 @@ export class VideoStreamSocket extends MediaSocket {
     }
 
     handleChunk(chunk: VideoPacket) {
-        this.validateChunk(chunk);
-        this.onOutput(chunk.EncodedPackets);
+        const isValid = this.validateChunk(chunk);
+        if (!isValid) {
+            return;
+        }
+        if (chunk.EncodedPackets) this.onOutput(chunk.EncodedPackets);
     }
 
     reset() {

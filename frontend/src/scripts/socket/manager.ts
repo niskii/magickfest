@@ -61,7 +61,7 @@ function onDisconnect(reason: string, description: DisconnectDescription) {
 }
 
 function onConnectError(err: Error) {
-    logger.info(err);
+    logger.error(err);
     if (socket.active) {
         // socket.io will try to reconnect
         socketStore.isReconnecting = true;
@@ -102,7 +102,7 @@ export function connect() {
         socketStore.isConnecting = true;
         socket.connect();
     } catch (error) {
-        logger.warn("Error connecting to server!", error);
+        logger.error("Error connecting to server!", error);
     }
 }
 

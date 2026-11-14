@@ -8,13 +8,12 @@ export class MediaSocket {
     protected socket: Socket;
     protected bufferHealthManager: BufferHealthManager;
     protected bufferHealthWatcher: BufferHealthWatcher;
-    protected lastChunkPage: number;
+    protected lastChunkPage: number = 0;
 
     constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
         this.socket = socket;
         this.bufferHealthManager = bufferHealthManager;
         this.bufferHealthWatcher = new BufferHealthWatcher(bufferHealthManager);
-        logger.info("making media socket!");
     }
 
     initializeBufferHealth(mediaPacket: MediaPacket) {
@@ -31,6 +30,10 @@ export class MediaSocket {
 
     start() {
         this.bufferHealthWatcher.start();
+    }
+
+    stop() {
+        this.bufferHealthWatcher.stop();
     }
 
     validateChunk(chunk: MediaPacket) {
