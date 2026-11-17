@@ -29,12 +29,16 @@ export class VideoStreamPlayer {
             offscreen,
         ]);
         this.decoder.addEventListener("message", (msg: MessageEvent<any>) => {
+            if (!this.bufferHealthManager.getStartedAt())
+                this.bufferHealthManager.setStartedAt(
+                    msg.data.currentTime / 1_000_000,
+                );
             this.videoContext.currentTimestamp =
                 msg.data.currentTime / 1_000_000;
         });
 
-        this.stream.onOutput = this.decode.bind(this);
-        this.stream.onFileEnd = this.flush.bind(this);
+        this.stream.onOutput = this.#decode.bind(this);
+        this.stream.onFileEnd = this.#flush.bind(this);
     }
 
     start() {
@@ -45,15 +49,18 @@ export class VideoStreamPlayer {
         this.decoder.postMessage({ action: "reset" });
     }
 
-    decode(chunks: Uint8Array<ArrayBufferLike>) {
+    #decode(chunks: Uint8Array<ArrayBufferLike>) {
         this.decoder.postMessage({ action: "buffer", chunks }, [chunks]);
     }
 
-    flush() {
+    #flush() {
         this.decoder.postMessage({ action: "flush" });
     }
 
     setExternalClockReference(timestamp: number) {
-        this.decoder.postMessage({ action: "externalClock", timestamp });
+        this.decoder.postMessage({
+            action: "externalClock",
+            timestamp,
+        });
     }
 }

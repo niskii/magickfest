@@ -132,9 +132,13 @@ export class VideoReader implements MediaReader {
         timestamp: number,
     ) {
         const chunks: EncodedPacket[] = new Array(end - start);
+        let duration = 0;
         for (let i = 0; i < end - start; i++) {
             const packet = await this.getPacket(start + i);
-            if (packet) chunks[i] = packet;
+            if (packet) {
+                chunks[i] = packet;
+                duration += packet.duration;
+            }
         }
 
         const serializedChunks = BSON.serialize({ chunks });
@@ -144,6 +148,7 @@ export class VideoReader implements MediaReader {
                 EncodedPackets: serializedChunks,
                 PacketStart: start,
                 PacketEnd: end,
+                PacketDuration: duration,
                 Timestamp: chunks[0].timestamp,
                 TotalDuration: this.getTotalDuration(),
                 ServerTime: timestamp,

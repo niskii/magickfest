@@ -6,8 +6,9 @@ export class BufferHealthWatcher {
     #bufferHealthManager: BufferHealthManager;
     #fetchTimer: NodeJS.Timeout;
 
-    onNext: () => void;
-    onCurrent: () => void;
+    onNext: () => void = null;
+    onCurrent: () => void = null;
+    onReset: () => void = null;
 
     constructor(bufferHealthManager: BufferHealthManager) {
         this.#bufferHealthManager = bufferHealthManager;
@@ -45,5 +46,6 @@ export class BufferHealthWatcher {
      */
     reset() {
         clearTimeout(this.#fetchTimer);
+        if (typeof this.onReset == "function") this.onReset();
     }
 }

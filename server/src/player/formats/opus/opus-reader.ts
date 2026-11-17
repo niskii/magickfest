@@ -173,6 +173,7 @@ export class OpusReader implements MediaReader {
                 Buffer: chunks,
                 PacketStart: start,
                 PacketEnd: end,
+                PacketDuration: this.calculateRangeDuration(start, end),
                 Timestamp: this.#headerObject.audioPageDuration * start,
                 TotalDuration: this.#totalDurationSeconds,
                 ServerTime: time,

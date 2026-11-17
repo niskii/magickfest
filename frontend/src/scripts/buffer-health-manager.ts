@@ -75,17 +75,11 @@ export class BufferHealthManager {
     }
 
     getCurrentPlayPosition() {
-        if (!this.#mediaContext) return 0.0;
-
-        return (
-            this.#mediaContext.getCurrentTime() -
-            this.#startedAt +
-            this.#startPosition +
-            this.#delay
-        );
+        return this.getCurrentTime() - this.#startedAt + this.#startPosition;
     }
 
     getCurrentTime() {
+        if (!this.#mediaContext) return 0.0;
         return this.#mediaContext.getCurrentTime();
     }
 
@@ -94,11 +88,8 @@ export class BufferHealthManager {
     }
 
     getDownloadedAudioDuration() {
-        if (!this.#mediaContext) return 0.0;
-
         return (
-            this.#totalTimeScheduled -
-            (this.#mediaContext.getCurrentTime() - this.#startedAt)
+            this.#totalTimeScheduled - (this.getCurrentTime() - this.#startedAt)
         );
     }
 

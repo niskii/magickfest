@@ -14,6 +14,7 @@ export type MediaPacket = {
   PacketStart: number;
   PacketEnd: number;
   Timestamp: number;
+  PacketDuration: number;
   TotalDuration: number;
   ServerTime: number;
 };

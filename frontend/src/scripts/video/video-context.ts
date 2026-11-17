@@ -1,3 +1,3 @@
 export class VideoContext {
-    currentTimestamp: number;
+    currentTimestamp: number = 0;
 }

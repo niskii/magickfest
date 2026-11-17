@@ -19,14 +19,12 @@ let renderer: WebGLRenderer = null;
 let pendingFrames: VideoFrame[] = [];
 let underflow = true;
 let baseTime = 0;
-
 let firstFrameTime: number = 0;
+
+let externalDelta = 0;
 
 let paused = false;
 let pausedTimestamp = 0;
-
-let externalClockReference = 0;
-let realTime = 0;
 
 self.onmessage = (event: MessageEvent<any>) => {
     switch (event.data.action) {
@@ -60,8 +58,8 @@ function setCanvas(canvas: OffscreenCanvas) {
 
 function setExternalClockReference(timestamp: number) {
     const mediaTime = performance.now() - baseTime + firstFrameTime;
-    const delta = mediaTime - timestamp;
-    if (!underflow) externalClockReference = delta;
+    const delta = timestamp - mediaTime;
+    if (!underflow) externalDelta = delta;
 }
 
 function play() {
@@ -78,7 +76,7 @@ function reset() {
     pendingFrames = [];
     underflow = true;
     baseTime = 0;
-    firstFrameTime = null;
+    firstFrameTime = 0;
 }
 
 function handleChunks(chunks: Uint8Array<ArrayBufferLike>) {
@@ -87,7 +85,7 @@ function handleChunks(chunks: Uint8Array<ArrayBufferLike>) {
     encodedpackets.forEach((chunk) => {
         if (!chunk) return;
         const encodedVideoChunk = new EncodedVideoChunk({
-            duration: chunk.duration,
+            duration: chunk.duration * 1e6,
             data: chunk.data.buffer,
             type: chunk.type,
             timestamp: chunk.timestamp * 1e6,
@@ -104,7 +102,7 @@ function error(error: Error) {
 function enqueueFrame(frame: VideoFrame) {
     if (!firstFrameTime) {
         firstFrameTime = frame.timestamp / 1000;
-        externalClockReference = 0;
+        externalDelta = 0;
     }
     pendingFrames.push(frame);
     if (paused) return;
@@ -114,7 +112,7 @@ function enqueueFrame(frame: VideoFrame) {
 function calculateTimeUntilNextFrame(timestamp: number) {
     if (baseTime == 0) baseTime = performance.now();
     let mediaTime =
-        performance.now() - baseTime + firstFrameTime - externalClockReference;
+        performance.now() - baseTime + firstFrameTime + externalDelta;
     const result = timestamp / 1000 - mediaTime;
     return result;
 }
@@ -132,8 +130,10 @@ async function renderAnimationFrame() {
         await new Promise((r) => {
             setTimeout(r, timeUntilNextFrame);
         });
-        realTime = frame.timestamp;
-        self.postMessage({ currentTime: frame.timestamp });
+        self.postMessage({
+            action: "currentTime",
+            currentTime: frame.timestamp,
+        });
         renderer.draw(frame);
         frame.close();
     }

@@ -27,8 +27,10 @@ export class VideoStreamSocket extends MediaSocket {
             this.isFetching = false;
             if (!data) return;
 
-            this.initializeBufferHealth(data);
+            logger.info("synced to video stream");
 
+            this.bufferHealthManager.reset();
+            this.initializeBufferHealth(data);
             this.handleChunk(data);
         });
 

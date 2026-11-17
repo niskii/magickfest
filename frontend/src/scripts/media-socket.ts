@@ -22,10 +22,17 @@ export class MediaSocket {
             mediaPacket.Timestamp,
             mediaPacket.TotalDuration,
         );
+
+        this.bufferHealthManager.addTotalTimeScheduled(
+            mediaPacket.PacketDuration,
+        );
     }
 
     updateBufferHealth(mediaPacket: MediaPacket) {
         this.bufferHealthManager.setLatestServerTime(mediaPacket.ServerTime);
+        this.bufferHealthManager.addTotalTimeScheduled(
+            mediaPacket.PacketDuration,
+        );
     }
 
     start() {
