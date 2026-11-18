@@ -1,43 +1,24 @@
+import FragmentShader from "./fragment-shader.frag?raw";
+import VertexShader from "./vertex-shader.vert?raw";
+
 export class WebGLRenderer {
     #canvas: OffscreenCanvas = null;
     #ctx: WebGL2RenderingContext = null;
-
-    static vertexShaderSource = `
-    attribute vec2 xy;
-
-    varying highp vec2 uv;
-
-    void main(void) {
-      gl_Position = vec4(xy, 0.0, 1.0);
-      // Map vertex coordinates (-1 to +1) to UV coordinates (0 to 1).
-      // UV coordinates are Y-flipped relative to vertex coordinates.
-      uv = vec2((1.0 + xy.x) / 2.0, (1.0 - xy.y) / 2.0);
-    }
-  `;
-
-    static fragmentShaderSource = `
-    varying highp vec2 uv;
-
-    uniform sampler2D texture;
-
-    void main(void) {
-      gl_FragColor = texture2D(texture, uv);
-    }
-  `;
+    #shaderProgram: WebGLProgram = null;
 
     constructor(canvas: OffscreenCanvas) {
         this.#canvas = canvas;
         const gl = (this.#ctx = canvas.getContext("webgl2"));
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, WebGLRenderer.vertexShaderSource);
+        gl.shaderSource(vertexShader, VertexShader);
         gl.compileShader(vertexShader);
         if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
             throw gl.getShaderInfoLog(vertexShader);
         }
 
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, WebGLRenderer.fragmentShaderSource);
+        gl.shaderSource(fragmentShader, FragmentShader);
         gl.compileShader(fragmentShader);
         if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
             throw gl.getShaderInfoLog(fragmentShader);
@@ -51,6 +32,8 @@ export class WebGLRenderer {
             throw gl.getProgramInfoLog(shaderProgram);
         }
         gl.useProgram(shaderProgram);
+
+        this.#shaderProgram = shaderProgram;
 
         // Vertex coordinates, clockwise from bottom-left.
         const vertexBuffer = gl.createBuffer();
@@ -79,6 +62,10 @@ export class WebGLRenderer {
         this.#canvas.height = frame.displayHeight;
 
         const gl = this.#ctx;
+        gl.uniform1f(
+            gl.getUniformLocation(this.#shaderProgram, "uTime"),
+            performance.now(),
+        );
 
         // Upload the frame.
         gl.texImage2D(
