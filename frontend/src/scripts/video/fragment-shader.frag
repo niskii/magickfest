@@ -1,9 +1,15 @@
+/*
+Improved film grain created by noby in 2019-11-28
+https://www.shadertoy.com/view/3sGSWV
+*/
+
 precision mediump float;
 
 varying highp vec2 uv;
 
 uniform float uTime;
 uniform sampler2D texture;
+
 
 float hash(vec3 p3){
     p3 = fract(p3 * 0.1031);
@@ -46,7 +52,6 @@ void main(void) {
 
     const float grain_strength = 1.0;
     const float grain_rate = 1.0;
-    // Range: [0.5, 1.0].
     const float grain_pitch = 1.0;
         
     float rg = grain_source(vec3(x, floor(grain_rate*(t))),     grain_strength, grain_pitch);
@@ -58,7 +63,7 @@ void main(void) {
     color_grain = mix(vec3(dot(color_grain, vec3(0.2126, 0.7152, 0.0722))), color_grain, color_level);
     grain = color_grain;
 
-    const float grain_lift_ratio = 0.5;
+    const float grain_lift_ratio = 0.2;
     color = max(mix(color*grain, color+(grain-1.0), grain_lift_ratio), 0.0);
 
     gl_FragColor.rgb = color;

@@ -88,11 +88,8 @@ function reset() {
 
 function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
     const encodedpackets = BSON.deserialize(chunks).chunks as EncodedPacket[];
-    // Process chunks in batches, not one at a time nor all at once
     encodedpackets.forEach((chunk) => {
-        if (chunk) {
-            pendingEncodedPackets.push(chunk);
-        }
+        if (chunk) pendingEncodedPackets.push(chunk);
     });
 
     if (chunkUnderflow) setTimeout(handleChunk, 0);
@@ -113,7 +110,7 @@ function handleChunk() {
 
         videoDecoder.decode(encodedVideoChunk);
     }
-    setTimeout(handleChunk, 10);
+    setTimeout(handleChunk, 0);
 }
 
 function error(error: Error) {

@@ -39,6 +39,9 @@ export class VideoStreamPlayer {
 
         this.stream.onOutput = this.#decode.bind(this);
         this.stream.onFileEnd = this.#flush.bind(this);
+        this.stream.onReset = () => {
+            this.decoder.postMessage({ action: "reset" });
+        };
     }
 
     start() {
@@ -46,7 +49,7 @@ export class VideoStreamPlayer {
     }
 
     reset() {
-        this.decoder.postMessage({ action: "reset" });
+        this.stream.reset();
     }
 
     #decode(chunks: Uint8Array<ArrayBufferLike>) {

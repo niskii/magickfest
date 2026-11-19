@@ -8,15 +8,13 @@ import { MediaSocket } from "../media-socket";
 export class VideoStreamSocket extends MediaSocket {
     onOutput: (packets: Uint8Array<ArrayBufferLike>) => void;
     onFileEnd: () => void;
+
     isFetching = false;
 
     constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
         super(socket, bufferHealthManager);
 
         this.setupListeners();
-
-        this.bufferHealthWatcher.onCurrent = this.getCurrent.bind(this);
-        this.bufferHealthWatcher.onNext = this.getNext.bind(this);
     }
 
     setupListeners() {
@@ -44,7 +42,8 @@ export class VideoStreamSocket extends MediaSocket {
         });
     }
 
-    getCurrent() {
+    fetchCurrent() {
+        this.reset();
         if (this.isFetching) return;
         this.isFetching = true;
         this.socket.emit(
@@ -56,7 +55,7 @@ export class VideoStreamSocket extends MediaSocket {
         );
     }
 
-    getNext() {
+    fetchNext() {
         if (this.isFetching) return;
         this.isFetching = true;
         this.socket.emit(
@@ -67,8 +66,8 @@ export class VideoStreamSocket extends MediaSocket {
             },
             (response: { status: ReadCode }) => {
                 if (response.status == ReadCode.EOF) {
+                    logger.info("end of file!");
                     this.stop();
-                    this.reset();
                     this.onFileEnd();
                     return;
                 }
@@ -84,9 +83,5 @@ export class VideoStreamSocket extends MediaSocket {
             return;
         }
         if (chunk.EncodedPackets) this.onOutput(chunk.EncodedPackets);
-    }
-
-    reset() {
-        this.lastChunkPage = 0;
     }
 }

@@ -1,19 +1,24 @@
-import { Socket } from "socket.io-client";
-import { BufferHealthManager } from "./buffer-health-manager";
-import { BufferHealthWatcher } from "./buffer-health-watcher";
 import type { MediaPacket } from "shared/types/audio-transfer";
+import { Socket } from "socket.io-client";
+import config from "../config/client.json";
 import logger from "../logger";
+import { BufferHealthManager } from "./buffer-health-manager";
 
-export class MediaSocket {
+export abstract class MediaSocket {
     protected socket: Socket;
     protected bufferHealthManager: BufferHealthManager;
-    protected bufferHealthWatcher: BufferHealthWatcher;
     protected lastChunkPage: number = 0;
+
+    protected abstract fetchCurrent(): void;
+    protected abstract fetchNext(): void;
+
+    onReset: () => void;
+
+    #fetchTimer: NodeJS.Timeout;
 
     constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
         this.socket = socket;
         this.bufferHealthManager = bufferHealthManager;
-        this.bufferHealthWatcher = new BufferHealthWatcher(bufferHealthManager);
     }
 
     initializeBufferHealth(mediaPacket: MediaPacket) {
@@ -36,11 +41,27 @@ export class MediaSocket {
     }
 
     start() {
-        this.bufferHealthWatcher.start();
+        this.fetchCurrent();
+        clearTimeout(this.#fetchTimer);
+        this.#fetchTimer = setInterval(async () => {
+            if (
+                this.bufferHealthManager.getCurrentPlayPosition() <
+                this.bufferHealthManager.getLatestServerTime() -
+                    config.MaxOutOfSync
+            ) {
+                this.reset();
+            }
+            if (this.bufferHealthManager.isBelowThreshold()) this.fetchNext();
+        }, 1000);
     }
 
     stop() {
-        this.bufferHealthWatcher.stop();
+        clearTimeout(this.#fetchTimer);
+    }
+
+    reset() {
+        this.lastChunkPage = 0;
+        this.onReset();
     }
 
     validateChunk(chunk: MediaPacket) {
