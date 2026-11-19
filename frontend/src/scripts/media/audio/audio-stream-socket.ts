@@ -29,33 +29,16 @@ export class AudioStreamSocket extends MediaSocket {
             this.#isFetching = false;
             if (!audioPacket) return;
 
-            logger.info("next will be:", audioPacket.PacketEnd);
-            // this.bufferHealthManager.reset();
             this.initializeBufferHealth(audioPacket);
-
-            // // save the play position of the sync chunk.
-            // this.bufferHealthManager.setStartPosition(audioPacket.Timestamp);
-            // // save the duration of the audio.
-            // this.bufferHealthManager.setTotalDuration(
-            //     audioPacket.TotalDuration,
-            // );
-            // // the calculated duration since client audio buffer ended.
-            // this.bufferHealthManager.addDelay(
-            //     audioPacket.Timestamp -
-            //         audioPacket.ServerTime -
-            //         this.bufferHealthManager.getCurrentTime(),
-            // );
             this.handleChunk(audioPacket);
         });
 
         this.socket.on("nextAudioChunk", (audioPacket: AudioPacket) => {
             this.#isFetching = false;
             if (!audioPacket) return;
-            logger.info("last chunk", this.lastChunkPage);
+
             this.logDelay(audioPacket.ServerTime);
-
             this.updateBufferHealth(audioPacket);
-
             this.handleChunk(audioPacket);
         });
     }

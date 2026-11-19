@@ -1,6 +1,7 @@
 import { BSON } from "bson";
 import type { EncodedPacket } from "mediabunny";
 import { WebGLRenderer } from "./webgl-renderer";
+import { CircularBuffer } from "../../circular-buffer";
 
 const videoDecoder = new VideoDecoder({
     error: error,
@@ -16,9 +17,11 @@ videoDecoder.configure({
 
 let renderer: WebGLRenderer = null;
 
-let pendingEncodedPackets: EncodedPacket[] = [];
+let pendingEncodedPackets: CircularBuffer<EncodedPacket> = new CircularBuffer(
+    700,
+);
 
-let pendingFrames: VideoFrame[] = [];
+let pendingFrames: CircularBuffer<VideoFrame> = new CircularBuffer(70);
 let frameUnderflow = true;
 let chunkUnderflow = true;
 let baseTime = 0;
@@ -77,8 +80,8 @@ function pause() {
 }
 
 function reset() {
-    pendingFrames = [];
-    pendingEncodedPackets = [];
+    pendingFrames.clear();
+    pendingEncodedPackets.clear();
     frameUnderflow = true;
     chunkUnderflow = true;
     baseTime = 0;
@@ -89,18 +92,18 @@ function reset() {
 function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
     const encodedpackets = BSON.deserialize(chunks).chunks as EncodedPacket[];
     encodedpackets.forEach((chunk) => {
-        if (chunk) pendingEncodedPackets.push(chunk);
+        if (chunk) pendingEncodedPackets.enqueue(chunk);
     });
 
     if (chunkUnderflow) setTimeout(handleChunk, 0);
 }
 
 function handleChunk() {
-    chunkUnderflow = pendingEncodedPackets.length == 0;
+    chunkUnderflow = pendingEncodedPackets.getSize() == 0;
     if (chunkUnderflow) return;
 
-    if (pendingFrames.length < 30) {
-        const chunk = pendingEncodedPackets.shift();
+    if (pendingFrames.getSize() < 30) {
+        const chunk = pendingEncodedPackets.dequeue();
         const encodedVideoChunk = new EncodedVideoChunk({
             duration: chunk.duration * 1e6,
             data: chunk.data.buffer,
@@ -122,7 +125,7 @@ function enqueueFrame(frame: VideoFrame) {
         firstFrameTime = frame.timestamp / 1000;
         externalDelta = 0;
     }
-    pendingFrames.push(frame);
+    pendingFrames.enqueue(frame);
     if (paused) return;
     if (frameUnderflow) setTimeout(renderAnimationFrame, 0);
 }
@@ -136,10 +139,10 @@ function calculateTimeUntilNextFrame(timestamp: number) {
 }
 
 async function renderAnimationFrame() {
-    frameUnderflow = pendingFrames.length == 0;
+    frameUnderflow = pendingFrames.getSize() == 0;
     if (frameUnderflow) return;
 
-    const frame = pendingFrames.shift();
+    const frame = pendingFrames.dequeue();
 
     // Based on the frame's timestamp calculate how much of real time waiting
     // is needed before showing the next frame.
