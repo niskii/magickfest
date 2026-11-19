@@ -1,14 +1,11 @@
 import type { Socket } from "socket.io-client";
 import type { BufferHealthManager } from "../buffer-health-manager";
 import { ReadCode } from "shared/types/read-codes";
-import logger from "../../logger";
+import logger from "../../../logger";
 import { Bitrate, type VideoPacket } from "shared/types/audio-transfer";
 import { MediaSocket } from "../media-socket";
 
 export class VideoStreamSocket extends MediaSocket {
-    onOutput: (packets: Uint8Array<ArrayBufferLike>) => void;
-    onFileEnd: () => void;
-
     isFetching = false;
 
     constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
@@ -21,24 +18,30 @@ export class VideoStreamSocket extends MediaSocket {
         this.socket.removeListener("syncedVideo");
         this.socket.removeListener("nextVideoChunk");
 
-        this.socket.on("syncedVideo", async (data: VideoPacket) => {
+        this.socket.on("syncedVideo", async (videoPacket: VideoPacket) => {
             this.isFetching = false;
-            if (!data) return;
+            if (!videoPacket) return;
 
             logger.info("synced to video stream");
 
             this.bufferHealthManager.reset();
-            this.initializeBufferHealth(data);
-            this.handleChunk(data);
+            this.initializeBufferHealth(videoPacket);
+            this.bufferHealthManager.addTotalTimeScheduled(
+                videoPacket.PacketDuration,
+            );
+            this.handleChunk(videoPacket);
         });
 
-        this.socket.on("nextVideoChunk", (data: VideoPacket) => {
+        this.socket.on("nextVideoChunk", (videoPacket: VideoPacket) => {
             this.isFetching = false;
-            if (!data) return;
+            if (!videoPacket) return;
 
-            this.updateBufferHealth(data);
+            this.updateBufferHealth(videoPacket);
+            this.bufferHealthManager.addTotalTimeScheduled(
+                videoPacket.PacketDuration,
+            );
 
-            this.handleChunk(data);
+            this.handleChunk(videoPacket);
         });
     }
 

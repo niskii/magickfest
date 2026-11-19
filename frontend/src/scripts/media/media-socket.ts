@@ -1,7 +1,7 @@
 import type { MediaPacket } from "shared/types/audio-transfer";
 import { Socket } from "socket.io-client";
-import config from "../config/client.json";
-import logger from "../logger";
+import config from "../../config/client.json";
+import logger from "../../logger";
 import { BufferHealthManager } from "./buffer-health-manager";
 
 export abstract class MediaSocket {
@@ -12,6 +12,8 @@ export abstract class MediaSocket {
     protected abstract fetchCurrent(): void;
     protected abstract fetchNext(): void;
 
+    onOutput: (buffer: Uint8Array<ArrayBufferLike>) => void;
+    onFileEnd: () => void;
     onReset: () => void;
 
     #fetchTimer: NodeJS.Timeout;
@@ -27,17 +29,10 @@ export abstract class MediaSocket {
             mediaPacket.Timestamp,
             mediaPacket.TotalDuration,
         );
-
-        this.bufferHealthManager.addTotalTimeScheduled(
-            mediaPacket.PacketDuration,
-        );
     }
 
     updateBufferHealth(mediaPacket: MediaPacket) {
         this.bufferHealthManager.setLatestServerTime(mediaPacket.ServerTime);
-        this.bufferHealthManager.addTotalTimeScheduled(
-            mediaPacket.PacketDuration,
-        );
     }
 
     start() {

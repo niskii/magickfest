@@ -1,6 +1,6 @@
 import { Bitrate } from "shared/types/audio-transfer";
 import { Socket } from "socket.io-client";
-import logger from "../../logger";
+import logger from "../../../logger";
 import { AudioStreamSocket } from "./audio-stream-socket";
 import type { ChanneledAudioBuffer } from "./AudioTypes";
 import * as decoder from "./decoder-service";
@@ -34,8 +34,9 @@ export class AudioStreamPlayer {
             this.#timeKeeper,
             this.#bitrate,
         );
-        stream.onFetch = this.#decode.bind(this);
-        stream.onFlush = this.#flush.bind(this);
+        stream.onOutput = this.#decode.bind(this);
+        stream.onFileEnd = this.#flush.bind(this);
+        stream.onReset = () => {};
         this.#stream = stream;
 
         this.reset();

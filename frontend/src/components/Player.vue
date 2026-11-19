@@ -2,8 +2,8 @@
 import { Bitrate } from "shared/types/audio-transfer";
 import { onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from "vue";
 import config from "../config/client.json";
-import { AudioStreamPlayer } from "../scripts/audio/audio-stream-player";
-import { VideoStreamPlayer } from "../scripts/video/video-stream-player";
+import { AudioStreamPlayer } from "../scripts/media/audio/audio-stream-player";
+import { VideoStreamPlayer } from "../scripts/media/video/video-stream-player";
 import { socket } from "../scripts/socket/socket";
 import Button from "./Button.vue";
 import ListDropdown from "./ListDropdown.vue";

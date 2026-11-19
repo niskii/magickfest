@@ -1,4 +1,4 @@
-import config from "../config/client.json";
+import config from "../../config/client.json";
 import type { VideoContext } from "./video/video-context";
 
 export interface MediaTimeContext {

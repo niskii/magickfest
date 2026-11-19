@@ -2,7 +2,7 @@ import type {
     OggOpusDecodedAudio,
     OggOpusDecoderWebWorker,
 } from "ogg-opus-decoder";
-import logger from "../../logger";
+import logger from "../../../logger";
 import type { ChanneledAudioBuffer, DecodedAudioBuffer } from "./AudioTypes";
 import { DecodedAudioPlaybackBuffer } from "./decoded-audio-playback-buffer";
 
