@@ -16,6 +16,7 @@ export class CircularBuffer<T> {
     clear() {
         this.#head = 0;
         this.#tail = 0;
+        this.#size = 0;
         this.#array = new Array(this.#N);
     }
 
@@ -29,6 +30,10 @@ export class CircularBuffer<T> {
 
     getSize() {
         return this.#size;
+    }
+
+    peek() {
+        return this.#array[this.#head];
     }
 
     enqueue(item: T) {

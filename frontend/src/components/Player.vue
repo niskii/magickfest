@@ -74,6 +74,7 @@ onMounted(() => {
     storage.load();
 
     document.addEventListener("freeze", handleFreeze);
+    document.addEventListener("visibilitychange", handleVisibilityChange)
     window.addEventListener("beforeunload", handleUnload);
 
     SocketManager.setupSocket();
@@ -115,6 +116,14 @@ function handleUnload() {
 
 function handleFreeze() {
     disconnect();
+}
+
+function handleVisibilityChange(event: Event) {
+    if (document.hidden) {
+        videoStreamPlayer.value.setRendererDisabled(true)
+    } else {
+        videoStreamPlayer.value.setRendererDisabled(false)
+    }
 }
 
 watch(playerState, () => {

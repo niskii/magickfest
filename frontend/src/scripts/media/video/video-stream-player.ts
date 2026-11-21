@@ -60,6 +60,10 @@ export class VideoStreamPlayer {
         this.decoder.postMessage({ action: "flush" });
     }
 
+    setRendererDisabled(disabled: boolean) {
+        this.decoder.postMessage({ action: "setDisabled", disabled });
+    }
+
     setExternalClockReference(timestamp: number) {
         this.decoder.postMessage({
             action: "externalClock",

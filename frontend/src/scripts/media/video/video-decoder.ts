@@ -10,11 +10,6 @@ const videoDecoder = new VideoDecoder({
     },
 });
 
-videoDecoder.configure({
-    codec: "av01.0.05M.08",
-    hardwareAcceleration: "prefer-hardware",
-});
-
 let renderer: WebGLRenderer = null;
 
 let pendingEncodedPackets: CircularBuffer<EncodedPacket> = new CircularBuffer(
@@ -22,6 +17,8 @@ let pendingEncodedPackets: CircularBuffer<EncodedPacket> = new CircularBuffer(
 );
 
 let pendingFrames: CircularBuffer<VideoFrame> = new CircularBuffer(70);
+
+let isNeedingKeyFrame = true;
 let frameUnderflow = true;
 let chunkUnderflow = true;
 let baseTime = 0;
@@ -32,10 +29,15 @@ let externalDelta = 0;
 let paused = false;
 let pausedTimestamp = 0;
 
+let isDisabled = false;
+
 self.onmessage = (event: MessageEvent<any>) => {
     switch (event.data.action) {
         case "init":
             setCanvas(event.data.canvas);
+            break;
+        case "externalClock":
+            setExternalClockReference(event.data.timestamp);
             break;
         case "flush":
             // TODO: find out if flush is needed
@@ -50,9 +52,10 @@ self.onmessage = (event: MessageEvent<any>) => {
         case "pause":
             pause();
             break;
-        case "externalClock":
-            setExternalClockReference(event.data.timestamp);
+        case "setDisabled": {
+            setDisabled(event.data.disabled);
             break;
+        }
         case "buffer":
             enqueueChunk(event.data.chunks);
             break;
@@ -70,28 +73,49 @@ function setExternalClockReference(timestamp: number) {
 }
 
 function play() {
+    if (!paused) return;
     paused = false;
     baseTime += performance.now() - pausedTimestamp;
 }
 
 function pause() {
-    if (!paused) pausedTimestamp = performance.now();
+    if (paused) return;
+    pausedTimestamp = performance.now();
     paused = true;
 }
 
 function reset() {
     pendingFrames.clear();
     pendingEncodedPackets.clear();
+
+    isNeedingKeyFrame = true;
     frameUnderflow = true;
     chunkUnderflow = true;
     baseTime = 0;
     firstFrameTime = 0;
-    videoDecoder.flush();
+    externalDelta = 0;
+
+    videoDecoder.reset();
+    videoDecoder.configure({
+        codec: "av01.0.05M.08",
+        hardwareAcceleration: "prefer-hardware",
+        optimizeForLatency: true,
+    });
+}
+
+function setDisabled(disabled: boolean) {
+    isDisabled = disabled;
+
+    if (!disabled) setTimeout(handleChunk, 0);
 }
 
 function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
     const encodedpackets = BSON.deserialize(chunks).chunks as EncodedPacket[];
     encodedpackets.forEach((chunk) => {
+        if (pendingEncodedPackets.isFull()) {
+            pendingEncodedPackets.dequeue();
+            isNeedingKeyFrame = true;
+        }
         if (chunk) pendingEncodedPackets.enqueue(chunk);
     });
 
@@ -99,19 +123,49 @@ function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
 }
 
 function handleChunk() {
+    if (isDisabled) {
+        self.postMessage({
+            action: "currentTime",
+            currentTime: mediaTime() * 1e3,
+        });
+        setTimeout(handleChunk, 1000);
+        return;
+    }
+
     chunkUnderflow = pendingEncodedPackets.getSize() == 0;
     if (chunkUnderflow) return;
 
-    if (pendingFrames.getSize() < 30) {
-        const chunk = pendingEncodedPackets.dequeue();
-        const encodedVideoChunk = new EncodedVideoChunk({
-            duration: chunk.duration * 1e6,
-            data: chunk.data.buffer,
-            type: chunk.type,
-            timestamp: chunk.timestamp * 1e6,
-        });
+    if (videoDecoder.decodeQueueSize < 15 && pendingFrames.getSize() < 15) {
+        const chunk = pendingEncodedPackets.peek();
+        const timestamp = chunk.timestamp * 1e6;
+        const duration = chunk.duration * 1e6;
 
-        videoDecoder.decode(encodedVideoChunk);
+        if (isNeedingKeyFrame) isNeedingKeyFrame = chunk.type != "key";
+
+        const timeUntilNextFrame = calculateTimeUntilNextFrame(timestamp);
+
+        if (timeUntilNextFrame < 0) {
+            pendingEncodedPackets.dequeue();
+            isNeedingKeyFrame = true;
+        }
+
+        if (!isNeedingKeyFrame) {
+            pendingEncodedPackets.dequeue();
+
+            const encodedVideoChunk = new EncodedVideoChunk({
+                duration: duration,
+                data: chunk.data.buffer,
+                type: chunk.type,
+                timestamp: timestamp,
+            });
+
+            videoDecoder.decode(encodedVideoChunk);
+        } else {
+            self.postMessage({
+                action: "currentTime",
+                currentTime: timestamp,
+            });
+        }
     }
     setTimeout(handleChunk, 0);
 }
@@ -125,16 +179,23 @@ function enqueueFrame(frame: VideoFrame) {
         firstFrameTime = frame.timestamp / 1000;
         externalDelta = 0;
     }
+
     pendingFrames.enqueue(frame);
     if (paused) return;
     if (frameUnderflow) setTimeout(renderAnimationFrame, 0);
 }
 
+/**
+ * The time position of the video
+ * @returns time in milliseconds
+ */
+function mediaTime() {
+    return performance.now() - baseTime + firstFrameTime + externalDelta;
+}
+
 function calculateTimeUntilNextFrame(timestamp: number) {
     if (baseTime == 0) baseTime = performance.now();
-    let mediaTime =
-        performance.now() - baseTime + firstFrameTime + externalDelta;
-    const result = timestamp / 1000 - mediaTime;
+    const result = timestamp / 1000 - mediaTime();
     return result;
 }
 
