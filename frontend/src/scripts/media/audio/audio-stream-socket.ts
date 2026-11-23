@@ -6,7 +6,6 @@ import { BufferHealthManager } from "../buffer-health-manager";
 import { MediaSocket } from "../media-socket";
 
 export class AudioStreamSocket extends MediaSocket {
-    #isFetching = false;
     #bitrate: Bitrate;
 
     constructor(
@@ -26,7 +25,7 @@ export class AudioStreamSocket extends MediaSocket {
 
         this.socket.on("syncedAudio", async (audioPacket: AudioPacket) => {
             logger.info("syncing!", this.lastChunkPage);
-            this.#isFetching = false;
+            this.isFetching = false;
             if (!audioPacket) return;
 
             this.initializeBufferHealth(audioPacket);
@@ -34,7 +33,7 @@ export class AudioStreamSocket extends MediaSocket {
         });
 
         this.socket.on("nextAudioChunk", (audioPacket: AudioPacket) => {
-            this.#isFetching = false;
+            this.isFetching = false;
             if (!audioPacket) return;
 
             this.logDelay(audioPacket.ServerTime);
@@ -56,7 +55,7 @@ export class AudioStreamSocket extends MediaSocket {
     }
 
     fetchCurrent() {
-        this.#isFetching = true;
+        this.isFetching = true;
         this.socket.emit(
             "fetchSyncedAudioChunk",
             { type: "audio", bitrate: this.#bitrate },
@@ -67,8 +66,8 @@ export class AudioStreamSocket extends MediaSocket {
     }
 
     fetchNext() {
-        if (this.#isFetching) return;
-        this.#isFetching = true;
+        if (this.isFetching) return;
+        this.isFetching = true;
 
         this.socket.emit(
             "fetchNextAudioChunk",

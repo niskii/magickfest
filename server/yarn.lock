@@ -3118,8 +3118,8 @@ __metadata:
 
 "shared@file:../shared::locator=server%40workspace%3A.":
   version: 0.0.0
-  resolution: "shared@file:../shared#../shared::hash=033f1b&locator=server%40workspace%3A."
-  checksum: 10c0/5ed57b5c6e4e877335d70e1433d64e618a7810704347f5ac4aea117501c03ad106168825dc268e89b20b2997f12e9ae2f7a45825a582bc54243361da095b77fe
+  resolution: "shared@file:../shared#../shared::hash=eb7549&locator=server%40workspace%3A."
+  checksum: 10c0/bbb5df593390881db8f2ddc35642441ff88f6c1f44cd4c42ec3639ddc323e3befa9ec8b24122e4e1db061bedee998d2137b1eede6d5d1f3bea4ded0ae0b98e3c
   languageName: node
   linkType: hard
 

@@ -118,7 +118,7 @@ function handleFreeze() {
     disconnect();
 }
 
-function handleVisibilityChange(event: Event) {
+function handleVisibilityChange() {
     if (document.hidden) {
         videoStreamPlayer.value.setRendererDisabled(true)
     } else {
@@ -175,9 +175,12 @@ function playerStart() {
     if (!audioStreamPlayer.value) return;
     audioStreamPlayer.value.reset();
     audioStreamPlayer.value.start();
-
-    videoStreamPlayer.value.reset();
-    videoStreamPlayer.value.start();
+    if (playerState.value.hasVideo) {
+        videoStreamPlayer.value.reset();
+        videoStreamPlayer.value.start();
+    } else {
+        videoStreamPlayer.value.stop();
+    }
     setVisualiser();
 }
 

@@ -10,26 +10,31 @@ const videoDecoder = new VideoDecoder({
     },
 });
 
+videoDecoder.configure({
+    codec: "av01.0.05M.08",
+    hardwareAcceleration: "prefer-hardware",
+    optimizeForLatency: true,
+});
+
 let renderer: WebGLRenderer = null;
 
 let pendingEncodedPackets: CircularBuffer<EncodedPacket> = new CircularBuffer(
     700,
 );
+let pendingFrames: CircularBuffer<VideoFrame> = new CircularBuffer(30);
 
-let pendingFrames: CircularBuffer<VideoFrame> = new CircularBuffer(70);
+let isNeedingKeyFrame: boolean;
+let frameUnderflow: boolean;
+let chunkUnderflow: boolean;
+let baseTime: number;
+let firstFrameTime: number;
 
-let isNeedingKeyFrame = true;
-let frameUnderflow = true;
-let chunkUnderflow = true;
-let baseTime = 0;
-let firstFrameTime: number = 0;
+let externalDelta: number;
 
-let externalDelta = 0;
+let paused: boolean;
+let pausedTimestamp: number;
 
-let paused = false;
-let pausedTimestamp = 0;
-
-let isDisabled = false;
+let isDisabled: boolean;
 
 self.onmessage = (event: MessageEvent<any>) => {
     switch (event.data.action) {
@@ -69,7 +74,7 @@ function setCanvas(canvas: OffscreenCanvas) {
 function setExternalClockReference(timestamp: number) {
     const mediaTime = performance.now() - baseTime + firstFrameTime;
     const delta = timestamp - mediaTime;
-    if (!frameUnderflow) externalDelta = delta;
+    if (firstFrameTime) externalDelta = delta;
 }
 
 function play() {
@@ -85,9 +90,10 @@ function pause() {
 }
 
 function reset() {
+    videoDecoder.flush();
+
     pendingFrames.clear();
     pendingEncodedPackets.clear();
-
     isNeedingKeyFrame = true;
     frameUnderflow = true;
     chunkUnderflow = true;
@@ -95,12 +101,9 @@ function reset() {
     firstFrameTime = 0;
     externalDelta = 0;
 
-    videoDecoder.reset();
-    videoDecoder.configure({
-        codec: "av01.0.05M.08",
-        hardwareAcceleration: "prefer-hardware",
-        optimizeForLatency: true,
-    });
+    isDisabled = false;
+    paused = false;
+    pausedTimestamp = 0;
 }
 
 function setDisabled(disabled: boolean) {

@@ -1,5 +1,5 @@
 export enum ReadCode {
-  CONTINUATION,
-  EOF,
-  INVALID,
+    CONTINUATION,
+    EOF,
+    INVALID,
 }

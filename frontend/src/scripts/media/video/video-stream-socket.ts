@@ -46,8 +46,6 @@ export class VideoStreamSocket extends MediaSocket {
     }
 
     fetchCurrent() {
-        this.reset();
-        if (this.isFetching) return;
         this.isFetching = true;
         this.socket.emit(
             "fetchSyncedVideoChunk",

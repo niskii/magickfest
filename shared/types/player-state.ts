@@ -5,10 +5,11 @@ export enum PlaybackState {
 }
 
 export type PlayerState = {
-    id: string,
-    setIndex: number,
-    startTime: number,
-    initialStartTime: number,
-    forwarded: number,
-    state: PlaybackState,
-}
+    id: string;
+    setIndex: number;
+    startTime: number;
+    initialStartTime: number;
+    forwarded: number;
+    state: PlaybackState;
+    hasVideo: boolean;
+};

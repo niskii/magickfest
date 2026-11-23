@@ -8,6 +8,7 @@ export abstract class MediaSocket {
     protected socket: Socket;
     protected bufferHealthManager: BufferHealthManager;
     protected lastChunkPage: number = 0;
+    protected isFetching = false;
 
     protected abstract fetchCurrent(): void;
     protected abstract fetchNext(): void;
@@ -45,6 +46,7 @@ export abstract class MediaSocket {
                     config.MaxOutOfSync
             ) {
                 this.reset();
+                this.start();
             }
             if (this.bufferHealthManager.isBelowThreshold()) this.fetchNext();
         }, 1000);
@@ -55,7 +57,10 @@ export abstract class MediaSocket {
     }
 
     reset() {
+        clearTimeout(this.#fetchTimer);
+        this.isFetching = false;
         this.lastChunkPage = 0;
+        this.bufferHealthManager.reset();
         this.onReset();
     }
 

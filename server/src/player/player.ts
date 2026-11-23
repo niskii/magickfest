@@ -134,6 +134,7 @@ export class Player {
             initialStartTime: this.#initialStartTime,
             forwarded: this.#forwarded,
             state: this.#state,
+            hasVideo: this.#playlist.getCurrentSet().Video != undefined,
         };
     }
 
@@ -395,6 +396,7 @@ export class Player {
 
         const videoFile = this.#playlist.getCurrentSet().Video;
         if (videoFile) this.#videoReader = new VideoReader(videoFile);
+        else this.#videoReader = undefined;
     }
 
     #setupPlaybackTimer() {

@@ -6,11 +6,8 @@ export class CircularBuffer<T> {
     #N: number;
 
     constructor(n: number) {
-        this.#head = 0;
-        this.#tail = 0;
-        this.#size = 0;
-        this.#array = new Array(n);
         this.#N = n;
+        this.clear();
     }
 
     clear() {

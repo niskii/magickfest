@@ -6,6 +6,7 @@ import {
 import { VideoContext } from "./video-context";
 import WorkerDecoder from "./video-decoder?worker";
 import { VideoStreamSocket } from "./video-stream-socket";
+import logger from "../../../logger";
 
 export class VideoStreamPlayer {
     videoContext: VideoContext;
@@ -40,7 +41,9 @@ export class VideoStreamPlayer {
         this.stream.onOutput = this.#decode.bind(this);
         this.stream.onFileEnd = this.#flush.bind(this);
         this.stream.onReset = () => {
+            logger.info("resetting the video decoder!");
             this.decoder.postMessage({ action: "reset" });
+            this.videoContext.currentTimestamp = 0;
         };
     }
 
@@ -50,6 +53,10 @@ export class VideoStreamPlayer {
 
     reset() {
         this.stream.reset();
+    }
+
+    stop() {
+        this.stream.stop();
     }
 
     #decode(chunks: Uint8Array<ArrayBufferLike>) {
