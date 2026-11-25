@@ -8,8 +8,12 @@ import { MediaSocket } from "../media-socket";
 export class VideoStreamSocket extends MediaSocket {
     isFetching = false;
 
-    constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
-        super(socket, bufferHealthManager);
+    constructor(
+        socket: Socket,
+        bufferHealthManager: BufferHealthManager,
+        output: (buffer: Uint8Array<ArrayBufferLike>) => void,
+    ) {
+        super(socket, bufferHealthManager, output);
 
         this.setupListeners();
     }
@@ -69,7 +73,7 @@ export class VideoStreamSocket extends MediaSocket {
                 if (response.status == ReadCode.EOF) {
                     logger.info("end of file!");
                     this.stop();
-                    this.onFileEnd();
+                    this.callOnFileEnd();
                     return;
                 }
                 if (response.status == ReadCode.INVALID)

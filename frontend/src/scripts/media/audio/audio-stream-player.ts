@@ -33,10 +33,9 @@ export class AudioStreamPlayer {
             socket,
             this.#timeKeeper,
             this.#bitrate,
+            this.#decode.bind(this),
         );
-        stream.onOutput = this.#decode.bind(this);
-        stream.onFileEnd = this.#flush.bind(this);
-        stream.onReset = () => {};
+        stream.setOnFileEndCallback(this.#flush.bind(this));
         this.#stream = stream;
 
         this.reset();

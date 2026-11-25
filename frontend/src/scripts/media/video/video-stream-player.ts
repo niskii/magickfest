@@ -14,37 +14,35 @@ export class VideoStreamPlayer {
     bufferHealthManager: BufferHealthManager;
     decoder: Worker;
 
-    constructor(socket: Socket, canvas: HTMLCanvasElement) {
+    constructor(socket: Socket, canvas: OffscreenCanvas) {
         this.videoContext = new VideoContext();
 
         this.bufferHealthManager = new BufferHealthManager();
         this.bufferHealthManager.setMediaContext(
             new VideoTimeContext(this.videoContext),
         );
-        this.stream = new VideoStreamSocket(socket, this.bufferHealthManager);
-
-        const offscreen = canvas.transferControlToOffscreen();
+        this.stream = new VideoStreamSocket(
+            socket,
+            this.bufferHealthManager,
+            this.#decode.bind(this),
+        );
 
         this.decoder = new WorkerDecoder();
-        this.decoder.postMessage({ action: "init", canvas: offscreen }, [
-            offscreen,
-        ]);
+        this.decoder.postMessage({ action: "init", canvas: canvas }, [canvas]);
         this.decoder.addEventListener("message", (msg: MessageEvent<any>) => {
+            const currentTime = msg.data.currentTime / 1e6;
             if (!this.bufferHealthManager.getStartedAt())
-                this.bufferHealthManager.setStartedAt(
-                    msg.data.currentTime / 1_000_000,
-                );
-            this.videoContext.currentTimestamp =
-                msg.data.currentTime / 1_000_000;
+                this.bufferHealthManager.setStartedAt(currentTime);
+            this.videoContext.currentTimestamp = currentTime;
         });
 
-        this.stream.onOutput = this.#decode.bind(this);
-        this.stream.onFileEnd = this.#flush.bind(this);
-        this.stream.onReset = () => {
-            logger.info("resetting the video decoder!");
-            this.decoder.postMessage({ action: "reset" });
-            this.videoContext.currentTimestamp = 0;
-        };
+        this.stream.setOnResetCallback(this.onReset.bind(this));
+    }
+
+    onReset() {
+        logger.info("resetting the video decoder!");
+        this.decoder.postMessage({ action: "reset" });
+        this.videoContext.currentTimestamp = 0;
     }
 
     start() {
@@ -61,10 +59,6 @@ export class VideoStreamPlayer {
 
     #decode(chunks: Uint8Array<ArrayBufferLike>) {
         this.decoder.postMessage({ action: "buffer", chunks }, [chunks]);
-    }
-
-    #flush() {
-        this.decoder.postMessage({ action: "flush" });
     }
 
     setRendererDisabled(disabled: boolean) {

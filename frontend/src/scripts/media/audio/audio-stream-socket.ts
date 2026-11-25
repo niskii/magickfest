@@ -12,8 +12,9 @@ export class AudioStreamSocket extends MediaSocket {
         socket: Socket,
         timeKeeper: BufferHealthManager,
         bitrate: Bitrate,
+        output: (buffer: Uint8Array<ArrayBufferLike>) => void,
     ) {
-        super(socket, timeKeeper);
+        super(socket, timeKeeper, output);
         this.#bitrate = bitrate;
 
         this.setupListeners();
@@ -79,7 +80,7 @@ export class AudioStreamSocket extends MediaSocket {
             (response: { status: ReadCode }) => {
                 if (response.status == ReadCode.EOF) {
                     this.stop();
-                    this.onFileEnd();
+                    this.callOnFileEnd();
                     return;
                 }
                 if (response.status == ReadCode.INVALID)

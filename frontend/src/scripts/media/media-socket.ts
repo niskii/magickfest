@@ -13,15 +13,32 @@ export abstract class MediaSocket {
     protected abstract fetchCurrent(): void;
     protected abstract fetchNext(): void;
 
-    onOutput: (buffer: Uint8Array<ArrayBufferLike>) => void;
-    onFileEnd: () => void;
-    onReset: () => void;
+    protected onOutput: (buffer: Uint8Array<ArrayBufferLike>) => void;
+    #onFileEnd?: () => void;
+    #onReset?: () => void;
 
     #fetchTimer: NodeJS.Timeout;
 
-    constructor(socket: Socket, bufferHealthManager: BufferHealthManager) {
+    constructor(
+        socket: Socket,
+        bufferHealthManager: BufferHealthManager,
+        output: (buffer: Uint8Array<ArrayBufferLike>) => void,
+    ) {
+        this.onOutput = output;
         this.socket = socket;
         this.bufferHealthManager = bufferHealthManager;
+    }
+
+    setOnFileEndCallback(callback: () => void) {
+        this.#onFileEnd = callback;
+    }
+
+    setOnResetCallback(callback: () => void) {
+        this.#onReset = callback;
+    }
+
+    callOnFileEnd() {
+        if (this.#onFileEnd) this.#onFileEnd();
     }
 
     initializeBufferHealth(mediaPacket: MediaPacket) {
@@ -61,7 +78,7 @@ export abstract class MediaSocket {
         this.isFetching = false;
         this.lastChunkPage = 0;
         this.bufferHealthManager.reset();
-        this.onReset();
+        if (this.#onReset) this.#onReset();
     }
 
     validateChunk(chunk: MediaPacket) {

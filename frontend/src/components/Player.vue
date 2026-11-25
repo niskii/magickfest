@@ -67,7 +67,7 @@ onMounted(() => {
         videoPlayer.setExternalClockReference(audioPlayer.getCurrentPlayPosition() * 1000)
     }, config.UpdateInterval);
 
-    const videoPlayer = new VideoStreamPlayer(socket, canvas.value);
+    const videoPlayer = new VideoStreamPlayer(socket, canvas.value.transferControlToOffscreen());
     videoStreamPlayer.value = videoPlayer;
 
     watchers(audioStreamPlayer, visualiserRef);

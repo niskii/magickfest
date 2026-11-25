@@ -44,10 +44,6 @@ self.onmessage = (event: MessageEvent<any>) => {
         case "externalClock":
             setExternalClockReference(event.data.timestamp);
             break;
-        case "flush":
-            // TODO: find out if flush is needed
-            // videoDecoder.flush();
-            break;
         case "reset":
             reset();
             break;
@@ -116,6 +112,7 @@ function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
     const encodedpackets = BSON.deserialize(chunks).chunks as EncodedPacket[];
     encodedpackets.forEach((chunk) => {
         if (pendingEncodedPackets.isFull()) {
+            console.log("this happened!");
             pendingEncodedPackets.dequeue();
             isNeedingKeyFrame = true;
         }
@@ -127,6 +124,7 @@ function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
 
 function handleChunk() {
     if (isDisabled) {
+        console.log(pendingEncodedPackets.getSize());
         self.postMessage({
             action: "currentTime",
             currentTime: mediaTime() * 1e3,
@@ -139,22 +137,13 @@ function handleChunk() {
     if (chunkUnderflow) return;
 
     if (videoDecoder.decodeQueueSize < 15 && pendingFrames.getSize() < 15) {
-        const chunk = pendingEncodedPackets.peek();
+        const chunk = pendingEncodedPackets.dequeue();
         const timestamp = chunk.timestamp * 1e6;
         const duration = chunk.duration * 1e6;
 
         if (isNeedingKeyFrame) isNeedingKeyFrame = chunk.type != "key";
 
-        const timeUntilNextFrame = calculateTimeUntilNextFrame(timestamp);
-
-        if (timeUntilNextFrame < 0) {
-            pendingEncodedPackets.dequeue();
-            isNeedingKeyFrame = true;
-        }
-
         if (!isNeedingKeyFrame) {
-            pendingEncodedPackets.dequeue();
-
             const encodedVideoChunk = new EncodedVideoChunk({
                 duration: duration,
                 data: chunk.data.buffer,
@@ -163,11 +152,6 @@ function handleChunk() {
             });
 
             videoDecoder.decode(encodedVideoChunk);
-        } else {
-            self.postMessage({
-                action: "currentTime",
-                currentTime: timestamp,
-            });
         }
     }
     setTimeout(handleChunk, 0);
