@@ -47,12 +47,11 @@ export class AudioStreamSocket extends MediaSocket {
         this.#bitrate = bitrate;
     }
 
-    handleChunk(data: AudioPacket) {
-        const isValid = this.validateChunk(data);
-        if (!isValid) {
-            return;
-        }
-        this.onOutput(data.Buffer);
+    handleChunk(audioPacket: AudioPacket) {
+        const isValid = this.validateChunk(audioPacket);
+        if (!isValid) return;
+        this.lastChunkPage = audioPacket.PacketEnd;
+        this.onOutput(audioPacket.Buffer);
     }
 
     fetchCurrent() {

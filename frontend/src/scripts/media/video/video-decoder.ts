@@ -36,6 +36,7 @@ let pausedTimestamp: number;
 
 let isDisabled: boolean;
 
+// Message handler
 self.onmessage = (event: MessageEvent<any>) => {
     switch (event.data.action) {
         case "init":
@@ -53,38 +54,54 @@ self.onmessage = (event: MessageEvent<any>) => {
         case "pause":
             pause();
             break;
-        case "setDisabled": {
+        case "setDisabled":
             setDisabled(event.data.disabled);
             break;
-        }
         case "buffer":
             enqueueChunk(event.data.chunks);
             break;
     }
 };
 
+/**
+ * Setter function
+ * @param canvas OffscreenCanvas from a HTML canvas
+ */
 function setCanvas(canvas: OffscreenCanvas) {
     renderer = new WebGLRenderer(canvas);
 }
 
+/**
+ * Calculates a delta based on an external clock's current time.
+ * @param timestamp of external clock's current time
+ */
 function setExternalClockReference(timestamp: number) {
     const mediaTime = performance.now() - baseTime + firstFrameTime;
     const delta = timestamp - mediaTime;
     if (firstFrameTime) externalDelta = delta;
 }
 
-function play() {
+/**
+ * Continues the decoder
+ */
+function play(): void {
     if (!paused) return;
     paused = false;
     baseTime += performance.now() - pausedTimestamp;
 }
 
-function pause() {
+/**
+ * Pauses the decoder
+ */
+function pause(): void {
     if (paused) return;
     pausedTimestamp = performance.now();
     paused = true;
 }
 
+/**
+ * Resets all state.
+ */
 function reset() {
     videoDecoder.flush();
 
@@ -102,13 +119,21 @@ function reset() {
     pausedTimestamp = 0;
 }
 
+/**
+ * Stops rendering while the current time is still updated.
+ * @param disabled
+ */
 function setDisabled(disabled: boolean) {
     isDisabled = disabled;
 
     if (!disabled) setTimeout(handleChunk, 0);
 }
 
-function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
+/**
+ * Adds the compressed frames from a chunk to a queue.
+ * Old frames get removed if the queue is full.
+ */
+function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>): void {
     const encodedpackets = BSON.deserialize(chunks).chunks as EncodedPacket[];
     encodedpackets.forEach((chunk) => {
         if (pendingEncodedPackets.isFull()) {
@@ -122,12 +147,18 @@ function enqueueChunk(chunks: Uint8Array<ArrayBufferLike>) {
     if (chunkUnderflow) setTimeout(handleChunk, 0);
 }
 
-function handleChunk() {
+/**
+ * Routine to dequeue the encoded frames and decode them.
+ * Limits to 15 uncompressed frames to save memory.
+ * If a frame has been dequeued without decoding it,
+ * all delta frames must be skipped before the next keyframe.
+ */
+function handleChunk(): void {
     if (isDisabled) {
         console.log(pendingEncodedPackets.getSize());
         self.postMessage({
             action: "currentTime",
-            currentTime: mediaTime() * 1e3,
+            currentTime: currentTime() * 1e3,
         });
         setTimeout(handleChunk, 1000);
         return;
@@ -161,7 +192,12 @@ function error(error: Error) {
     throw error;
 }
 
-function enqueueFrame(frame: VideoFrame) {
+/**
+ * Adds a frame to the frame queue and starts the draw loop.
+ * The timestamp of the first frame is saved to allow calculation of the current time.
+ * @param frame VideoFrame from decoder
+ */
+function enqueueFrame(frame: VideoFrame): void {
     if (!firstFrameTime) {
         firstFrameTime = frame.timestamp / 1000;
         externalDelta = 0;
@@ -180,13 +216,29 @@ function mediaTime() {
     return performance.now() - baseTime + firstFrameTime + externalDelta;
 }
 
-function calculateTimeUntilNextFrame(timestamp: number) {
+/**
+ * simple time since the decoder started.
+ */
+function currentTime(): number {
+    return performance.now() - baseTime;
+}
+
+/**
+ * Calculates the time to pass before the frame should be displayed according to the current time.
+ * Negative numbers mean the frame can be skipped.
+ * @param timestamp of a frame
+ * @returns time in milliseconds
+ */
+function calculateTimeUntilNextFrame(timestamp: number): number {
     if (baseTime == 0) baseTime = performance.now();
     const result = timestamp / 1000 - mediaTime();
     return result;
 }
 
-async function renderAnimationFrame() {
+/**
+ * Dequeues a frame and renders it when the current time reaches the timestamp.
+ */
+async function renderAnimationFrame(): Promise<void> {
     frameUnderflow = pendingFrames.getSize() == 0;
     if (frameUnderflow) return;
 
@@ -201,7 +253,7 @@ async function renderAnimationFrame() {
         });
         self.postMessage({
             action: "currentTime",
-            currentTime: frame.timestamp,
+            currentTime: currentTime() * 1e3,
         });
         renderer.draw(frame);
         frame.close();

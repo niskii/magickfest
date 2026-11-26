@@ -15,7 +15,7 @@ export class AudioStreamPlayer {
     #audioCtx: AudioContext; // Created/Closed when this player starts/stops audio
     #audioSrcNodes: Array<AudioBufferSourceNode>; // Used to fix Safari Bug https://github.com/AnthumChris/fetch-stream-audio/issues/1
     #gainNode: GainNode;
-    #timeKeeper: BufferHealthManager;
+    #bufferHealthManager: BufferHealthManager;
     #flushTimeoutId: NodeJS.Timeout;
     #bitrate: Bitrate;
     #volume: number;
@@ -27,11 +27,11 @@ export class AudioStreamPlayer {
         this.#bitrate = bitrate;
         this.#volume = volume;
 
-        this.#timeKeeper = new BufferHealthManager();
+        this.#bufferHealthManager = new BufferHealthManager();
 
         const stream = new AudioStreamSocket(
             socket,
-            this.#timeKeeper,
+            this.#bufferHealthManager,
             this.#bitrate,
             this.#decode.bind(this),
         );
@@ -61,7 +61,7 @@ export class AudioStreamPlayer {
 
     reset() {
         this.#stream.reset();
-        this.#timeKeeper.reset();
+        this.#bufferHealthManager.reset();
         decoder.clear();
 
         if (this.#sessionId) {
@@ -102,7 +102,9 @@ export class AudioStreamPlayer {
         this.#gainNode.gain.value = this.#volume ** 1.5;
         this.#audioCtx.suspend();
 
-        this.#timeKeeper.setMediaContext(new AudioTimeContext(this.#audioCtx));
+        this.#bufferHealthManager.setMediaContext(
+            new AudioTimeContext(this.#audioCtx),
+        );
         this.#stream.start();
     }
 
@@ -121,19 +123,19 @@ export class AudioStreamPlayer {
     }
 
     getCurrentPlayPosition() {
-        return this.#timeKeeper.getCurrentPlayPosition();
+        return this.#bufferHealthManager.getCurrentPlayPosition();
     }
 
     getTotalDuration() {
-        return this.#timeKeeper.getTotalDuration();
+        return this.#bufferHealthManager.getTotalDuration();
     }
 
     getDownloadedAudioTime() {
-        return this.#timeKeeper.getDownloadedAudioDuration();
+        return this.#bufferHealthManager.getDownloadedDuration();
     }
 
     getServerDelay() {
-        return this.#timeKeeper.getDelay();
+        return this.#bufferHealthManager.getDelay();
     }
 
     #flush() {
@@ -178,8 +180,8 @@ export class AudioStreamPlayer {
 
             if (
                 this.#audioCtx.currentTime >
-                this.#timeKeeper.getStartedAt() +
-                    this.#timeKeeper.getTotalTimeScheduled()
+                this.#bufferHealthManager.getStartedAt() +
+                    this.#bufferHealthManager.getTotalTimeScheduled()
             ) {
                 this.#audioCtx.suspend();
             }
@@ -203,7 +205,7 @@ export class AudioStreamPlayer {
         let startDelay = 0;
         // initialize first play position.  initial clipping/choppiness sometimes occurs and intentional start latency needed
         // read more: https://github.com/WebAudio/web-audio-api/issues/296#issuecomment-257100626
-        if (!this.#timeKeeper.getStartedAt()) {
+        if (!this.#bufferHealthManager.getStartedAt()) {
             /* this clips in Firefox, plays */
             // const startDelay = audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
@@ -217,7 +219,7 @@ export class AudioStreamPlayer {
             /* this could be useful for firefox but outputLatency is about 250ms in FF. too long */
             // const startDelay = audioCtx.outputLatency || audioCtx.baseLatency || (128 / audioCtx.sampleRate);
 
-            this.#timeKeeper.setStartedAt(
+            this.#bufferHealthManager.setStartedAt(
                 this.#audioCtx.currentTime + startDelay,
             );
         }
@@ -230,11 +232,11 @@ export class AudioStreamPlayer {
 
         const startAt = Math.max(
             this.#audioCtx.currentTime,
-            this.#timeKeeper.getStartedAt() +
-                this.#timeKeeper.getTotalTimeScheduled(),
+            this.#bufferHealthManager.getStartedAt() +
+                this.#bufferHealthManager.getTotalTimeScheduled(),
         ); // play at current time if underflowing
 
         audioSrc.start(startAt);
-        this.#timeKeeper.addTotalTimeScheduled(audioBuffer.duration);
+        this.#bufferHealthManager.addTotalTimeScheduled(audioBuffer.duration);
     }
 }

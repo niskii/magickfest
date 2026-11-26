@@ -40,6 +40,8 @@ export class VideoStreamSocket extends MediaSocket {
             this.isFetching = false;
             if (!videoPacket) return;
 
+            this.logDelay(videoPacket.ServerTime);
+
             this.updateBufferHealth(videoPacket);
             this.bufferHealthManager.addTotalTimeScheduled(
                 videoPacket.PacketDuration,
@@ -49,7 +51,7 @@ export class VideoStreamSocket extends MediaSocket {
         });
     }
 
-    fetchCurrent() {
+    override fetchCurrent() {
         this.isFetching = true;
         this.socket.emit(
             "fetchSyncedVideoChunk",
@@ -60,7 +62,7 @@ export class VideoStreamSocket extends MediaSocket {
         );
     }
 
-    fetchNext() {
+    override fetchNext() {
         if (this.isFetching) return;
         this.isFetching = true;
         this.socket.emit(
@@ -82,11 +84,11 @@ export class VideoStreamSocket extends MediaSocket {
         );
     }
 
-    handleChunk(chunk: VideoPacket) {
-        const isValid = this.validateChunk(chunk);
-        if (!isValid) {
-            return;
-        }
-        if (chunk.EncodedPackets) this.onOutput(chunk.EncodedPackets);
+    handleChunk(videoPacket: VideoPacket) {
+        const isValid = this.validateChunk(videoPacket);
+        if (!isValid) return;
+        this.lastChunkPage = videoPacket.PacketEnd;
+        if (videoPacket.EncodedPackets)
+            this.onOutput(videoPacket.EncodedPackets);
     }
 }

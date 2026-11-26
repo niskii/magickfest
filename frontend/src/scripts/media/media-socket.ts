@@ -29,10 +29,18 @@ export abstract class MediaSocket {
         this.bufferHealthManager = bufferHealthManager;
     }
 
+    /**
+     * Setter for the function to call when the media ends.
+     * @param callback function to call
+     */
     setOnFileEndCallback(callback: () => void) {
         this.#onFileEnd = callback;
     }
 
+    /**
+     * Setter for the function to call when the instance is reset.
+     * @param callback function to call
+     */
     setOnResetCallback(callback: () => void) {
         this.#onReset = callback;
     }
@@ -66,7 +74,7 @@ export abstract class MediaSocket {
                 this.start();
             }
             if (this.bufferHealthManager.isBelowThreshold()) this.fetchNext();
-        }, 1000);
+        }, config.FetchInterval);
     }
 
     stop() {
@@ -81,11 +89,13 @@ export abstract class MediaSocket {
         if (this.#onReset) this.#onReset();
     }
 
+    /**
+     * Checks for null and page validity.
+     * @param chunk to validate
+     * @returns true if the chunk is valid
+     */
     validateChunk(chunk: MediaPacket) {
-        if (chunk == null) return false;
-        if (this.lastChunkPage == chunk.PacketEnd) return false;
-        this.lastChunkPage = chunk.PacketEnd;
-        return true;
+        return chunk !== null && this.lastChunkPage !== chunk.PacketEnd;
     }
 
     logDelay(serverTime: number) {
@@ -94,7 +104,10 @@ export abstract class MediaSocket {
             (
                 serverTime - this.bufferHealthManager.getCurrentPlayPosition()
             ).toFixed(2),
-            this.bufferHealthManager.getDownloadedAudioDuration().toFixed(2),
+            "Buffer Duration:",
+            this.bufferHealthManager.getDownloadedDuration().toFixed(2),
+            "in:",
+            this.constructor.name,
         );
     }
 }

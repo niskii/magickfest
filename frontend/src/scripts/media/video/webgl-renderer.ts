@@ -8,6 +8,7 @@ export class WebGLRenderer {
 
     constructor(canvas: OffscreenCanvas) {
         this.#canvas = canvas;
+        // TODO: check for support to select an appropriate renderer.
         const gl = (this.#ctx = canvas.getContext("webgl2"));
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
