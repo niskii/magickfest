@@ -57,6 +57,14 @@ export class VideoStreamPlayer {
         this.#stream.stop();
     }
 
+    pause() {
+        this.#decoder.postMessage({ action: "pause" });
+    }
+
+    resume() {
+        this.#decoder.postMessage({ action: "resume" });
+    }
+
     #decode(chunks: Uint8Array<ArrayBufferLike>) {
         this.#decoder.postMessage({ action: "buffer", chunks }, [chunks]);
     }

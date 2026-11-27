@@ -48,8 +48,8 @@ self.onmessage = (event: MessageEvent<any>) => {
         case "reset":
             reset();
             break;
-        case "play":
-            play();
+        case "resume":
+            resume();
             break;
         case "pause":
             pause();
@@ -84,10 +84,12 @@ function setExternalClockReference(timestamp: number) {
 /**
  * Continues the decoder
  */
-function play(): void {
+function resume(): void {
     if (!paused) return;
     paused = false;
     baseTime += performance.now() - pausedTimestamp;
+    setTimeout(renderAnimationFrame, 0);
+    setTimeout(handleChunk, 0);
 }
 
 /**
@@ -165,7 +167,7 @@ function handleChunk(): void {
     }
 
     chunkUnderflow = pendingEncodedPackets.getSize() == 0;
-    if (chunkUnderflow) return;
+    if (chunkUnderflow || paused) return;
 
     if (videoDecoder.decodeQueueSize < 15 && pendingFrames.getSize() < 15) {
         const chunk = pendingEncodedPackets.dequeue();
@@ -240,7 +242,7 @@ function calculateTimeUntilNextFrame(timestamp: number): number {
  */
 async function renderAnimationFrame(): Promise<void> {
     frameUnderflow = pendingFrames.getSize() == 0;
-    if (frameUnderflow) return;
+    if (frameUnderflow || paused) return;
 
     const frame = pendingFrames.dequeue();
 

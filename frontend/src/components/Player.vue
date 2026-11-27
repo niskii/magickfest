@@ -137,6 +137,7 @@ watch(playerState, () => {
             case PlaybackState.Running:
                 if (isPaused.value && setIndex.value == playerState.value.setIndex) {
                     audioStreamPlayer.value.resume();
+                    videoStreamPlayer.value.resume();
                 } else {
                     playerStart();
                     setIndex.value = playerState.value.setIndex;
@@ -148,6 +149,7 @@ watch(playerState, () => {
                 if (startPaused.value) {
                     playerStart();
                 }
+                videoStreamPlayer.value.pause();
                 audioStreamPlayer.value.pause();
                 isPaused.value = true;
                 break;
